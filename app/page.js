@@ -7,7 +7,8 @@ import ReelsScorecard, { SIZE as SIZE_REELS } from "../components/presets/ReelsS
 import HoleCard, { SIZE as SIZE_HOLE } from "../components/presets/HoleCard";
 import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../lib/score";
 import { coursesFromDb, mergeDb, SEED_DB } from "../lib/coursesDb";
-import { loadDb } from "../lib/nineStore";
+import { loadDb, saveDb } from "../lib/nineStore";
+import { fetchDb } from "../lib/api";
 import { COURSE_DIRECTORY } from "../lib/courseDirectory";
 
 const FORMATS = {
@@ -129,7 +130,12 @@ export default function Home() {
   // 즐겨찾기 (코스 이름 배열, localStorage)
   const [favorites, setFavorites] = useState([]);
   useEffect(() => {
-    setBuiltinCourses(coursesFromDb(mergeDb(SEED_DB, loadDb())));
+    (async () => {
+      let remote;
+      try { remote = await fetchDb(); saveDb(remote); }   // KV → 로컬 캐시
+      catch { remote = loadDb(); }                          // 오프라인/로컬: 캐시 사용
+      setBuiltinCourses(coursesFromDb(mergeDb(SEED_DB, remote)));
+    })();
     try { setFavorites(JSON.parse(localStorage.getItem("sc-favorites") || "[]")); }
     catch { setFavorites([]); }
   }, []);

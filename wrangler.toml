@@ -1,0 +1,7 @@
+name = "dallu-golf-studio"
+pages_build_output_dir = "out"
+compatibility_date = "2024-11-01"
+
+[[kv_namespaces]]
+binding = "COURSE_KV"
+id = "f15dacc2003649349f8b8ad72d7fb7ac"

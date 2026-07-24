@@ -4,14 +4,43 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { COURSE_DIRECTORY } from "../../lib/courseDirectory";
 import { loadDb, saveDb } from "../../lib/nineStore";
+import { fetchDb, pushDb } from "../../lib/api";
 import { mergeDb, SEED_DB } from "../../lib/coursesDb";
 
 const DEFAULT9 = () => Array(9).fill("4");
 
 export default function Admin() {
   const [db, setDb] = useState({ nines: [], combos: [] });
-  useEffect(() => { setDb(mergeDb(SEED_DB, loadDb())); }, []);
-  const persist = (next) => { setDb(next); saveDb(next); };
+  const [syncing, setSyncing] = useState(false);
+  useEffect(() => {
+    (async () => {
+      let remote;
+      try { remote = await fetchDb(); } catch { remote = loadDb(); }
+      setDb(mergeDb(SEED_DB, remote));
+    })();
+  }, []);
+  // 저장: 로컬 캐시 + KV 서버(POST). 인증 필요 시 토큰 프롬프트.
+  const persist = async (next) => {
+    setDb(next);
+    saveDb(next);
+    setSyncing(true);
+    try {
+      let token = localStorage.getItem("sc-admin-token") || "";
+      try {
+        await pushDb(next, token);
+      } catch (e) {
+        if (String(e.message).includes("인증")) {
+          token = prompt("관리자 토큰(ADMIN_TOKEN)을 입력하세요") || "";
+          localStorage.setItem("sc-admin-token", token);
+          await pushDb(next, token);
+        } else throw e;
+      }
+    } catch (e) {
+      alert("서버 저장 실패(로컬엔 저장됨): " + e.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   // 디렉토리 검색
   const [region, setRegion] = useState("");
@@ -107,7 +136,7 @@ export default function Admin() {
         <div>
           <div className="font-head text-[12px] font-semibold uppercase tracking-[0.28em] text-txt">Admin</div>
           <h1 className="font-head text-3xl font-bold text-txt">코스 DB 관리</h1>
-          <p className="mt-1 text-sm text-txt-soft">나인 {db.nines.length}개 · 조합 {db.combos.length}개 · 골프장 {clubsWithNines.length}곳 (localStorage 실시간 연동)</p>
+          <p className="mt-1 text-sm text-txt-soft">나인 {db.nines.length}개 · 조합 {db.combos.length}개 · 골프장 {clubsWithNines.length}곳 (Cloudflare KV 서버 연동){syncing ? " · 저장중…" : ""}</p>
         </div>
         <div className="flex items-center gap-3 text-sm">
           <button onClick={downloadSeed} className="rounded-lg border border-accent px-3 py-1.5 text-xs font-semibold text-txt hover:bg-accent hover:text-[#06210f]">seedDb.js 다운로드</button>
