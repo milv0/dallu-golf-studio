@@ -59,16 +59,6 @@ export default function Home() {
 
   const summary = useMemo(() => summarize(round.holes), [round]);
 
-  // 골프장 이름 자동완성 목록 (디렉토리 541곳 + 기본DB + 저장코스, 이름 중복 제거)
-  const courseNameList = useMemo(() => {
-    const seen = new Set();
-    const out = [];
-    for (const c of [...COURSE_DB, ...savedCourses, ...COURSE_DIRECTORY]) {
-      if (c.name && !seen.has(c.name)) { seen.add(c.name); out.push(c.name); }
-    }
-    return out;
-  }, [savedCourses]);
-
   const setMeta = (key, val) => setRound((r) => ({ ...r, [key]: val }));
   const setHC = (key, val) => setHoleCard((s) => ({ ...s, [key]: val }));
 
@@ -151,6 +141,16 @@ export default function Home() {
     alert(`"${name}" 코스의 PAR를 저장했습니다.`);
   };
   const removeCourse = (name) => persistCourses(savedCourses.filter((c) => c.name !== name));
+
+  // 골프장 이름 자동완성 목록 (디렉토리 541곳 + 기본DB + 저장코스, 이름 중복 제거)
+  const courseNameList = useMemo(() => {
+    const seen = new Set();
+    const out = [];
+    for (const c of [...COURSE_DB, ...savedCourses, ...COURSE_DIRECTORY]) {
+      if (c.name && !seen.has(c.name)) { seen.add(c.name); out.push(c.name); }
+    }
+    return out;
+  }, [savedCourses]);
   // 골프장 이름이 (DB 또는 저장한 코스)와 일치하면 par 자동 로드
   const maybeLoadCourse = (name) => {
     const key = (name || "").trim();
