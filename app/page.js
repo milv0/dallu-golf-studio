@@ -239,7 +239,7 @@ export default function Home() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[680px_1fr]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(440px,500px)_1fr]">
         {/* ── 입력 패널 ── */}
         <section className="space-y-6">
           {/* 기본 정보 + 코스 (좌우 배치) */}
