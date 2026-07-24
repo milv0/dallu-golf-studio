@@ -36,6 +36,8 @@ export default function Admin() {
     return COURSE_DIRECTORY.filter((c) => (!region || c.region === region) && (!kw || c.name.includes(kw))).slice(0, 400);
   }, [region, q]);
   const ninesOf = (cl) => db.nines.filter((n) => n.club === cl);
+  // 선택된 골프장이 있으면 그 골프장만, 없으면 전체
+  const shownClubs = club.trim() ? clubsWithNines.filter((c) => c === club.trim()) : clubsWithNines;
 
   const setPar = (i, v) => setPars((p) => p.map((x, idx) => (idx === i ? v : x)));
   const onParKey = (e, i) => {
@@ -174,9 +176,19 @@ export default function Admin() {
           {/* 저장된 코스 (스코어카드 형식) */}
           {clubsWithNines.length > 0 && (
             <div className="rounded-xl border border-line bg-panel p-4">
-              <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">저장된 코스</div>
+              <div className="mb-3 flex items-center justify-between">
+                <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
+                  저장된 코스 {club.trim() && <span className="normal-case tracking-normal text-accent">· {club.trim()}</span>}
+                </span>
+                {club.trim() && (
+                  <button onClick={() => setClub("")} className="text-[12px] text-txt-soft hover:text-txt">전체 보기</button>
+                )}
+              </div>
+              {shownClubs.length === 0 ? (
+                <p className="text-[12px] text-txt-faint">이 골프장에 저장된 코스가 없습니다. 위에서 나인을 입력하세요.</p>
+              ) : (
               <div className="space-y-4">
-                {clubsWithNines.map((cl) => (
+                {shownClubs.map((cl) => (
                   <div key={cl}>
                     <div className="mb-1.5 text-[13px] font-semibold text-accent">{cl}</div>
                     <div className="space-y-1.5">
@@ -210,6 +222,7 @@ export default function Admin() {
                   </div>
                 ))}
               </div>
+              )}
             </div>
           )}
 
