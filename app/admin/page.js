@@ -4,12 +4,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { COURSE_DIRECTORY } from "../../lib/courseDirectory";
 import { loadDb, saveDb } from "../../lib/nineStore";
+import { mergeDb, SEED_DB } from "../../lib/coursesDb";
 
 const DEFAULT9 = () => Array(9).fill("4");
 
 export default function Admin() {
   const [db, setDb] = useState({ nines: [], combos: [] });
-  useEffect(() => { setDb(loadDb()); }, []);
+  useEffect(() => { setDb(mergeDb(SEED_DB, loadDb())); }, []);
   const persist = (next) => { setDb(next); saveDb(next); };
 
   // 디렉토리 검색
@@ -69,13 +70,22 @@ export default function Admin() {
 
   const total = pars.reduce((a, b) => a + (Number(b) || 0), 0);
 
-  // 백업(JSON)
+  // 백업(JSON) / seedDb.js 다운로드
   const backup = JSON.stringify(db);
   const importBackup = () => {
     const t = prompt("백업 JSON 붙여넣기");
     if (!t) return;
     try { const d = JSON.parse(t); persist({ nines: d.nines || [], combos: d.combos || [] }); alert("가져오기 완료"); }
     catch { alert("JSON 파싱 실패"); }
+  };
+  const downloadSeed = () => {
+    const text =
+      "// 코스 시드 DB (데이터 전용) — /admin 에서 생성. 이 파일(lib/seedDb.js)을 교체 후 배포하면 모든 사용자에게 공유됩니다.\n" +
+      "export const SEED_DB = " + JSON.stringify(db, null, 2) + ";\n";
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type: "text/javascript" }));
+    a.download = "seedDb.js";
+    a.click();
   };
 
   return (
@@ -87,6 +97,7 @@ export default function Admin() {
           <p className="mt-1 text-sm text-txt-soft">나인 {db.nines.length}개 · 조합 {db.combos.length}개 · 골프장 {clubsWithNines.length}곳 (localStorage 실시간 연동)</p>
         </div>
         <div className="flex items-center gap-3 text-sm">
+          <button onClick={downloadSeed} className="rounded-lg border border-accent px-3 py-1.5 text-xs font-semibold text-accent hover:bg-accent hover:text-[#06210f]">seedDb.js 다운로드</button>
           <button onClick={importBackup} className="text-txt-soft hover:text-txt">백업 가져오기</button>
           <button onClick={() => navigator.clipboard?.writeText(backup)} className="text-txt-soft hover:text-txt">백업 복사</button>
           <Link href="/" className="text-txt-soft hover:text-txt">← 메인</Link>
@@ -160,25 +171,45 @@ export default function Admin() {
             <p className="mt-1.5 text-[11px] text-txt-faint">숫자 입력 후 Tab/Enter로 다음 홀 이동. 저장하면 아래 목록에 추가됩니다.</p>
           </div>
 
-          {/* 나인 목록 */}
+          {/* 저장된 코스 (스코어카드 형식) */}
           {clubsWithNines.length > 0 && (
             <div className="rounded-xl border border-line bg-panel p-4">
-              <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">저장된 나인</div>
-              {clubsWithNines.map((cl) => (
-                <div key={cl} className="mb-2">
-                  <div className="mb-1 text-[12px] text-accent">{cl}</div>
-                  <div className="flex flex-wrap gap-2">
-                    {ninesOf(cl).map((n) => (
-                      <span key={n.nine} className="flex items-center gap-1 rounded-full border border-line-2 bg-panel-2 py-1 pl-3 pr-1 text-[13px]">
-                        <button onClick={() => loadNine(cl, n.nine)} className="text-txt hover:text-accent" title="불러와 수정">
-                          {n.nine} <span className="font-mono text-txt-faint">({n.pars.reduce((a, b) => a + b, 0)})</span>
-                        </button>
-                        <button onClick={() => removeNine(cl, n.nine)} className="flex h-5 w-5 items-center justify-center rounded-full text-txt-faint hover:bg-line hover:text-txt">×</button>
-                      </span>
-                    ))}
+              <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">저장된 코스</div>
+              <div className="space-y-4">
+                {clubsWithNines.map((cl) => (
+                  <div key={cl}>
+                    <div className="mb-1.5 text-[13px] font-semibold text-accent">{cl}</div>
+                    <div className="space-y-1.5">
+                      {ninesOf(cl).map((n) => (
+                        <div key={n.nine} className="overflow-x-auto rounded-lg border border-line bg-panel-2">
+                          <div className="flex items-center justify-between px-3 py-1.5">
+                            <button onClick={() => loadNine(cl, n.nine)} className="text-sm font-semibold text-txt hover:text-accent" title="불러와 수정">
+                              {n.nine} <span className="font-mono text-[11px] text-txt-faint">· 합 {n.pars.reduce((a, b) => a + b, 0)}</span>
+                            </button>
+                            <button onClick={() => removeNine(cl, n.nine)} className="flex h-5 w-5 items-center justify-center rounded-full text-txt-faint hover:bg-line hover:text-txt">×</button>
+                          </div>
+                          <table className="w-full border-collapse text-center">
+                            <tbody>
+                              <tr className="border-t border-line">
+                                <td className="px-2 py-1 text-[10px] uppercase tracking-wider text-txt-faint">홀</td>
+                                {n.pars.map((_, i) => (
+                                  <td key={i} className="border-l border-line px-2 py-1 font-mono text-[11px] text-txt-faint">{i + 1}</td>
+                                ))}
+                              </tr>
+                              <tr className="border-t border-line">
+                                <td className="px-2 py-1 text-[10px] uppercase tracking-wider text-txt-faint">PAR</td>
+                                {n.pars.map((p, i) => (
+                                  <td key={i} className="border-l border-line px-2 py-1 font-mono text-sm font-bold text-txt">{p}</td>
+                                ))}
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           )}
 

@@ -6,7 +6,7 @@ import HoleByHoleStrip, { SIZE as SIZE_YT } from "../components/presets/HoleByHo
 import ReelsScorecard, { SIZE as SIZE_REELS } from "../components/presets/ReelsScorecard";
 import HoleCard, { SIZE as SIZE_HOLE } from "../components/presets/HoleCard";
 import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../lib/score";
-import { coursesFromDb } from "../lib/coursesDb";
+import { coursesFromDb, mergeDb, SEED_DB } from "../lib/coursesDb";
 import { loadDb } from "../lib/nineStore";
 import { COURSE_DIRECTORY } from "../lib/courseDirectory";
 
@@ -130,7 +130,7 @@ export default function Home() {
   useEffect(() => {
     try { setSavedCourses(JSON.parse(localStorage.getItem("sc-courses") || "[]")); }
     catch { setSavedCourses([]); }
-    setBuiltinCourses(coursesFromDb(loadDb()));
+    setBuiltinCourses(coursesFromDb(mergeDb(SEED_DB, loadDb())));
   }, []);
   const persistCourses = (list) => {
     setSavedCourses(list);
