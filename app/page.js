@@ -495,13 +495,11 @@ function ClubAutocomplete({ value, onChange, onPick, options }) {
   );
 }
 
-// 코스: 즐겨찾기 + 골프장 DB. 기본정보에서 고른 골프장(selectedClub)의 조합을 자동 표시.
+// 코스: 즐겨찾기 + 기본정보에서 고른 골프장(selectedClub)의 조합만 표시.
 function CoursePresets({ builtin = [], favorites = [], selectedClub = "", onToggleFav, onLoad }) {
-  const [browseClub, setBrowseClub] = useState("");
   const clubs = [...new Set(builtin.map((c) => c.club || c.name))];
-  // 기본정보에서 고른 골프장이 DB에 있으면 그 골프장, 아니면 수동 브라우즈 선택
   const sel = (selectedClub || "").trim();
-  const activeClub = clubs.includes(sel) ? sel : browseClub;
+  const activeClub = clubs.includes(sel) ? sel : "";
   const clubCourses = builtin.filter((c) => (c.club || c.name) === activeClub);
   const favCourses = builtin.filter((c) => favorites.includes(c.name));
 
@@ -530,45 +528,24 @@ function CoursePresets({ builtin = [], favorites = [], selectedClub = "", onTogg
         </div>
       )}
 
-      {activeClub ? (
-        // 선택된 골프장의 조합 자동 표시
-        <div>
-          <div className="mb-1 flex items-center gap-2">
-            <span className="text-[12px] text-txt-soft">{activeClub} · 조합 선택</span>
-            {!clubs.includes(sel) && (
-              <button type="button" onClick={() => setBrowseClub("")} className="text-[12px] text-txt-faint hover:text-txt">← 목록</button>
-            )}
-          </div>
-          {clubCourses.length === 0 ? (
-            <p className="text-[12px] text-txt-faint">등록된 조합이 없습니다.</p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {clubCourses.map((c) => (
-                <span key={c.name} className="flex items-center gap-0.5 rounded-full border border-line-2 bg-panel-2 py-1 pl-3 pr-1 text-sm">
-                  <button type="button" onClick={() => onLoad(c)} className="text-txt hover:text-accent">
-                    {c.out && c.in ? `${c.out}+${c.in}` : c.name}
-                  </button>
-                  <Star name={c.name} />
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+      {!activeClub ? (
+        <p className="text-[12px] text-txt-faint">기본 정보에서 <b className="text-txt-soft">골프장을 선택</b>하면 코스(조합)가 표시됩니다.</p>
+      ) : clubCourses.length === 0 ? (
+        <p className="text-[12px] text-txt-faint">{activeClub} · 등록된 조합이 없습니다.</p>
       ) : (
-        // 골프장 미선택 시: 골프장 목록 브라우즈
-        clubs.length > 0 && (
-          <div>
-            <div className="mb-1 text-[11px] uppercase tracking-widest text-accent">골프장 DB</div>
-            <div className="flex flex-wrap gap-2">
-              {clubs.map((cl) => (
-                <button key={cl} type="button" onClick={() => setBrowseClub(cl)}
-                  className="rounded-full border border-line-2 bg-panel-2 px-3 py-1 text-sm text-txt transition hover:border-accent hover:text-accent">
-                  {cl}
+        <div>
+          <div className="mb-1 text-[12px] text-txt-soft">{activeClub} · 조합 선택</div>
+          <div className="flex flex-wrap gap-2">
+            {clubCourses.map((c) => (
+              <span key={c.name} className="flex items-center gap-0.5 rounded-full border border-line-2 bg-panel-2 py-1 pl-3 pr-1 text-sm">
+                <button type="button" onClick={() => onLoad(c)} className="text-txt hover:text-accent">
+                  {c.out && c.in ? `${c.out}+${c.in}` : c.name}
                 </button>
-              ))}
-            </div>
+                <Star name={c.name} />
+              </span>
+            ))}
           </div>
-        )
+        </div>
       )}
     </div>
   );
