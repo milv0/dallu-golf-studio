@@ -265,7 +265,7 @@ export default function Admin() {
                   <div className="flex flex-wrap gap-2">
                     {db.combos.filter((c) => c.club === club.trim()).map((c, i) => (
                       <span key={i} className="flex items-center gap-1 rounded-full border border-line-2 bg-panel-2 py-1 pl-3 pr-1 text-[13px]">
-                        <span className="text-txt"><b className="text-accent">{c.out}+{c.in}</b></span>
+                        <span className="text-txt"><b>{c.out}+{c.in}</b></span>
                         <button onClick={() => removeCombo(c)} className="flex h-5 w-5 items-center justify-center rounded-full text-txt-faint hover:bg-line hover:text-txt">×</button>
                       </span>
                     ))}
