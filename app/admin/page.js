@@ -15,7 +15,11 @@ const PAR_COLOR = { 3: "text-[#7fd1ff]", 4: "text-txt", 5: "text-[#ffd27f]" };
 function NineRow({ n, pars, onName, onPar, onDel, isNew }) {
   const total = sum(pars);
   const bad = total !== 36;
-  const cycle = (p) => { const c = Number(p) || 4; return String(c >= 5 ? 3 : c + 1); };
+  const setByPos = (e, i) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const rx = (e.clientX - rect.left) / rect.width;
+    onPar(i, rx < 0.38 ? "3" : rx > 0.62 ? "5" : "4");
+  };
   return (
     <div className="flex items-center gap-2 border-t border-line px-3 py-2 first:border-t-0">
       {isNew ? (
@@ -28,8 +32,8 @@ function NineRow({ n, pars, onName, onPar, onDel, isNew }) {
       )}
       <div className="grid flex-1 grid-cols-9 gap-1">
         {pars.map((p, i) => (
-          <button key={i} type="button" onClick={() => onPar(i, cycle(p))}
-            title="클릭: 3 → 4 → 5 순환"
+          <button key={i} type="button" onClick={(e) => setByPos(e, i)}
+            title="왼쪽=3 · 가운데=4 · 오른쪽=5"
             className={"select-none rounded bg-panel py-1.5 text-center font-mono text-sm font-bold outline-none transition hover:ring-2 hover:ring-accent focus:ring-2 focus:ring-accent " + (PAR_COLOR[Number(p)] || "text-txt")}>
             {p || "–"}
           </button>
@@ -315,7 +319,7 @@ export default function Admin() {
                       </span>
                     )}
                   </span>
-                  <span className="font-mono text-[11px] text-txt-faint">이름 클릭 수정 · PAR 칸 클릭 = 3→4→5</span>
+                  <span className="font-mono text-[11px] text-txt-faint">이름 클릭 수정 · PAR 칸 클릭: 왼쪽3·중간4·오른쪽5</span>
                 </div>
                 {nineMismatch && (
                   <div className="border-b border-line bg-[#ffb648]/10 px-4 py-2 text-[12px] text-[#ffb648]">
