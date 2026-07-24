@@ -62,6 +62,11 @@ export default function Admin() {
     const kw = q.trim();
     return COURSE_DIRECTORY.filter((c) => (!region || c.region === region) && (!kw || c.name.includes(kw))).slice(0, 400);
   }, [region, q]);
+  const dbOnly = useMemo(() => {
+    const kw = q.trim();
+    const dir = new Set(COURSE_DIRECTORY.map((c) => c.name));
+    return clubsWithNines.filter((c) => !dir.has(c) && (!kw || c.includes(kw)));
+  }, [clubsWithNines, q]);
   const ninesOf = (cl) => Object.entries((db[cl] && db[cl].nines) || {}).map(([nine, pars]) => ({ nine, pars }));
   const combosOf = (cl) => (db[cl] && db[cl].combos) || [];
 
@@ -101,6 +106,17 @@ export default function Admin() {
     if (!pars9) return;
     setClub(cl); setNine(nn); setPars(pars9.map(String)); setEditingNine(nn);
     focusEditor();
+  };
+  const renameClub = () => {
+    const cur = club.trim(); if (!cur) return;
+    const nn = (prompt("골프장 이름 수정", cur) || "").trim();
+    if (!nn || nn === cur) return;
+    if (db[nn]) { alert("이미 같은 이름의 골프장이 있습니다"); return; }
+    const next = {};
+    for (const k of Object.keys(db)) next[k === cur ? nn : k] = db[k];
+    if (!next[nn] && db[cur]) next[nn] = db[cur];
+    persist(next);
+    setClub(nn); resetEditor();
   };
 
   const addCombo = () => {
@@ -188,6 +204,24 @@ export default function Admin() {
               className="flex-1 rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
           </div>
           <div className="max-h-[64vh] overflow-auto rounded-xl border border-line">
+            {dbOnly.length > 0 && (
+              <div className="border-b border-line-2 bg-panel-2/60">
+                <div className="px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-accent">내 DB (커스텀·변경됨)</div>
+                {dbOnly.map((cl) => {
+                  const active = selClub === cl;
+                  return (
+                    <button key={"dbonly-" + cl} type="button" onClick={() => { setClub(cl); resetEditor(); }}
+                      className={"flex w-full items-center justify-between border-b border-line px-3 py-2 text-left transition " + (active ? "bg-accent/15" : "hover:bg-panel-2")}>
+                      <span className="flex items-center gap-1.5 text-sm text-txt">
+                        <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-accent text-[10px] text-[#06210f]">✓</span>
+                        {cl}
+                      </span>
+                      <span className="font-mono text-[10px] text-txt-faint">custom</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {filtered.map((c) => {
               const done = enteredClubs.has(c.name);
               const active = selClub === c.name;
@@ -217,6 +251,7 @@ export default function Admin() {
               {/* 선택된 골프장 */}
               <div className="flex items-center gap-2">
                 <h2 className="font-head text-xl font-bold text-txt">{selClub}</h2>
+                <button onClick={renameClub} className="rounded-md border border-line px-2 py-1 text-[11px] font-semibold text-txt-soft hover:border-accent hover:text-txt">이름 수정</button>
                 <button onClick={() => { setClub(""); resetEditor(); }} className="text-[12px] text-txt-faint hover:text-txt">변경</button>
               </div>
 
