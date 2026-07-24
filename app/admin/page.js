@@ -24,7 +24,6 @@ export default function Admin() {
   const parRefs = useRef([]);
 
   // 조합 입력
-  const [cClub, setCClub] = useState("");
   const [cOut, setCOut] = useState("");
   const [cIn, setCIn] = useState("");
 
@@ -63,10 +62,12 @@ export default function Admin() {
   };
 
   const addCombo = () => {
-    if (!cClub || !cOut || !cIn || cOut === cIn) { alert("골프장과 서로 다른 전/후반 코스를 선택하세요"); return; }
-    const exists = db.combos.some((c) => c.club === cClub && c.out === cOut && c.in === cIn);
+    const cl = club.trim();
+    if (!cl || !cOut || !cIn || cOut === cIn) { alert("골프장을 선택하고 서로 다른 전/후반 코스를 고르세요"); return; }
+    const exists = db.combos.some((c) => c.club === cl && c.out === cOut && c.in === cIn);
     if (exists) { alert("이미 있는 조합"); return; }
-    persist({ ...db, combos: [{ club: cClub, out: cOut, in: cIn }, ...db.combos] });
+    persist({ ...db, combos: [{ club: cl, out: cOut, in: cIn }, ...db.combos] });
+    setCOut(""); setCIn("");
   };
   const removeCombo = (c) => persist({ ...db, combos: db.combos.filter((x) => !(x.club === c.club && x.out === c.out && x.in === c.in)) });
 
@@ -228,36 +229,39 @@ export default function Admin() {
 
           {/* 2) 조합 정의 */}
           <div className="rounded-xl border border-line bg-panel p-4">
-            <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">2. 제공 조합(전/후반) 정의</div>
-            <div className="mb-3 grid grid-cols-4 gap-2">
-              <select value={cClub} onChange={(e) => { setCClub(e.target.value); setCOut(""); setCIn(""); }}
-                className="rounded-lg border border-line-2 bg-panel-2 px-2 py-2 text-sm text-txt outline-none focus:border-accent">
-                <option value="">골프장</option>
-                {clubsWithNines.map((cl) => <option key={cl} value={cl}>{cl}</option>)}
-              </select>
-              <select value={cOut} onChange={(e) => setCOut(e.target.value)}
-                className="rounded-lg border border-line-2 bg-panel-2 px-2 py-2 text-sm text-txt outline-none focus:border-accent">
-                <option value="">전반</option>
-                {ninesOf(cClub).map((n) => <option key={n.nine} value={n.nine}>{n.nine}</option>)}
-              </select>
-              <select value={cIn} onChange={(e) => setCIn(e.target.value)}
-                className="rounded-lg border border-line-2 bg-panel-2 px-2 py-2 text-sm text-txt outline-none focus:border-accent">
-                <option value="">후반</option>
-                {ninesOf(cClub).map((n) => <option key={n.nine} value={n.nine}>{n.nine}</option>)}
-              </select>
-              <button onClick={addCombo} className="rounded-lg bg-accent px-3 py-2 text-sm font-bold text-[#06210f] hover:bg-accent-2">조합 추가</button>
+            <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
+              2. 제공 조합(전/후반) 정의 {club.trim() && <span className="normal-case tracking-normal text-accent">· {club.trim()}</span>}
             </div>
-            {db.combos.length === 0 ? (
-              <p className="text-[12px] text-txt-faint">정의된 조합이 없습니다. 조합을 추가하면 사용자에게 그 조합이 제공됩니다.</p>
+            {!club.trim() ? (
+              <p className="text-[12px] text-txt-faint">좌측에서 골프장을 먼저 선택하세요.</p>
             ) : (
-              <div className="flex flex-wrap gap-2">
-                {db.combos.map((c, i) => (
-                  <span key={i} className="flex items-center gap-1 rounded-full border border-line-2 bg-panel-2 py-1 pl-3 pr-1 text-[13px]">
-                    <span className="text-txt">{c.club} <b className="text-accent">{c.out}+{c.in}</b></span>
-                    <button onClick={() => removeCombo(c)} className="flex h-5 w-5 items-center justify-center rounded-full text-txt-faint hover:bg-line hover:text-txt">×</button>
-                  </span>
-                ))}
-              </div>
+              <>
+                <div className="mb-3 grid grid-cols-3 gap-2">
+                  <select value={cOut} onChange={(e) => setCOut(e.target.value)}
+                    className="rounded-lg border border-line-2 bg-panel-2 px-2 py-2 text-sm text-txt outline-none focus:border-accent">
+                    <option value="">전반</option>
+                    {ninesOf(club.trim()).map((n) => <option key={n.nine} value={n.nine}>{n.nine}</option>)}
+                  </select>
+                  <select value={cIn} onChange={(e) => setCIn(e.target.value)}
+                    className="rounded-lg border border-line-2 bg-panel-2 px-2 py-2 text-sm text-txt outline-none focus:border-accent">
+                    <option value="">후반</option>
+                    {ninesOf(club.trim()).map((n) => <option key={n.nine} value={n.nine}>{n.nine}</option>)}
+                  </select>
+                  <button onClick={addCombo} className="rounded-lg bg-accent px-3 py-2 text-sm font-bold text-[#06210f] hover:bg-accent-2">조합 추가</button>
+                </div>
+                {db.combos.filter((c) => c.club === club.trim()).length === 0 ? (
+                  <p className="text-[12px] text-txt-faint">정의된 조합이 없습니다. 추가하면 사용자에게 그 조합이 제공됩니다.</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {db.combos.filter((c) => c.club === club.trim()).map((c, i) => (
+                      <span key={i} className="flex items-center gap-1 rounded-full border border-line-2 bg-panel-2 py-1 pl-3 pr-1 text-[13px]">
+                        <span className="text-txt"><b className="text-accent">{c.out}+{c.in}</b></span>
+                        <button onClick={() => removeCombo(c)} className="flex h-5 w-5 items-center justify-center rounded-full text-txt-faint hover:bg-line hover:text-txt">×</button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
