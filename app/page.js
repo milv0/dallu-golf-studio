@@ -398,38 +398,17 @@ const PAR_STYLE = {
   4: { background: "#475162", color: "#ffffff" }, // 중간
   5: { background: "#616d7d", color: "#ffffff" }, // 연한 (모두 어두운 바탕 + 흰 글씨)
 };
-// par 셀: 숫자 하나 표시. 왼쪽 탭=3 / 가운데=4 / 오른쪽=5, 좌우 드래그 스크럽도 지원. (웹 전용, 큼직하게)
+// par 셀: 클릭(왼쪽=3/가운데=4/오른쪽=5) + 키보드(3·4·5, ←→). 드래그 없음.
 function ParCell({ par, onSet }) {
-  const drag = useRef(null);
   const cur = Number(par) || 4;
   const clamp = (n) => Math.max(3, Math.min(5, n));
   const st = PAR_STYLE[par];
 
-  const onPointerDown = (e) => {
-    drag.current = { x: e.clientX, base: cur, moved: false };
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch {}
+  const onClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const rx = (e.clientX - rect.left) / rect.width;
+    onSet(String(rx < 0.38 ? 3 : rx > 0.62 ? 5 : 4));
   };
-  const onPointerMove = (e) => {
-    const d = drag.current;
-    if (!d) return;
-    const dx = e.clientX - d.x;
-    if (Math.abs(dx) > 5) d.moved = true;
-    if (d.moved) {
-      const next = clamp(d.base + Math.round(dx / 20));
-      if (next !== Number(par)) onSet(String(next));
-    }
-  };
-  const onPointerUp = (e) => {
-    const d = drag.current;
-    drag.current = null;
-    try { e.currentTarget.releasePointerCapture(e.pointerId); } catch {}
-    if (d && !d.moved) {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const rx = (e.clientX - rect.left) / rect.width;
-      onSet(String(rx < 0.38 ? 3 : rx > 0.62 ? 5 : 4));
-    }
-  };
-
   const onKeyDown = (e) => {
     if (["3", "4", "5"].includes(e.key)) { e.preventDefault(); onSet(e.key); }
     else if (e.key === "ArrowLeft") { e.preventDefault(); onSet(String(clamp(cur - 1))); }
@@ -437,13 +416,10 @@ function ParCell({ par, onSet }) {
   };
 
   return (
-    <button type="button" tabIndex={0}
-      onKeyDown={onKeyDown}
-      onPointerDown={onPointerDown} onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
+    <button type="button" tabIndex={0} onClick={onClick} onKeyDown={onKeyDown}
       style={st ? { background: st.background, color: st.color } : undefined}
-      title="3·4·5 키 입력 / 왼쪽=파3·가운데=파4·오른쪽=파5 클릭 / 좌우 드래그"
-      className={"mb-1.5 w-full cursor-ew-resize touch-none select-none rounded-md py-1.5 text-center font-mono text-base font-bold leading-none outline-none transition focus-visible:ring-2 focus-visible:ring-accent " +
+      title="클릭: 왼쪽=파3·가운데=파4·오른쪽=파5 / 키보드: 3·4·5 (←→ 조절)"
+      className={"mb-1.5 w-full select-none rounded-md py-1.5 text-center font-mono text-base font-bold leading-none outline-none transition focus-visible:ring-2 focus-visible:ring-accent " +
         (st ? "" : "text-txt-faint hover:text-txt")}>
       {par || "–"}
     </button>
