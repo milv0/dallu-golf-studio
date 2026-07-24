@@ -6,7 +6,8 @@ import HoleByHoleStrip, { SIZE as SIZE_YT } from "../components/presets/HoleByHo
 import ReelsScorecard, { SIZE as SIZE_REELS } from "../components/presets/ReelsScorecard";
 import HoleCard, { SIZE as SIZE_HOLE } from "../components/presets/HoleCard";
 import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../lib/score";
-import { COURSE_DB } from "../lib/coursesDb";
+import { coursesFromDb } from "../lib/coursesDb";
+import { loadDb } from "../lib/nineStore";
 import { COURSE_DIRECTORY } from "../lib/courseDirectory";
 
 const FORMATS = {
@@ -125,9 +126,11 @@ export default function Home() {
 
   // 내 코스 저장소 (localStorage) — 골프장 이름 기준 18홀 par 기억
   const [savedCourses, setSavedCourses] = useState([]);
+  const [builtinCourses, setBuiltinCourses] = useState([]);
   useEffect(() => {
     try { setSavedCourses(JSON.parse(localStorage.getItem("sc-courses") || "[]")); }
     catch { setSavedCourses([]); }
+    setBuiltinCourses(coursesFromDb(loadDb()));
   }, []);
   const persistCourses = (list) => {
     setSavedCourses(list);
@@ -146,15 +149,15 @@ export default function Home() {
   const courseNameList = useMemo(() => {
     const seen = new Set();
     const out = [];
-    for (const c of [...COURSE_DB, ...savedCourses, ...COURSE_DIRECTORY]) {
+    for (const c of [...builtinCourses, ...savedCourses, ...COURSE_DIRECTORY]) {
       if (c.name && !seen.has(c.name)) { seen.add(c.name); out.push(c.name); }
     }
     return out;
-  }, [savedCourses]);
+  }, [savedCourses, builtinCourses]);
   // 골프장 이름이 (DB 또는 저장한 코스)와 일치하면 par 자동 로드
   const maybeLoadCourse = (name) => {
     const key = (name || "").trim();
-    const c = savedCourses.find((x) => x.name === key) || COURSE_DB.find((x) => x.name === key);
+    const c = savedCourses.find((x) => x.name === key) || builtinCourses.find((x) => x.name === key);
     if (c) applyPreset(c);
   };
 
@@ -257,7 +260,7 @@ export default function Home() {
             <>
               {/* OpenGolfAPI 코스 검색(미국)은 한국 배포용으로 임시 숨김 — 나중에 복구
               <CourseSearch onPick={applyCourse} /> */}
-              <CoursePresets courses={savedCourses} builtin={COURSE_DB} onSave={saveCurrentCourse}
+              <CoursePresets courses={savedCourses} builtin={builtinCourses} onSave={saveCurrentCourse}
                              onRemove={removeCourse} onLoad={applyPreset} />
               <div className="rounded-xl border border-line bg-panel p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
