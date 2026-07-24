@@ -459,6 +459,9 @@ function ParCell({ par, onSet }) {
 
 // 내 코스 저장/불러오기 — 기본 DB(coursesDb) + 사용자가 저장한 코스
 function CoursePresets({ courses, builtin = [], onSave, onRemove, onLoad }) {
+  const [pickClub, setPickClub] = useState("");
+  const clubs = [...new Set(builtin.map((c) => c.club || c.name))];
+  const clubCourses = builtin.filter((c) => (c.club || c.name) === pickClub);
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
       <div className="mb-1 flex items-center justify-between">
@@ -475,16 +478,36 @@ function CoursePresets({ courses, builtin = [], onSave, onRemove, onLoad }) {
       </p>
 
       {builtin.length > 0 && (
-        <div className="mb-2">
-          <div className="mb-1 text-[11px] uppercase tracking-widest text-accent">기본 DB</div>
-          <div className="flex flex-wrap gap-2">
-            {builtin.map((c) => (
-              <button key={c.name} type="button" onClick={() => onLoad(c)}
-                className="rounded-full border border-line-2 bg-panel-2 px-3 py-1 text-sm text-txt transition hover:border-accent hover:text-accent">
-                {c.name}
-              </button>
-            ))}
+        <div className="mb-3">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="text-[11px] uppercase tracking-widest text-accent">골프장 DB</span>
+            {pickClub && (
+              <button type="button" onClick={() => setPickClub("")}
+                className="text-[12px] text-txt-soft hover:text-txt">← 골프장 목록</button>
+            )}
           </div>
+          {!pickClub ? (
+            <div className="flex flex-wrap gap-2">
+              {clubs.map((cl) => (
+                <button key={cl} type="button" onClick={() => setPickClub(cl)}
+                  className="rounded-full border border-line-2 bg-panel-2 px-3 py-1 text-sm text-txt transition hover:border-accent hover:text-accent">
+                  {cl}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <div className="mb-1 text-[12px] text-txt-soft">{pickClub} · 조합 선택</div>
+              <div className="flex flex-wrap gap-2">
+                {clubCourses.map((c) => (
+                  <button key={c.name} type="button" onClick={() => onLoad(c)}
+                    className="rounded-full border border-line-2 bg-panel-2 px-3 py-1 text-sm text-txt transition hover:border-accent hover:text-accent">
+                    {c.out && c.in ? `${c.out}+${c.in}` : c.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
