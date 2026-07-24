@@ -13,6 +13,20 @@ export default function Admin() {
   const [db, setDb] = useState({});
   const [syncing, setSyncing] = useState(false);
   const [dirty, setDirty] = useState(false);
+
+  const [region, setRegion] = useState("");
+  const [q, setQ] = useState("");
+
+  const [club, setClub] = useState("");
+  const [nine, setNine] = useState("");
+  const [pars, setPars] = useState(DEFAULT9());
+  const [editingNine, setEditingNine] = useState(null); // 수정 중인 원래 나인명
+  const parRefs = useRef([]);
+  const editorRef = useRef(null);
+
+  const [cOut, setCOut] = useState("");
+  const [cIn, setCIn] = useState("");
+
   useEffect(() => {
     (async () => {
       let remote;
@@ -20,86 +34,73 @@ export default function Admin() {
       setDb(mergeDb(SEED_DB, remote));
     })();
   }, []);
-  // 편집은 로컬(state+캐시)에만 반영. KV 반영은 "전체 저장" 버튼으로.
-  const persist = (next) => {
-    setDb(next);
-    saveDb(next);
-    setDirty(true);
-  };
-  // KV(서버)에 전체 저장 — 인증 필요 시 토큰 프롬프트
+  const persist = (next) => { setDb(next); saveDb(next); setDirty(true); };
   const saveAll = async () => {
     setSyncing(true);
     try {
       let token = localStorage.getItem("sc-admin-token") || "";
-      try {
-        await pushDb(db, token);
-      } catch (e) {
+      try { await pushDb(db, token); }
+      catch (e) {
         if (String(e.message).includes("인증")) {
-          token = prompt("관리자 토큰(ADMIN_TOKEN)을 입력하세요") || "";
+          token = prompt("관리자 토큰(ADMIN_TOKEN)") || "";
           localStorage.setItem("sc-admin-token", token);
           await pushDb(db, token);
         } else throw e;
       }
       setDirty(false);
-      alert("KV에 전체 저장 완료 — 모든 사용자에게 반영됩니다");
-    } catch (e) {
-      alert("서버 저장 실패(로컬엔 저장됨): " + e.message);
-    } finally {
-      setSyncing(false);
-    }
+      alert("KV에 저장 완료 — 모든 사용자에게 반영됩니다");
+    } catch (e) { alert("서버 저장 실패(로컬엔 저장됨): " + e.message); }
+    finally { setSyncing(false); }
   };
-
-  // 디렉토리 검색
-  const [region, setRegion] = useState("");
-  const [q, setQ] = useState("");
-
-  // 나인 입력
-  const [club, setClub] = useState("");
-  const [nine, setNine] = useState("");
-  const [pars, setPars] = useState(DEFAULT9());
-  const parRefs = useRef([]);
-
-  // 조합 입력
-  const [cOut, setCOut] = useState("");
-  const [cIn, setCIn] = useState("");
 
   const regions = useMemo(() => [...new Set(COURSE_DIRECTORY.map((c) => c.region))].sort(), []);
   const clubsWithNines = useMemo(() => Object.keys(db), [db]);
   const enteredClubs = useMemo(() => new Set(Object.keys(db)), [db]);
+  const nineCount = useMemo(() => Object.values(db).reduce((s, c) => s + Object.keys(c.nines || {}).length, 0), [db]);
+  const comboCount = useMemo(() => Object.values(db).reduce((s, c) => s + (c.combos || []).length, 0), [db]);
   const filtered = useMemo(() => {
     const kw = q.trim();
     return COURSE_DIRECTORY.filter((c) => (!region || c.region === region) && (!kw || c.name.includes(kw))).slice(0, 400);
   }, [region, q]);
   const ninesOf = (cl) => Object.entries((db[cl] && db[cl].nines) || {}).map(([nine, pars]) => ({ nine, pars }));
   const combosOf = (cl) => (db[cl] && db[cl].combos) || [];
-  const shownClubs = club.trim() ? clubsWithNines.filter((c) => c === club.trim()) : [];
 
   const setPar = (i, v) => setPars((p) => p.map((x, idx) => (idx === i ? v : x)));
-  const onParKey = (e, i) => {
-    if (e.key === "Enter") { e.preventDefault(); parRefs.current[i + 1]?.focus(); }
-  };
+  const onParKey = (e, i) => { if (e.key === "Enter") { e.preventDefault(); parRefs.current[i + 1]?.focus(); } };
+  const focusEditor = () => { editorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); parRefs.current[0]?.focus(); };
+
+  const resetEditor = () => { setNine(""); setPars(DEFAULT9()); setEditingNine(null); };
 
   const saveNine = () => {
     const cl = club.trim(), nn = nine.trim();
     if (!cl || !nn) { alert("골프장과 코스(나인) 이름을 입력하세요"); return; }
     const c = db[cl] || { nines: {}, combos: [] };
-    persist({ ...db, [cl]: { nines: { ...c.nines, [nn]: pars.map((x) => Number(x) || 0) }, combos: c.combos || [] } });
-    setNine(""); setPars(DEFAULT9());
+    const nines = { ...c.nines };
+    let combos = [...(c.combos || [])];
+    if (editingNine && editingNine !== nn) {   // 이름 변경 → 이전 나인 제거 + 조합 갱신
+      delete nines[editingNine];
+      combos = combos.map((x) => ({ out: x.out === editingNine ? nn : x.out, in: x.in === editingNine ? nn : x.in }));
+    }
+    nines[nn] = pars.map((x) => Number(x) || 0);
+    persist({ ...db, [cl]: { nines, combos } });
+    resetEditor();
   };
   const removeNine = (cl, nn) => {
-    const c = db[cl];
-    if (!c) return;
+    if (!confirm(`${cl} / ${nn} 삭제?`)) return;
+    const c = db[cl]; if (!c) return;
     const nines = { ...c.nines }; delete nines[nn];
     const combos = (c.combos || []).filter((x) => x.out !== nn && x.in !== nn);
     const next = { ...db };
     if (Object.keys(nines).length === 0 && combos.length === 0) delete next[cl];
     else next[cl] = { nines, combos };
     persist(next);
+    if (editingNine === nn) resetEditor();
   };
-  const loadNine = (cl, nn) => {
+  const editNine = (cl, nn) => {
     const pars9 = db[cl] && db[cl].nines && db[cl].nines[nn];
     if (!pars9) return;
-    setClub(cl); setNine(nn); setPars(pars9.map(String));
+    setClub(cl); setNine(nn); setPars(pars9.map(String)); setEditingNine(nn);
+    focusEditor();
   };
 
   const addCombo = () => {
@@ -111,19 +112,14 @@ export default function Admin() {
     setCOut(""); setCIn("");
   };
   const removeCombo = (cl, cb) => {
-    const c = db[cl];
-    if (!c) return;
+    const c = db[cl]; if (!c) return;
     persist({ ...db, [cl]: { nines: c.nines || {}, combos: (c.combos || []).filter((x) => !(x.out === cb.out && x.in === cb.in)) } });
   };
 
   const total = pars.reduce((a, b) => a + (Number(b) || 0), 0);
-  const nineCount = useMemo(() => Object.values(db).reduce((s, c) => s + Object.keys(c.nines || {}).length, 0), [db]);
-  const comboCount = useMemo(() => Object.values(db).reduce((s, c) => s + (c.combos || []).length, 0), [db]);
-
   const backup = JSON.stringify(db);
   const importBackup = () => {
-    const t = prompt("백업 JSON 붙여넣기");
-    if (!t) return;
+    const t = prompt("백업 JSON 붙여넣기"); if (!t) return;
     try { const d = JSON.parse(t); persist(d && typeof d === "object" ? d : {}); alert("가져오기 완료"); }
     catch { alert("JSON 파싱 실패"); }
   };
@@ -131,48 +127,58 @@ export default function Admin() {
     const qs = (s) => JSON.stringify(s ?? "");
     const clubs = Object.keys(db);
     let body = "";
-    clubs.forEach((club, ci) => {
-      const c = db[club];
+    clubs.forEach((cl, ci) => {
+      const c = db[cl];
       const nk = Object.keys(c.nines || {});
-      const nineLines = nk.map((nn, i) => `      ${qs(nn)}: [${(c.nines[nn] || []).join(", ")}]${i < nk.length - 1 ? "," : ""}`).join("\n");
-      const combos = (c.combos || []).map((x) => `{ "out": ${qs(x.out)}, "in": ${qs(x.in)} }`).join(", ");
-      body += `  ${qs(club)}: {\n    "nines": {\n${nineLines}\n    },\n    "combos": [${combos}]\n  }${ci < clubs.length - 1 ? "," : ""}\n`;
+      const nl = nk.map((nn, i) => `      ${qs(nn)}: [${(c.nines[nn] || []).join(", ")}]${i < nk.length - 1 ? "," : ""}`).join("\n");
+      const cb = (c.combos || []).map((x) => `{ "out": ${qs(x.out)}, "in": ${qs(x.in)} }`).join(", ");
+      body += `  ${qs(cl)}: {\n    "nines": {\n${nl}\n    },\n    "combos": [${cb}]\n  }${ci < clubs.length - 1 ? "," : ""}\n`;
     });
-    const text =
-      "// 코스 시드 DB (골프장 기준 nested) — /admin 에서 생성. lib/seedDb.js 교체 후 배포하면 모든 사용자 공유.\n" +
-      "// 구조: { \"골프장\": { nines: { \"코스명\": [9홀 par] }, combos: [{out,in}] } }\n" +
-      "export const SEED_DB = {\n" + body + "};\n";
+    const text = "// 코스 시드 DB (nested) — lib/seedDb.js 교체 후 배포\nexport const SEED_DB = {\n" + body + "};\n";
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([text], { type: "text/javascript" }));
-    a.download = "seedDb.js";
-    a.click();
+    a.download = "seedDb.js"; a.click();
   };
 
+  const selClub = club.trim();
+  const btnGhost = "rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-txt-soft transition hover:border-line-2 hover:text-txt";
+
   return (
-    <main className="mx-auto max-w-[1200px] px-6 py-8">
-      <div className="mb-6 flex items-end justify-between border-b border-line pb-4">
-        <div>
-          <div className="font-head text-[12px] font-semibold uppercase tracking-[0.28em] text-txt">Admin</div>
-          <h1 className="font-head text-3xl font-bold text-txt">코스 DB 관리</h1>
-          <p className="mt-1 text-sm text-txt-soft">나인 {nineCount}개 · 조합 {comboCount}개 · 골프장 {clubsWithNines.length}곳 {syncing ? "· 저장 중…" : dirty ? "· ⚠ 저장 필요(전체 저장 누르기)" : "· KV 저장됨"}</p>
-        </div>
-        <div className="flex items-center gap-3 text-sm">
-          <button onClick={saveAll} disabled={syncing}
-            className={"rounded-lg px-4 py-2 text-sm font-bold transition disabled:opacity-60 " +
-              (dirty ? "bg-accent text-[#06210f] hover:bg-accent-2" : "border border-line text-txt-soft hover:text-txt")}>
-            {syncing ? "저장 중…" : dirty ? "● KV에 전체 저장" : "KV에 전체 저장"}
-          </button>
-          <button onClick={downloadSeed} className="rounded-lg border border-accent px-3 py-1.5 text-xs font-semibold text-txt hover:bg-accent hover:text-[#06210f]">seedDb.js 다운로드</button>
-          <button onClick={importBackup} className="text-txt-soft hover:text-txt">백업 가져오기</button>
-          <button onClick={() => navigator.clipboard?.writeText(backup)} className="text-txt-soft hover:text-txt">백업 복사</button>
-          <Link href="/" className="text-txt-soft hover:text-txt">← 메인</Link>
+    <main className="mx-auto max-w-[1200px] px-6 pb-16">
+      {/* 스티키 헤더 */}
+      <div className="sticky top-0 z-40 -mx-6 mb-6 border-b border-line bg-bg/85 px-6 py-4 backdrop-blur-md">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="font-head text-[11px] font-semibold uppercase tracking-[0.3em] text-accent">Admin · Course DB</div>
+            <h1 className="font-head text-2xl font-bold leading-tight text-txt">코스 DB 관리</h1>
+            <div className="mt-0.5 font-mono text-[11px] text-txt-faint">
+              골프장 {clubsWithNines.length} · 나인 {nineCount} · 조합 {comboCount}
+              <span className={dirty ? "text-[#ffb648]" : "text-accent"}> · {syncing ? "저장 중…" : dirty ? "⚠ 미저장" : "동기화됨"}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={saveAll} disabled={syncing}
+              className={"rounded-lg px-4 py-2 text-sm font-bold transition disabled:opacity-60 " +
+                (dirty ? "bg-accent text-[#06210f] hover:bg-accent-2" : "border border-line text-txt-soft")}>
+              {syncing ? "저장 중…" : "KV 저장"}
+            </button>
+            <details className="relative">
+              <summary className={btnGhost + " list-none"}>⋯</summary>
+              <div className="absolute right-0 z-50 mt-1 w-40 rounded-lg border border-line bg-panel p-1 shadow-lg">
+                <button onClick={downloadSeed} className="block w-full rounded px-3 py-2 text-left text-sm text-txt hover:bg-panel-2">seedDb.js 다운로드</button>
+                <button onClick={() => navigator.clipboard?.writeText(backup)} className="block w-full rounded px-3 py-2 text-left text-sm text-txt hover:bg-panel-2">백업 복사</button>
+                <button onClick={importBackup} className="block w-full rounded px-3 py-2 text-left text-sm text-txt hover:bg-panel-2">백업 가져오기</button>
+              </div>
+            </details>
+            <Link href="/" className={btnGhost}>← 메인</Link>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr]">
-        {/* 디렉토리 */}
-        <section className="rounded-xl border border-line bg-panel p-4">
-          <div className="mb-2 flex gap-2">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[300px_1fr]">
+        {/* 골프장 디렉토리 */}
+        <section className="rounded-2xl border border-line bg-panel p-4">
+          <div className="mb-3 flex gap-2">
             <select value={region} onChange={(e) => setRegion(e.target.value)}
               className="rounded-lg border border-line-2 bg-panel-2 px-2 py-2 text-sm text-txt outline-none focus:border-accent">
               <option value="">전지역</option>
@@ -181,150 +187,139 @@ export default function Admin() {
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="골프장 검색"
               className="flex-1 rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
           </div>
-          <div className="max-h-[60vh] overflow-auto rounded-lg border border-line">
+          <div className="max-h-[64vh] overflow-auto rounded-xl border border-line">
             {filtered.map((c) => {
               const done = enteredClubs.has(c.name);
+              const active = selClub === c.name;
               return (
-                <button key={c.name + c.address} type="button" onClick={() => setClub(c.name)}
-                  className={"flex w-full items-center justify-between border-b border-line px-3 py-2 text-left last:border-0 transition " + (done ? "bg-accent/10 hover:bg-accent/15" : "hover:bg-panel-2")}>
+                <button key={c.name + c.address} type="button" onClick={() => { setClub(c.name); resetEditor(); }}
+                  className={"flex w-full items-center justify-between border-b border-line px-3 py-2 text-left last:border-0 transition " +
+                    (active ? "bg-accent/15" : done ? "bg-accent/[0.06] hover:bg-accent/10" : "hover:bg-panel-2")}>
                   <span className={"flex items-center gap-1.5 text-sm " + (done ? "text-txt" : "text-txt-soft")}>
                     <span className={"flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] " + (done ? "bg-accent text-[#06210f]" : "border border-line-2 text-transparent")}>✓</span>
                     {c.name}
                   </span>
-                  <span className="text-[11px] text-txt-faint">{c.region} · {c.holes}H</span>
+                  <span className="font-mono text-[10px] text-txt-faint">{c.region}·{c.holes}H</span>
                 </button>
               );
             })}
           </div>
         </section>
 
-        <section className="space-y-4">
-          {/* 1) 나인 입력 */}
-          <div className="rounded-xl border border-line bg-panel p-4">
-            <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">1. 나인(9홀) PAR 입력</div>
-            <div className="mb-3 grid grid-cols-2 gap-2">
-              <label className="block">
-                <span className="mb-1 block text-[11px] uppercase tracking-widest text-txt-faint">골프장</span>
-                <input value={club} onChange={(e) => setClub(e.target.value)} list="clubdir" placeholder="골프장 (좌측에서 선택 가능)"
-                  className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
-                <datalist id="clubdir">{COURSE_DIRECTORY.map((c) => <option key={c.name + c.address} value={c.name} />)}</datalist>
-              </label>
-              <label className="block">
-                <span className="mb-1 block text-[11px] uppercase tracking-widest text-txt-faint">코스(나인) 이름</span>
-                <input value={nine} onChange={(e) => setNine(e.target.value)} placeholder="예: LAKE"
-                  className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
-              </label>
+        <section className="space-y-5">
+          {!selClub ? (
+            <div className="rounded-2xl border border-dashed border-line-2 bg-panel/50 p-10 text-center">
+              <div className="mb-2 text-3xl">⛳</div>
+              <p className="text-sm text-txt-soft">좌측에서 <b className="text-txt">골프장을 선택</b>하면 편집을 시작합니다.</p>
             </div>
-            <div className="grid grid-cols-9 gap-1.5">
-              {pars.map((p, i) => (
-                <div key={i} className="rounded-md border border-line bg-panel-2 p-1 text-center">
-                  <div className="mb-1 font-mono text-[10px] text-txt-faint">{i + 1}</div>
-                  <input
-                    ref={(el) => (parRefs.current[i] = el)}
-                    value={p} inputMode="numeric" maxLength={1}
-                    onChange={(e) => setPar(i, e.target.value.replace(/[^0-9]/g, ""))}
-                    onKeyDown={(e) => onParKey(e, i)}
-                    onFocus={(e) => e.target.select()}
-                    className="w-full rounded bg-panel py-1.5 text-center font-mono text-lg font-bold text-txt outline-none focus:ring-2 focus:ring-accent" />
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 flex items-center justify-between">
-              <span className="text-sm text-txt-soft">합 <b className="font-mono text-txt">{total}</b> (9홀)</span>
-              <button onClick={saveNine} className="rounded-lg bg-accent px-5 py-2 text-sm font-bold text-[#06210f] hover:bg-accent-2">나인 저장</button>
-            </div>
-            <p className="mt-1.5 text-[11px] text-txt-faint">숫자 입력 후 Tab/Enter로 다음 홀 이동. 저장하면 아래 목록에 추가됩니다.</p>
-          </div>
-
-          {/* 저장된 코스 (스코어카드 형식) */}
-          {clubsWithNines.length > 0 && (
-            <div className="rounded-xl border border-line bg-panel p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-                  저장된 코스 {club.trim() && <span className="normal-case tracking-normal text-txt">· {club.trim()}</span>}
-                </span>
+          ) : (
+            <>
+              {/* 선택된 골프장 */}
+              <div className="flex items-center gap-2">
+                <h2 className="font-head text-xl font-bold text-txt">{selClub}</h2>
+                <button onClick={() => { setClub(""); resetEditor(); }} className="text-[12px] text-txt-faint hover:text-txt">변경</button>
               </div>
-              {!club.trim() ? (
-                <p className="text-[12px] text-txt-faint">좌측에서 골프장을 선택하면 저장된 코스가 표시됩니다.</p>
-              ) : shownClubs.length === 0 ? (
-                <p className="text-[12px] text-txt-faint">이 골프장에 저장된 코스가 없습니다. 위에서 나인을 입력하세요.</p>
-              ) : (
-              <div className="space-y-4">
-                {shownClubs.map((cl) => (
-                  <div key={cl}>
-                    <div className="mb-1.5 text-[13px] font-semibold text-txt">{cl}</div>
-                    <div className="space-y-1.5">
-                      {ninesOf(cl).map((n) => (
-                        <div key={n.nine} className="overflow-x-auto rounded-lg border border-line bg-panel-2">
-                          <div className="flex items-center justify-between px-3 py-1.5">
-                            <button onClick={() => loadNine(cl, n.nine)} className="text-sm font-semibold text-txt hover:text-txt" title="불러와 수정">
-                              {n.nine} <span className="font-mono text-[11px] text-txt-faint">· 합 {n.pars.reduce((a, b) => a + b, 0)}</span>
-                            </button>
-                            <button onClick={() => removeNine(cl, n.nine)} className="flex h-5 w-5 items-center justify-center rounded-full text-txt-faint hover:bg-line hover:text-txt">×</button>
+
+              {/* ① 나인 입력 */}
+              <div ref={editorRef} className="rounded-2xl border border-line bg-panel p-5">
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-[#06210f]">1</span>
+                  <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">나인(9홀) PAR</span>
+                  {editingNine && <span className="rounded-full bg-panel-2 px-2 py-0.5 text-[11px] text-[#ffb648]">수정 중: {editingNine}</span>}
+                </div>
+                <input value={nine} onChange={(e) => setNine(e.target.value)} placeholder="코스(나인) 이름 · 예: LAKE"
+                  className="mb-3 w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
+                <div className="grid grid-cols-9 gap-1.5">
+                  {pars.map((p, i) => (
+                    <div key={i} className="rounded-lg border border-line bg-panel-2 p-1 text-center">
+                      <div className="mb-1 font-mono text-[10px] text-txt-faint">{i + 1}</div>
+                      <input ref={(el) => (parRefs.current[i] = el)} value={p} inputMode="numeric" maxLength={1}
+                        onChange={(e) => setPar(i, e.target.value.replace(/[^0-9]/g, ""))}
+                        onKeyDown={(e) => onParKey(e, i)} onFocus={(e) => e.target.select()}
+                        className="w-full rounded bg-panel py-2 text-center font-mono text-lg font-bold text-txt outline-none focus:ring-2 focus:ring-accent" />
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="font-mono text-sm text-txt-soft">합 <b className="text-txt">{total}</b></span>
+                  <div className="flex gap-2">
+                    {editingNine && <button onClick={resetEditor} className={btnGhost}>취소</button>}
+                    <button onClick={saveNine} className="rounded-lg bg-accent px-5 py-2 text-sm font-bold text-[#06210f] hover:bg-accent-2">
+                      {editingNine ? "수정 저장" : "나인 추가"}
+                    </button>
+                  </div>
+                </div>
+                <p className="mt-1.5 font-mono text-[11px] text-txt-faint">숫자 입력 → Tab/Enter로 다음 홀</p>
+              </div>
+
+              {/* 저장된 코스 (스코어카드) */}
+              {ninesOf(selClub).length > 0 && (
+                <div className="rounded-2xl border border-line bg-panel p-5">
+                  <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">저장된 코스</div>
+                  <div className="space-y-2">
+                    {ninesOf(selClub).map((n) => (
+                      <div key={n.nine} className="overflow-hidden rounded-xl border border-line">
+                        <div className="flex items-center justify-between bg-panel-2 px-3 py-1.5">
+                          <span className="text-sm font-semibold text-txt">{n.nine} <span className="font-mono text-[11px] text-txt-faint">· 합 {n.pars.reduce((a, b) => a + b, 0)}</span></span>
+                          <div className="flex gap-1">
+                            <button onClick={() => editNine(selClub, n.nine)} className="rounded-md border border-line px-2 py-1 text-[11px] font-semibold text-txt-soft hover:border-accent hover:text-txt">수정</button>
+                            <button onClick={() => removeNine(selClub, n.nine)} className="rounded-md border border-line px-2 py-1 text-[11px] font-semibold text-txt-soft hover:border-[#ff6b57] hover:text-[#ff6b57]">삭제</button>
                           </div>
+                        </div>
+                        <div className="overflow-x-auto">
                           <table className="w-full border-collapse text-center">
                             <tbody>
-                              <tr className="border-t border-line">
-                                <td className="px-2 py-1 text-[10px] uppercase tracking-wider text-txt-faint">홀</td>
-                                {n.pars.map((_, i) => (
-                                  <td key={i} className="border-l border-line px-2 py-1 font-mono text-[11px] text-txt-faint">{i + 1}</td>
-                                ))}
+                              <tr>
+                                <td className="px-2 py-1 font-mono text-[10px] text-txt-faint">홀</td>
+                                {n.pars.map((_, i) => <td key={i} className="border-l border-line px-2 py-1 font-mono text-[11px] text-txt-faint">{i + 1}</td>)}
                               </tr>
                               <tr className="border-t border-line">
-                                <td className="px-2 py-1 text-[10px] uppercase tracking-wider text-txt-faint">PAR</td>
-                                {n.pars.map((p, i) => (
-                                  <td key={i} className="border-l border-line px-2 py-1 font-mono text-sm font-bold text-txt">{p}</td>
-                                ))}
+                                <td className="px-2 py-1 font-mono text-[10px] text-txt-faint">PAR</td>
+                                {n.pars.map((p, i) => <td key={i} className="border-l border-line px-2 py-1 font-mono text-sm font-bold text-txt">{p}</td>)}
                               </tr>
                             </tbody>
                           </table>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </div>
               )}
-            </div>
-          )}
 
-          {/* 2) 조합 정의 */}
-          <div className="rounded-xl border border-line bg-panel p-4">
-            <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-              2. 제공 조합(전/후반) 정의 {club.trim() && <span className="normal-case tracking-normal text-txt">· {club.trim()}</span>}
-            </div>
-            {!club.trim() ? (
-              <p className="text-[12px] text-txt-faint">좌측에서 골프장을 먼저 선택하세요.</p>
-            ) : (
-              <>
-                <div className="mb-3 grid grid-cols-3 gap-2">
+              {/* ② 조합 정의 */}
+              <div className="rounded-2xl border border-line bg-panel p-5">
+                <div className="mb-3 flex items-center gap-2">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-bold text-[#06210f]">2</span>
+                  <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">제공 조합(전/후반)</span>
+                </div>
+                <div className="mb-3 grid grid-cols-[1fr_1fr_auto] gap-2">
                   <select value={cOut} onChange={(e) => setCOut(e.target.value)}
                     className="rounded-lg border border-line-2 bg-panel-2 px-2 py-2 text-sm text-txt outline-none focus:border-accent">
                     <option value="">전반</option>
-                    {ninesOf(club.trim()).map((n) => <option key={n.nine} value={n.nine}>{n.nine}</option>)}
+                    {ninesOf(selClub).map((n) => <option key={n.nine} value={n.nine}>{n.nine}</option>)}
                   </select>
                   <select value={cIn} onChange={(e) => setCIn(e.target.value)}
                     className="rounded-lg border border-line-2 bg-panel-2 px-2 py-2 text-sm text-txt outline-none focus:border-accent">
                     <option value="">후반</option>
-                    {ninesOf(club.trim()).map((n) => <option key={n.nine} value={n.nine}>{n.nine}</option>)}
+                    {ninesOf(selClub).map((n) => <option key={n.nine} value={n.nine}>{n.nine}</option>)}
                   </select>
-                  <button onClick={addCombo} className="rounded-lg bg-accent px-3 py-2 text-sm font-bold text-[#06210f] hover:bg-accent-2">조합 추가</button>
+                  <button onClick={addCombo} className="rounded-lg bg-accent px-4 py-2 text-sm font-bold text-[#06210f] hover:bg-accent-2">추가</button>
                 </div>
-                {combosOf(club.trim()).length === 0 ? (
-                  <p className="text-[12px] text-txt-faint">정의된 조합이 없습니다. 추가하면 사용자에게 그 조합이 제공됩니다.</p>
+                {combosOf(selClub).length === 0 ? (
+                  <p className="font-mono text-[12px] text-txt-faint">정의된 조합 없음 — 추가하면 사용자에게 제공됩니다.</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
-                    {combosOf(club.trim()).map((c, i) => (
+                    {combosOf(selClub).map((c, i) => (
                       <span key={i} className="flex items-center gap-1 rounded-full border border-line-2 bg-panel-2 py-1 pl-3 pr-1 text-[13px]">
-                        <span className="text-txt"><b>{c.out}+{c.in}</b></span>
-                        <button onClick={() => removeCombo(club.trim(), c)} className="flex h-5 w-5 items-center justify-center rounded-full text-txt-faint hover:bg-line hover:text-txt">×</button>
+                        <b className="text-txt">{c.out}+{c.in}</b>
+                        <button onClick={() => removeCombo(selClub, c)} className="flex h-5 w-5 items-center justify-center rounded-full text-txt-faint hover:bg-line hover:text-txt">×</button>
                       </span>
                     ))}
                   </div>
                 )}
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </section>
       </div>
     </main>
