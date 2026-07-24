@@ -116,33 +116,46 @@ export default function Admin() {
     const nineN = Object.keys(c.nines || {}).length;
     const comboN = (c.combos || []).length;
     if (nineN === 0 && comboN === 0) return "none";
-    const exp = holesByClub[name] ? Math.round(holesByClub[name] / 9) : null;
+    const dirName = c.orig || name;   // 이름 바꿨어도 원본 디렉토리명으로 홀수 판정
+    const exp = holesByClub[dirName] ? Math.round(holesByClub[dirName] / 9) : null;
     const okNines = exp == null ? nineN > 0 : nineN === exp;
     return okNines && comboN > 0 ? "complete" : "incomplete";
   };
+  // 원본 디렉토리명 → 사용자가 바꾼 이름(별칭)
+  const aliasByOrig = useMemo(() => {
+    const m = {};
+    for (const [k, c] of Object.entries(db)) if (c && c.orig) m[c.orig] = k;
+    return m;
+  }, [db]);
 
   const filtered = useMemo(() => {
     const kw = q.trim();
-    return COURSE_DIRECTORY.filter((c) => (!region || c.region === region) && (!kw || c.name.includes(kw))).slice(0, 400);
-  }, [region, q]);
+    return COURSE_DIRECTORY.filter((c) => {
+      if (region && c.region !== region) return false;
+      if (!kw) return true;
+      const alias = aliasByOrig[c.name];
+      return c.name.includes(kw) || (alias && alias.includes(kw));   // 원본명·별칭 둘 다 검색
+    }).slice(0, 400);
+  }, [region, q, aliasByOrig]);
+  // 디렉토리에도 없고 별칭(orig)도 아닌 = 순수 직접 추가한 골프장
   const dbOnly = useMemo(() => {
     const kw = q.trim();
     const dir = new Set(COURSE_DIRECTORY.map((c) => c.name));
-    return clubsWithNines.filter((c) => !dir.has(c) && (!kw || c.includes(kw)));
-  }, [clubsWithNines, q]);
+    return Object.keys(db).filter((c) => !dir.has(c) && !(db[c] && db[c].orig) && (!kw || c.includes(kw)));
+  }, [db, q]);
 
   const selClub = club.trim();
   const cur = db[selClub] || { nines: {}, combos: [] };
   const nines = Object.entries(cur.nines || {}).map(([nine, pars]) => ({ nine, pars }));
   const combos = cur.combos || [];
   // 홀 수(디렉토리) 대비 나인 개수 검증: 27홀=3나인, 36홀=4나인, 18홀=2나인
-  const expectedHoles = holesByClub[selClub] || null;
+  const expectedHoles = holesByClub[cur.orig || selClub] || null;
   const expectedNines = expectedHoles ? Math.round(expectedHoles / 9) : null;
   const nineMismatch = expectedNines != null && nines.length !== expectedNines;
 
   // ---- 나인 편집 (인라인) ----
   const writeClub = (nextNines, nextCombos) =>
-    persist({ ...db, [selClub]: { nines: nextNines, combos: nextCombos } });
+    persist({ ...db, [selClub]: { ...(db[selClub] || {}), nines: nextNines, combos: nextCombos } });
 
   const updatePar = (nn, i, v) => {
     const arr = [...(cur.nines[nn] || DEFAULT9().map(Number))];
@@ -164,7 +177,7 @@ export default function Admin() {
     const nc = combos.filter((x) => x.out !== nn && x.in !== nn);
     const next = { ...db };
     if (Object.keys(nx).length === 0 && nc.length === 0) delete next[selClub];
-    else next[selClub] = { nines: nx, combos: nc };
+    else next[selClub] = { ...(db[selClub] || {}), nines: nx, combos: nc };
     persist(next);
   };
   const addNine = () => {
@@ -184,11 +197,15 @@ export default function Admin() {
   const removeCombo = (cb) => writeClub(cur.nines, combos.filter((x) => !(x.out === cb.out && x.in === cb.in)));
 
   const renameClub = () => {
-    const nn = (prompt("골프장 이름 수정", selClub) || "").trim();
+    const nn = (prompt("골프장 이름 수정 (네이버식 등 친숙한 이름)", selClub) || "").trim();
     if (!nn || nn === selClub) return;
     if (db[nn]) { alert("이미 같은 이름의 골프장이 있습니다"); return; }
+    const src = db[selClub] || { nines: {}, combos: [] };
+    // 원본 디렉토리명 보존: 이미 별칭이면 기존 orig 유지, 아니면 현재(디렉토리)명을 orig로
+    const orig = src.orig || (holesByClub[selClub] ? selClub : undefined);
     const next = {};
-    for (const k of Object.keys(db)) next[k === selClub ? nn : k] = db[k];
+    for (const k of Object.keys(db)) if (k !== selClub) next[k] = db[k];
+    next[nn] = orig ? { ...src, orig } : { ...src };
     persist(next); setClub(nn);
   };
   const deleteClub = () => {
@@ -273,7 +290,7 @@ export default function Admin() {
           <div className="max-h-[64vh] overflow-auto rounded-xl border border-line">
             {dbOnly.length > 0 && (
               <div className="border-b border-line-2 bg-panel-2/60">
-                <div className="px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-accent">내 DB (커스텀·변경됨)</div>
+                <div className="px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-accent">직접 추가한 골프장</div>
                 {dbOnly.map((cl) => {
                   const st = clubStatus(cl);
                   return (
@@ -285,27 +302,31 @@ export default function Admin() {
                           {st === "incomplete" ? "!" : "✓"}
                         </span>{cl}
                       </span>
-                      <span className="font-mono text-[10px] text-txt-faint">custom</span>
                     </button>
                   );
                 })}
               </div>
             )}
             {filtered.map((c) => {
-              const st = clubStatus(c.name);
+              const alias = aliasByOrig[c.name];
+              const key = alias || c.name;              // 별칭 있으면 그게 DB 키/표시명
+              const st = clubStatus(key);
               const done = st !== "none";
-              const active = selClub === c.name;
+              const active = selClub === key;
               return (
-                <button key={c.name + c.address} type="button" onClick={() => setClub(c.name)}
+                <button key={c.name + c.address} type="button" onClick={() => setClub(key)}
                   className={"flex w-full items-center justify-between border-b border-line px-3 py-2 text-left last:border-0 transition " + (active ? "bg-accent/15" : done ? "bg-accent/[0.06] hover:bg-accent/10" : "hover:bg-panel-2")}>
-                  <span className={"flex items-center gap-1.5 text-sm " + (done ? "text-txt" : "text-txt-soft")}>
+                  <span className={"flex min-w-0 items-center gap-1.5 text-sm " + (done ? "text-txt" : "text-txt-soft")}>
                     <span className={"flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] " +
                       (st === "complete" ? "bg-accent text-[#06210f]" : st === "incomplete" ? "bg-[#ffb648] text-[#2a1a00]" : "border border-line-2 text-transparent")}>
                       {st === "incomplete" ? "!" : "✓"}
                     </span>
-                    {c.name}
+                    <span className="truncate">
+                      {key}
+                      {alias && <span className="ml-1 text-[10px] text-txt-faint">({c.name})</span>}
+                    </span>
                   </span>
-                  <span className="font-mono text-[10px] text-txt-faint">{c.region}·{c.holes}H</span>
+                  <span className="shrink-0 font-mono text-[10px] text-txt-faint">{c.region}·{c.holes}H</span>
                 </button>
               );
             })}
