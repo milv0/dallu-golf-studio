@@ -11,6 +11,9 @@ import { loadDb, saveDb } from "../lib/nineStore";
 import { fetchDb } from "../lib/api";
 import { COURSE_DIRECTORY } from "../lib/courseDirectory";
 
+// 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
+const PREVIEW_MAX_H = 340;
+
 const FORMATS = {
   youtube: { label: "YouTube", ratio: "가로 16:9", Comp: HoleByHoleStrip, size: SIZE_YT },
   reels: { label: "Instagram Reels", ratio: "세로 9:16", Comp: ReelsScorecard, size: SIZE_REELS },
@@ -274,7 +277,7 @@ export default function Home() {
               <div className="rounded-xl border border-line bg-panel p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-                    홀별 Par · 스코어
+                    스코어 입력
                   </span>
                   <div className="flex overflow-hidden rounded-lg border border-line">
                     {[["strokes", "타수"], ["relative", "파대비"]].map(([key, label]) => (
@@ -410,7 +413,7 @@ export default function Home() {
 
           <div className="checker overflow-hidden rounded-xl border border-line p-6">
             <div ref={captureRef} className="preview-svg mx-auto w-full"
-                 style={{ maxWidth: size.w }}>
+                 style={{ maxWidth: Math.min(size.w, PREVIEW_MAX_H * (size.w / size.h)) }}>
               {isHole
                 ? <HoleCard data={holeData} />
                 : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} />; })()}
@@ -431,40 +434,6 @@ export default function Home() {
 
 // 스코어카드 이미지 업로드 + 미리보기 + 추출
 // par 빠른 지정: 3/4/5 인라인 세그먼트 — 회색 명도로 구분 (초록X)
-// Tab 이동은 스코어 칸끼리만 되도록 par 버튼은 tabIndex=-1
-const PAR_STYLE = {
-  3: { background: "#2f3947", color: "#ffffff" }, // 진한
-  4: { background: "#475162", color: "#ffffff" }, // 중간
-  5: { background: "#616d7d", color: "#ffffff" }, // 연한 (모두 어두운 바탕 + 흰 글씨)
-};
-// par 셀: 클릭(왼쪽=3/가운데=4/오른쪽=5) + 키보드(3·4·5, ←→). 드래그 없음.
-function ParCell({ par, onSet }) {
-  const cur = Number(par) || 4;
-  const clamp = (n) => Math.max(3, Math.min(5, n));
-  const st = PAR_STYLE[par];
-
-  const onClick = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const rx = (e.clientX - rect.left) / rect.width;
-    onSet(String(rx < 0.38 ? 3 : rx > 0.62 ? 5 : 4));
-  };
-  const onKeyDown = (e) => {
-    if (["3", "4", "5"].includes(e.key)) { e.preventDefault(); onSet(e.key); }
-    else if (e.key === "ArrowLeft") { e.preventDefault(); onSet(String(clamp(cur - 1))); }
-    else if (e.key === "ArrowRight") { e.preventDefault(); onSet(String(clamp(cur + 1))); }
-  };
-
-  return (
-    <button type="button" tabIndex={-1} onClick={onClick} onKeyDown={onKeyDown}
-      style={st ? { background: st.background, color: st.color } : undefined}
-      title="클릭: 왼쪽=파3·가운데=파4·오른쪽=파5 (클릭 후 3·4·5 키도 가능)"
-      className={"mb-1.5 w-full select-none rounded-md py-1.5 text-center font-mono text-base font-bold leading-none outline-none transition focus-visible:ring-2 focus-visible:ring-accent " +
-        (st ? "" : "text-txt-faint hover:text-txt")}>
-      {par || "–"}
-    </button>
-  );
-}
-
 // 내 코스 저장/불러오기 — 기본 DB(coursesDb) + 사용자가 저장한 코스
 // 골프장명 자동완성 — 입력하면 연관 골프장만 드롭다운
 function ClubAutocomplete({ value, onChange, onPick, options }) {
@@ -534,15 +503,15 @@ function CoursePresets({ builtin = [], favorites = [], selectedClub = "", onTogg
         <p className="text-[12px] text-txt-faint">{activeClub} · 등록된 조합이 없습니다.</p>
       ) : (
         <div>
-          <div className="mb-1 text-[12px] text-txt-soft">{activeClub} · 조합 선택</div>
-          <div className="flex flex-wrap gap-2">
+          <div className="mb-1.5 text-[12px] text-txt-soft">{activeClub} · 조합 선택</div>
+          <div className="flex flex-col gap-1.5">
             {clubCourses.map((c) => (
-              <span key={c.name} className="flex items-center gap-0.5 rounded-full border border-line-2 bg-panel-2 py-1 pl-3 pr-1 text-sm">
-                <button type="button" onClick={() => onLoad(c)} className="text-txt hover:text-accent">
+              <div key={c.name} className="flex items-center justify-between gap-2 rounded-lg border border-line-2 bg-panel-2 py-1.5 pl-3 pr-1.5 text-sm">
+                <button type="button" onClick={() => onLoad(c)} className="flex-1 text-left font-semibold text-txt hover:text-accent">
                   {c.out && c.in ? `${c.out}+${c.in}` : c.name}
                 </button>
                 <Star name={c.name} />
-              </span>
+              </div>
             ))}
           </div>
         </div>
@@ -644,11 +613,14 @@ function HoleGroup({ label, holes, offset, setHole, scoreRefs, onScoreKey, score
         {holes.map((h, i) => {
           const idx = offset + i;
           return (
-            <div key={idx} className="rounded-lg border border-line bg-panel-2 p-2 text-center">
-              <div className="mb-1 font-mono text-xs text-txt-faint">{idx + 1}</div>
-              <ParCell par={h.par} onSet={(v) => setHole(idx, "par", v)} />
-              <ScoreInput idx={idx} par={h.par} score={h.score} mode={scoreMode}
-                setHole={setHole} scoreRefs={scoreRefs} onScoreKey={onScoreKey} />
+            <div key={idx} className="rounded-lg border border-line bg-panel-2 pb-2 text-center">
+              <div className="mb-1.5 rounded-t-md bg-panel py-1 font-mono text-[10px] text-txt-faint">
+                {idx + 1}<span className="text-txt-soft"> · P{h.par || "–"}</span>
+              </div>
+              <div className="px-1">
+                <ScoreInput idx={idx} par={h.par} score={h.score} mode={scoreMode}
+                  setHole={setHole} scoreRefs={scoreRefs} onScoreKey={onScoreKey} />
+              </div>
             </div>
           );
         })}
