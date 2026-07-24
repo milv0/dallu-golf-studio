@@ -57,14 +57,14 @@ export default function Admin() {
   const [cIn, setCIn] = useState("");
 
   const regions = useMemo(() => [...new Set(COURSE_DIRECTORY.map((c) => c.region))].sort(), []);
-  const clubsWithNines = useMemo(() => [...new Set(db.nines.map((n) => n.club))], [db.nines]);
-  const enteredClubs = useMemo(() => new Set(db.nines.map((n) => n.club)), [db.nines]);
+  const clubsWithNines = useMemo(() => Object.keys(db), [db]);
+  const enteredClubs = useMemo(() => new Set(Object.keys(db)), [db]);
   const filtered = useMemo(() => {
     const kw = q.trim();
     return COURSE_DIRECTORY.filter((c) => (!region || c.region === region) && (!kw || c.name.includes(kw))).slice(0, 400);
   }, [region, q]);
-  const ninesOf = (cl) => db.nines.filter((n) => n.club === cl);
-  // 선택된 골프장이 있으면 그 골프장만, 없으면 전체
+  const ninesOf = (cl) => Object.entries((db[cl] && db[cl].nines) || {}).map(([nine, pars]) => ({ nine, pars }));
+  const combosOf = (cl) => (db[cl] && db[cl].combos) || [];
   const shownClubs = club.trim() ? clubsWithNines.filter((c) => c === club.trim()) : clubsWithNines;
 
   const setPar = (i, v) => setPars((p) => p.map((x, idx) => (idx === i ? v : x)));
@@ -73,57 +73,68 @@ export default function Admin() {
   };
 
   const saveNine = () => {
-    if (!club.trim() || !nine.trim()) { alert("골프장과 코스(나인) 이름을 입력하세요"); return; }
-    const entry = { club: club.trim(), nine: nine.trim(), pars: pars.map((x) => Number(x) || 0) };
-    const next = { ...db, nines: [entry, ...db.nines.filter((n) => !(n.club === entry.club && n.nine === entry.nine))] };
-    persist(next);
+    const cl = club.trim(), nn = nine.trim();
+    if (!cl || !nn) { alert("골프장과 코스(나인) 이름을 입력하세요"); return; }
+    const c = db[cl] || { nines: {}, combos: [] };
+    persist({ ...db, [cl]: { nines: { ...c.nines, [nn]: pars.map((x) => Number(x) || 0) }, combos: c.combos || [] } });
     setNine(""); setPars(DEFAULT9());
   };
-  const removeNine = (cl, nn) => persist({
-    ...db,
-    nines: db.nines.filter((n) => !(n.club === cl && n.nine === nn)),
-    combos: db.combos.filter((c) => !(c.club === cl && (c.out === nn || c.in === nn))),
-  });
+  const removeNine = (cl, nn) => {
+    const c = db[cl];
+    if (!c) return;
+    const nines = { ...c.nines }; delete nines[nn];
+    const combos = (c.combos || []).filter((x) => x.out !== nn && x.in !== nn);
+    const next = { ...db };
+    if (Object.keys(nines).length === 0 && combos.length === 0) delete next[cl];
+    else next[cl] = { nines, combos };
+    persist(next);
+  };
   const loadNine = (cl, nn) => {
-    const n = db.nines.find((x) => x.club === cl && x.nine === nn);
-    if (!n) return;
-    setClub(cl); setNine(nn); setPars(n.pars.map(String));
+    const pars9 = db[cl] && db[cl].nines && db[cl].nines[nn];
+    if (!pars9) return;
+    setClub(cl); setNine(nn); setPars(pars9.map(String));
   };
 
   const addCombo = () => {
     const cl = club.trim();
     if (!cl || !cOut || !cIn || cOut === cIn) { alert("골프장을 선택하고 서로 다른 전/후반 코스를 고르세요"); return; }
-    const exists = db.combos.some((c) => c.club === cl && c.out === cOut && c.in === cIn);
-    if (exists) { alert("이미 있는 조합"); return; }
-    persist({ ...db, combos: [{ club: cl, out: cOut, in: cIn }, ...db.combos] });
+    const c = db[cl] || { nines: {}, combos: [] };
+    if ((c.combos || []).some((x) => x.out === cOut && x.in === cIn)) { alert("이미 있는 조합"); return; }
+    persist({ ...db, [cl]: { nines: c.nines || {}, combos: [{ out: cOut, in: cIn }, ...(c.combos || [])] } });
     setCOut(""); setCIn("");
   };
-  const removeCombo = (c) => persist({ ...db, combos: db.combos.filter((x) => !(x.club === c.club && x.out === c.out && x.in === c.in)) });
+  const removeCombo = (cl, cb) => {
+    const c = db[cl];
+    if (!c) return;
+    persist({ ...db, [cl]: { nines: c.nines || {}, combos: (c.combos || []).filter((x) => !(x.out === cb.out && x.in === cb.in)) } });
+  };
 
   const total = pars.reduce((a, b) => a + (Number(b) || 0), 0);
+  const nineCount = useMemo(() => Object.values(db).reduce((s, c) => s + Object.keys(c.nines || {}).length, 0), [db]);
+  const comboCount = useMemo(() => Object.values(db).reduce((s, c) => s + (c.combos || []).length, 0), [db]);
 
-  // 백업(JSON) / seedDb.js 다운로드
   const backup = JSON.stringify(db);
   const importBackup = () => {
     const t = prompt("백업 JSON 붙여넣기");
     if (!t) return;
-    try { const d = JSON.parse(t); persist({ nines: d.nines || [], combos: d.combos || [] }); alert("가져오기 완료"); }
+    try { const d = JSON.parse(t); persist(d && typeof d === "object" ? d : {}); alert("가져오기 완료"); }
     catch { alert("JSON 파싱 실패"); }
   };
   const downloadSeed = () => {
-    const q = (s) => JSON.stringify(s ?? "");
-    const nineLines = (db.nines || [])
-      .map((n) => `    { "club": ${q(n.club)}, "nine": ${q(n.nine)}, "pars": [${(n.pars || []).join(", ")}] }`)
-      .join(",\n");
-    const comboLines = (db.combos || [])
-      .map((c) => `    { "club": ${q(c.club)}, "out": ${q(c.out)}, "in": ${q(c.in)} }`)
-      .join(",\n");
+    const qs = (s) => JSON.stringify(s ?? "");
+    const clubs = Object.keys(db);
+    let body = "";
+    clubs.forEach((club, ci) => {
+      const c = db[club];
+      const nk = Object.keys(c.nines || {});
+      const nineLines = nk.map((nn, i) => `      ${qs(nn)}: [${(c.nines[nn] || []).join(", ")}]${i < nk.length - 1 ? "," : ""}`).join("\n");
+      const combos = (c.combos || []).map((x) => `{ "out": ${qs(x.out)}, "in": ${qs(x.in)} }`).join(", ");
+      body += `  ${qs(club)}: {\n    "nines": {\n${nineLines}\n    },\n    "combos": [${combos}]\n  }${ci < clubs.length - 1 ? "," : ""}\n`;
+    });
     const text =
-      "// 코스 시드 DB (데이터 전용) — /admin 에서 생성. 이 파일(lib/seedDb.js)을 교체 후 배포하면 모든 사용자에게 공유됩니다.\n" +
-      "export const SEED_DB = {\n" +
-      `  "nines": [\n${nineLines}${nineLines ? "\n" : ""}  ],\n` +
-      `  "combos": [\n${comboLines}${comboLines ? "\n" : ""}  ]\n` +
-      "};\n";
+      "// 코스 시드 DB (골프장 기준 nested) — /admin 에서 생성. lib/seedDb.js 교체 후 배포하면 모든 사용자 공유.\n" +
+      "// 구조: { \"골프장\": { nines: { \"코스명\": [9홀 par] }, combos: [{out,in}] } }\n" +
+      "export const SEED_DB = {\n" + body + "};\n";
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([text], { type: "text/javascript" }));
     a.download = "seedDb.js";
@@ -136,7 +147,7 @@ export default function Admin() {
         <div>
           <div className="font-head text-[12px] font-semibold uppercase tracking-[0.28em] text-txt">Admin</div>
           <h1 className="font-head text-3xl font-bold text-txt">코스 DB 관리</h1>
-          <p className="mt-1 text-sm text-txt-soft">나인 {db.nines.length}개 · 조합 {db.combos.length}개 · 골프장 {clubsWithNines.length}곳 (Cloudflare KV 서버 연동){syncing ? " · 저장중…" : ""}</p>
+          <p className="mt-1 text-sm text-txt-soft">나인 {nineCount}개 · 조합 {comboCount}개 · 골프장 {clubsWithNines.length}곳 (Cloudflare KV 서버 연동){syncing ? " · 저장중…" : ""}</p>
         </div>
         <div className="flex items-center gap-3 text-sm">
           <button onClick={downloadSeed} className="rounded-lg border border-accent px-3 py-1.5 text-xs font-semibold text-txt hover:bg-accent hover:text-[#06210f]">seedDb.js 다운로드</button>
@@ -288,14 +299,14 @@ export default function Admin() {
                   </select>
                   <button onClick={addCombo} className="rounded-lg bg-accent px-3 py-2 text-sm font-bold text-[#06210f] hover:bg-accent-2">조합 추가</button>
                 </div>
-                {db.combos.filter((c) => c.club === club.trim()).length === 0 ? (
+                {combosOf(club.trim()).length === 0 ? (
                   <p className="text-[12px] text-txt-faint">정의된 조합이 없습니다. 추가하면 사용자에게 그 조합이 제공됩니다.</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
-                    {db.combos.filter((c) => c.club === club.trim()).map((c, i) => (
+                    {combosOf(club.trim()).map((c, i) => (
                       <span key={i} className="flex items-center gap-1 rounded-full border border-line-2 bg-panel-2 py-1 pl-3 pr-1 text-[13px]">
                         <span className="text-txt"><b>{c.out}+{c.in}</b></span>
-                        <button onClick={() => removeCombo(c)} className="flex h-5 w-5 items-center justify-center rounded-full text-txt-faint hover:bg-line hover:text-txt">×</button>
+                        <button onClick={() => removeCombo(club.trim(), c)} className="flex h-5 w-5 items-center justify-center rounded-full text-txt-faint hover:bg-line hover:text-txt">×</button>
                       </span>
                     ))}
                   </div>
