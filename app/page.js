@@ -161,7 +161,7 @@ export default function Home() {
   const holeData = { player: round.player, ...holeCard };
 
   return (
-    <main className="mx-auto max-w-[1200px] px-6 py-8">
+    <main className="mx-auto max-w-[1500px] px-6 py-8">
       {/* Header */}
       <div className="mb-6 flex items-end justify-between gap-4 border-b border-line pb-5">
         <div>
@@ -198,7 +198,7 @@ export default function Home() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[380px_1fr]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[680px_1fr]">
         {/* ── 입력 패널 ── */}
         <section className="space-y-6">
           {/* 기본 정보 */}
@@ -398,34 +398,8 @@ const PAR_STYLE = {
   4: { background: "#475162", color: "#ffffff" }, // 중간
   5: { background: "#616d7d", color: "#ffffff" }, // 연한 (모두 어두운 바탕 + 흰 글씨)
 };
-// par 셀 (반응형): 모바일=큰 3/4/5 세그먼트, 데스크톱=숫자 하나+위치탭/드래그
+// par 셀: 숫자 하나 표시. 왼쪽 탭=3 / 가운데=4 / 오른쪽=5, 좌우 드래그 스크럽도 지원. (웹 전용, 큼직하게)
 function ParCell({ par, onSet }) {
-  return (
-    <>
-      {/* 모바일: 큰 세그먼트 (터치 타겟 확보) */}
-      <div className="mb-0.5 flex overflow-hidden rounded border border-line sm:hidden">
-        {[3, 4, 5].map((p) => {
-          const active = String(par) === String(p);
-          return (
-            <button key={p} type="button" tabIndex={-1} onClick={() => onSet(String(p))}
-              style={active ? PAR_STYLE[p] : undefined}
-              className={"flex-1 py-1.5 text-center font-mono text-[13px] font-bold leading-none transition " +
-                (active ? "" : "text-txt-faint")}>
-              {p}
-            </button>
-          );
-        })}
-      </div>
-      {/* 데스크톱: 컴팩트 스크럽 */}
-      <div className="mb-0.5 hidden sm:block">
-        <ParScrub par={par} onSet={onSet} />
-      </div>
-    </>
-  );
-}
-
-// 데스크톱용: 숫자 하나 표시. 왼쪽 탭=3 / 가운데=4 / 오른쪽=5, 좌우 드래그 스크럽도 지원.
-function ParScrub({ par, onSet }) {
   const drag = useRef(null);
   const cur = Number(par) || 4;
   const clamp = (n) => Math.max(3, Math.min(5, n));
@@ -441,7 +415,7 @@ function ParScrub({ par, onSet }) {
     const dx = e.clientX - d.x;
     if (Math.abs(dx) > 5) d.moved = true;
     if (d.moved) {
-      const next = clamp(d.base + Math.round(dx / 16));
+      const next = clamp(d.base + Math.round(dx / 20));
       if (next !== Number(par)) onSet(String(next));
     }
   };
@@ -462,7 +436,7 @@ function ParScrub({ par, onSet }) {
       onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
       style={st ? { background: st.background, color: st.color } : undefined}
       title="왼쪽=파3 · 가운데=파4 · 오른쪽=파5 (좌우 드래그도 가능)"
-      className={"w-full cursor-ew-resize touch-none select-none rounded py-0.5 text-center font-mono text-[11px] font-bold leading-none transition " +
+      className={"mb-1.5 w-full cursor-ew-resize touch-none select-none rounded-md py-1.5 text-center font-mono text-base font-bold leading-none transition " +
         (st ? "" : "text-txt-faint hover:text-txt")}>
       {par || "–"}
     </button>
@@ -596,12 +570,12 @@ function HoleGroup({ label, holes, offset, setHole, scoreRefs, onScoreKey, score
   return (
     <div className="mb-4 last:mb-0">
       <div className="mb-1.5 font-head text-[11px] uppercase tracking-widest text-accent">{label}</div>
-      <div className="grid grid-cols-3 gap-1 sm:grid-cols-9">
+      <div className="grid grid-cols-9 gap-2">
         {holes.map((h, i) => {
           const idx = offset + i;
           return (
-            <div key={idx} className="rounded-md border border-line bg-panel-2 p-1 text-center">
-              <div className="font-mono text-[10px] text-txt-faint">{idx + 1}</div>
+            <div key={idx} className="rounded-lg border border-line bg-panel-2 p-2 text-center">
+              <div className="mb-1 font-mono text-xs text-txt-faint">{idx + 1}</div>
               <ParCell par={h.par} onSet={(v) => setHole(idx, "par", v)} />
               <ScoreInput idx={idx} par={h.par} score={h.score} mode={scoreMode}
                 setHole={setHole} scoreRefs={scoreRefs} onScoreKey={onScoreKey} />
@@ -645,7 +619,7 @@ function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreKey }) {
       onKeyDown={(e) => onScoreKey && onScoreKey(e, idx)}
       onChange={(e) => handle(e.target.value)}
       placeholder="–"
-      className="w-full rounded bg-panel px-0.5 py-0.5 text-center font-mono text-sm font-bold text-txt outline-none placeholder:text-txt-faint focus:ring-1 focus:ring-accent"
+      className="w-full rounded-md bg-panel px-1 py-2 text-center font-mono text-xl font-bold text-txt outline-none placeholder:text-txt-faint focus:ring-2 focus:ring-accent"
     />
   );
 }
