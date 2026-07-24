@@ -6,7 +6,7 @@ import HoleByHoleStrip, { SIZE as SIZE_YT } from "../components/presets/HoleByHo
 import ReelsScorecard, { SIZE as SIZE_REELS } from "../components/presets/ReelsScorecard";
 import HoleCard, { SIZE as SIZE_HOLE } from "../components/presets/HoleCard";
 import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../lib/score";
-import { coursesFromDb, effectiveDb, SEED_DB } from "../lib/coursesDb";
+import { coursesFromDb, effectiveDb } from "../lib/coursesDb";
 import { loadDb, saveDb } from "../lib/nineStore";
 import { fetchDb } from "../lib/api";
 import { COURSE_DIRECTORY } from "../lib/courseDirectory";

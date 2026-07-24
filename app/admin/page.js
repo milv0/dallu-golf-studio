@@ -5,7 +5,7 @@ import Link from "next/link";
 import { COURSE_DIRECTORY } from "../../lib/courseDirectory";
 import { loadDb, saveDb } from "../../lib/nineStore";
 import { fetchDb, pushDb } from "../../lib/api";
-import { mergeDb, effectiveDb, SEED_DB } from "../../lib/coursesDb";
+import { effectiveDb } from "../../lib/coursesDb";
 
 const DEFAULT9 = () => Array(9).fill("4");
 const sum = (a) => a.reduce((s, x) => s + (Number(x) || 0), 0);
