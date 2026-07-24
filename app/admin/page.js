@@ -10,6 +10,40 @@ import { effectiveDb } from "../../lib/coursesDb";
 const DEFAULT9 = () => Array(9).fill("4");
 const sum = (a) => a.reduce((s, x) => s + (Number(x) || 0), 0);
 
+// 나인 한 행 (모듈 최상위 정의 — Admin 내부에 두면 리렌더마다 remount되어 입력 포커스가 풀림)
+const NINE_CELL = "w-full rounded bg-panel py-1.5 text-center font-mono text-sm font-bold text-txt outline-none focus:ring-2 focus:ring-accent";
+function NineRow({ n, pars, onName, onPar, onDel, isNew }) {
+  const total = sum(pars);
+  const bad = total !== 36;
+  return (
+    <div className="flex items-center gap-2 border-t border-line px-3 py-2 first:border-t-0">
+      {isNew ? (
+        <input value={n} onChange={(e) => onName(e.target.value)} placeholder="새 코스명"
+          className="w-28 shrink-0 rounded border border-dashed border-line-2 bg-panel-2 px-2 py-1.5 text-sm text-txt outline-none focus:border-accent" />
+      ) : (
+        <input key={n} defaultValue={n} onBlur={(e) => onName(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+          className="w-28 shrink-0 rounded border border-transparent bg-transparent px-2 py-1.5 text-sm font-semibold text-txt outline-none hover:border-line focus:border-accent focus:bg-panel-2" />
+      )}
+      <div className="grid flex-1 grid-cols-9 gap-1">
+        {pars.map((p, i) => (
+          <input key={i} value={p} inputMode="numeric" maxLength={1}
+            onChange={(e) => onPar(i, e.target.value.replace(/[^0-9]/g, ""))}
+            onFocus={(e) => e.target.select()} className={NINE_CELL} />
+        ))}
+      </div>
+      <span className={"w-12 shrink-0 text-center font-mono text-xs " + (bad ? "text-[#ffb648]" : "text-txt-faint")} title="9홀 합(기대 36)">
+        {total}{bad ? "⚠" : ""}
+      </span>
+      {isNew ? (
+        <button onClick={onDel} className="shrink-0 rounded-md bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] hover:bg-accent-2">추가</button>
+      ) : (
+        <button onClick={onDel} className="shrink-0 rounded-md border border-line px-2 py-1.5 text-[11px] font-semibold text-txt-soft hover:border-[#ff6b57] hover:text-[#ff6b57]">삭제</button>
+      )}
+    </div>
+  );
+}
+
 export default function Admin() {
   const [db, setDb] = useState({});
   const [syncing, setSyncing] = useState(false);
@@ -167,39 +201,6 @@ export default function Admin() {
   };
 
   const ghost = "rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-txt-soft transition hover:border-line-2 hover:text-txt";
-  const cell = "w-full rounded bg-panel py-1.5 text-center font-mono text-sm font-bold text-txt outline-none focus:ring-2 focus:ring-accent";
-
-  const NineRow = ({ n, pars, onName, onPar, onDel, isNew }) => {
-    const total = sum(pars);
-    const bad = total !== 36;
-    return (
-      <div className="flex items-center gap-2 border-t border-line px-3 py-2 first:border-t-0">
-        {isNew ? (
-          <input value={n} onChange={(e) => onName(e.target.value)} placeholder="새 코스명"
-            className="w-28 shrink-0 rounded border border-dashed border-line-2 bg-panel-2 px-2 py-1.5 text-sm text-txt outline-none focus:border-accent" />
-        ) : (
-          <input key={n} defaultValue={n} onBlur={(e) => onName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-            className="w-28 shrink-0 rounded border border-transparent bg-transparent px-2 py-1.5 text-sm font-semibold text-txt outline-none hover:border-line focus:border-accent focus:bg-panel-2" />
-        )}
-        <div className="grid flex-1 grid-cols-9 gap-1">
-          {pars.map((p, i) => (
-            <input key={i} value={p} inputMode="numeric" maxLength={1}
-              onChange={(e) => onPar(i, e.target.value.replace(/[^0-9]/g, ""))}
-              onFocus={(e) => e.target.select()} className={cell} />
-          ))}
-        </div>
-        <span className={"w-12 shrink-0 text-center font-mono text-xs " + (bad ? "text-[#ffb648]" : "text-txt-faint")} title="9홀 합(기대 36)">
-          {total}{bad ? "⚠" : ""}
-        </span>
-        {isNew ? (
-          <button onClick={onDel} className="shrink-0 rounded-md bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] hover:bg-accent-2">추가</button>
-        ) : (
-          <button onClick={onDel} className="shrink-0 rounded-md border border-line px-2 py-1.5 text-[11px] font-semibold text-txt-soft hover:border-[#ff6b57] hover:text-[#ff6b57]">삭제</button>
-        )}
-      </div>
-    );
-  };
 
   return (
     <main className="mx-auto max-w-[1200px] px-6 pb-16">
