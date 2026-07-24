@@ -72,7 +72,7 @@ export default function Admin() {
   }, [region, q]);
   const ninesOf = (cl) => Object.entries((db[cl] && db[cl].nines) || {}).map(([nine, pars]) => ({ nine, pars }));
   const combosOf = (cl) => (db[cl] && db[cl].combos) || [];
-  const shownClubs = club.trim() ? clubsWithNines.filter((c) => c === club.trim()) : clubsWithNines;
+  const shownClubs = club.trim() ? clubsWithNines.filter((c) => c === club.trim()) : [];
 
   const setPar = (i, v) => setPars((p) => p.map((x, idx) => (idx === i ? v : x)));
   const onParKey = (e, i) => {
@@ -243,11 +243,10 @@ export default function Admin() {
                 <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
                   저장된 코스 {club.trim() && <span className="normal-case tracking-normal text-txt">· {club.trim()}</span>}
                 </span>
-                {club.trim() && (
-                  <button onClick={() => setClub("")} className="text-[12px] text-txt-soft hover:text-txt">전체 보기</button>
-                )}
               </div>
-              {shownClubs.length === 0 ? (
+              {!club.trim() ? (
+                <p className="text-[12px] text-txt-faint">좌측에서 골프장을 선택하면 저장된 코스가 표시됩니다.</p>
+              ) : shownClubs.length === 0 ? (
                 <p className="text-[12px] text-txt-faint">이 골프장에 저장된 코스가 없습니다. 위에서 나인을 입력하세요.</p>
               ) : (
               <div className="space-y-4">
