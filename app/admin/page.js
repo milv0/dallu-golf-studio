@@ -105,12 +105,12 @@ export default function Admin() {
     <main className="mx-auto max-w-[1200px] px-6 py-8">
       <div className="mb-6 flex items-end justify-between border-b border-line pb-4">
         <div>
-          <div className="font-head text-[12px] font-semibold uppercase tracking-[0.28em] text-accent">Admin</div>
+          <div className="font-head text-[12px] font-semibold uppercase tracking-[0.28em] text-txt">Admin</div>
           <h1 className="font-head text-3xl font-bold text-txt">코스 DB 관리</h1>
           <p className="mt-1 text-sm text-txt-soft">나인 {db.nines.length}개 · 조합 {db.combos.length}개 · 골프장 {clubsWithNines.length}곳 (localStorage 실시간 연동)</p>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <button onClick={downloadSeed} className="rounded-lg border border-accent px-3 py-1.5 text-xs font-semibold text-accent hover:bg-accent hover:text-[#06210f]">seedDb.js 다운로드</button>
+          <button onClick={downloadSeed} className="rounded-lg border border-accent px-3 py-1.5 text-xs font-semibold text-txt hover:bg-accent hover:text-[#06210f]">seedDb.js 다운로드</button>
           <button onClick={importBackup} className="text-txt-soft hover:text-txt">백업 가져오기</button>
           <button onClick={() => navigator.clipboard?.writeText(backup)} className="text-txt-soft hover:text-txt">백업 복사</button>
           <Link href="/" className="text-txt-soft hover:text-txt">← 메인</Link>
@@ -189,7 +189,7 @@ export default function Admin() {
             <div className="rounded-xl border border-line bg-panel p-4">
               <div className="mb-3 flex items-center justify-between">
                 <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-                  저장된 코스 {club.trim() && <span className="normal-case tracking-normal text-accent">· {club.trim()}</span>}
+                  저장된 코스 {club.trim() && <span className="normal-case tracking-normal text-txt">· {club.trim()}</span>}
                 </span>
                 {club.trim() && (
                   <button onClick={() => setClub("")} className="text-[12px] text-txt-soft hover:text-txt">전체 보기</button>
@@ -201,12 +201,12 @@ export default function Admin() {
               <div className="space-y-4">
                 {shownClubs.map((cl) => (
                   <div key={cl}>
-                    <div className="mb-1.5 text-[13px] font-semibold text-accent">{cl}</div>
+                    <div className="mb-1.5 text-[13px] font-semibold text-txt">{cl}</div>
                     <div className="space-y-1.5">
                       {ninesOf(cl).map((n) => (
                         <div key={n.nine} className="overflow-x-auto rounded-lg border border-line bg-panel-2">
                           <div className="flex items-center justify-between px-3 py-1.5">
-                            <button onClick={() => loadNine(cl, n.nine)} className="text-sm font-semibold text-txt hover:text-accent" title="불러와 수정">
+                            <button onClick={() => loadNine(cl, n.nine)} className="text-sm font-semibold text-txt hover:text-txt" title="불러와 수정">
                               {n.nine} <span className="font-mono text-[11px] text-txt-faint">· 합 {n.pars.reduce((a, b) => a + b, 0)}</span>
                             </button>
                             <button onClick={() => removeNine(cl, n.nine)} className="flex h-5 w-5 items-center justify-center rounded-full text-txt-faint hover:bg-line hover:text-txt">×</button>
@@ -240,7 +240,7 @@ export default function Admin() {
           {/* 2) 조합 정의 */}
           <div className="rounded-xl border border-line bg-panel p-4">
             <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-              2. 제공 조합(전/후반) 정의 {club.trim() && <span className="normal-case tracking-normal text-accent">· {club.trim()}</span>}
+              2. 제공 조합(전/후반) 정의 {club.trim() && <span className="normal-case tracking-normal text-txt">· {club.trim()}</span>}
             </div>
             {!club.trim() ? (
               <p className="text-[12px] text-txt-faint">좌측에서 골프장을 먼저 선택하세요.</p>

@@ -124,40 +124,36 @@ export default function Home() {
     }));
   };
 
-  // 내 코스 저장소 (localStorage) — 골프장 이름 기준 18홀 par 기억
-  const [savedCourses, setSavedCourses] = useState([]);
+  // 코스 DB (localStorage seed + 편집분 병합)
   const [builtinCourses, setBuiltinCourses] = useState([]);
+  // 즐겨찾기 (코스 이름 배열, localStorage)
+  const [favorites, setFavorites] = useState([]);
   useEffect(() => {
-    try { setSavedCourses(JSON.parse(localStorage.getItem("sc-courses") || "[]")); }
-    catch { setSavedCourses([]); }
     setBuiltinCourses(coursesFromDb(mergeDb(SEED_DB, loadDb())));
+    try { setFavorites(JSON.parse(localStorage.getItem("sc-favorites") || "[]")); }
+    catch { setFavorites([]); }
   }, []);
-  const persistCourses = (list) => {
-    setSavedCourses(list);
-    localStorage.setItem("sc-courses", JSON.stringify(list));
+  const toggleFav = (name) => {
+    setFavorites((prev) => {
+      const next = prev.includes(name) ? prev.filter((n) => n !== name) : [name, ...prev];
+      localStorage.setItem("sc-favorites", JSON.stringify(next));
+      return next;
+    });
   };
-  const saveCurrentCourse = () => {
-    const name = (round.course || "").trim();
-    if (!name) { alert("골프장 이름을 먼저 입력하세요"); return; }
-    const pars = round.holes.map((h) => Number(h.par) || null);
-    persistCourses([{ name, pars }, ...savedCourses.filter((c) => c.name !== name)]);
-    alert(`"${name}" 코스의 PAR를 저장했습니다.`);
-  };
-  const removeCourse = (name) => persistCourses(savedCourses.filter((c) => c.name !== name));
 
-  // 골프장 이름 자동완성 목록 (디렉토리 541곳 + 기본DB + 저장코스, 이름 중복 제거)
-  const courseNameList = useMemo(() => {
+  // 골프장(클럽) 이름 자동완성 목록 — 디렉토리 541곳 + DB 클럽 (조합명 제외)
+  const clubNameList = useMemo(() => {
     const seen = new Set();
     const out = [];
-    for (const c of [...builtinCourses, ...savedCourses, ...COURSE_DIRECTORY]) {
-      if (c.name && !seen.has(c.name)) { seen.add(c.name); out.push(c.name); }
+    for (const c of [...builtinCourses.map((x) => x.club).filter(Boolean), ...COURSE_DIRECTORY.map((x) => x.name)]) {
+      if (c && !seen.has(c)) { seen.add(c); out.push(c); }
     }
     return out;
-  }, [savedCourses, builtinCourses]);
-  // 골프장 이름이 (DB 또는 저장한 코스)와 일치하면 par 자동 로드
+  }, [builtinCourses]);
+  // 골프장 이름이 DB 코스명과 정확히 일치하면 par 자동 로드
   const maybeLoadCourse = (name) => {
     const key = (name || "").trim();
-    const c = savedCourses.find((x) => x.name === key) || builtinCourses.find((x) => x.name === key);
+    const c = builtinCourses.find((x) => x.name === key);
     if (c) applyPreset(c);
   };
 
@@ -241,13 +237,8 @@ export default function Home() {
                      onChange={(v) => setMeta("player", v)} placeholder="선수 이름 입력" />
               {!isHole && (
                 <>
-                  <Field label="골프장" value={round.course}
-                         onChange={(v) => setMeta("course", v)}
-                         onBlur={() => maybeLoadCourse(round.course)}
-                         list="saved-courses" placeholder="골프장 이름 입력" />
-                  <datalist id="saved-courses">
-                    {courseNameList.map((n) => <option key={n} value={n} />)}
-                  </datalist>
+                  <ClubAutocomplete value={round.course} onChange={(v) => setMeta("course", v)}
+                    onPick={(v) => { setMeta("course", v); maybeLoadCourse(v); }} options={clubNameList} />
                   <Field label="날짜" type="date" value={round.date}
                          onChange={(v) => setMeta("date", v)} />
                 </>
@@ -260,8 +251,8 @@ export default function Home() {
             <>
               {/* OpenGolfAPI 코스 검색(미국)은 한국 배포용으로 임시 숨김 — 나중에 복구
               <CourseSearch onPick={applyCourse} /> */}
-              <CoursePresets courses={savedCourses} builtin={builtinCourses} onSave={saveCurrentCourse}
-                             onRemove={removeCourse} onLoad={applyPreset} />
+              <CoursePresets builtin={builtinCourses} favorites={favorites}
+                             onToggleFav={toggleFav} onLoad={applyPreset} />
               <div className="rounded-xl border border-line bg-panel p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
@@ -458,27 +449,68 @@ function ParCell({ par, onSet }) {
 }
 
 // 내 코스 저장/불러오기 — 기본 DB(coursesDb) + 사용자가 저장한 코스
-function CoursePresets({ courses, builtin = [], onSave, onRemove, onLoad }) {
+// 골프장명 자동완성 — 입력하면 연관 골프장만 드롭다운
+function ClubAutocomplete({ value, onChange, onPick, options }) {
+  const [open, setOpen] = useState(false);
+  const q = (value || "").trim();
+  const matches = q ? options.filter((o) => o.includes(q)).slice(0, 8) : [];
+  return (
+    <label className="relative col-span-2 block">
+      <span className="mb-1 block font-head text-[11px] uppercase tracking-widest text-txt-faint">골프장</span>
+      <input value={value} placeholder="골프장 이름 검색"
+        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent" />
+      {open && matches.length > 0 && (
+        <ul className="absolute z-30 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-line-2 bg-panel shadow-lg">
+          {matches.map((m) => (
+            <li key={m}>
+              <button type="button" onMouseDown={() => { (onPick || onChange)(m); setOpen(false); }}
+                className="block w-full px-3 py-2 text-left text-sm text-txt hover:bg-panel-2">
+                {m}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </label>
+  );
+}
+
+// 코스: 즐겨찾기 + 골프장 DB(2단계: 골프장 → 조합), 조합 ★로 즐겨찾기
+function CoursePresets({ builtin = [], favorites = [], onToggleFav, onLoad }) {
   const [pickClub, setPickClub] = useState("");
   const clubs = [...new Set(builtin.map((c) => c.club || c.name))];
   const clubCourses = builtin.filter((c) => (c.club || c.name) === pickClub);
+  const favCourses = builtin.filter((c) => favorites.includes(c.name));
+
+  const Star = ({ name }) => (
+    <button type="button" onClick={(e) => { e.stopPropagation(); onToggleFav(name); }}
+      className={"px-1 text-sm " + (favorites.includes(name) ? "text-amber-400" : "text-txt-faint hover:text-txt")}
+      title="즐겨찾기" style={favorites.includes(name) ? { color: "#ffb648" } : undefined}>★</button>
+  );
+
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
-      <div className="mb-1 flex items-center justify-between">
-        <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-          코스 <span className="normal-case tracking-normal text-txt-faint">(선택·저장)</span>
-        </span>
-        <button type="button" onClick={onSave}
-          className="rounded-lg border border-accent px-3 py-1 text-xs font-semibold text-accent transition hover:bg-accent hover:text-[#06210f]">
-          현재 코스 저장
-        </button>
-      </div>
-      <p className="mb-2 text-[12px] text-txt-faint">
-        코스를 누르면 18홀 PAR가 채워집니다. 기본 DB는 코드에서 관리(lib/coursesDb.js), 내가 저장한 코스는 이 브라우저에 보관됩니다.
-      </p>
+      <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">코스</div>
+
+      {favCourses.length > 0 && (
+        <div className="mb-3">
+          <div className="mb-1 text-[11px] uppercase tracking-widest text-[#ffb648]">★ 즐겨찾기</div>
+          <div className="flex flex-wrap gap-2">
+            {favCourses.map((c) => (
+              <span key={c.name} className="flex items-center gap-0.5 rounded-full border border-line-2 bg-panel-2 py-1 pl-3 pr-1 text-sm">
+                <button type="button" onClick={() => onLoad(c)} className="text-txt hover:text-accent">{c.name}</button>
+                <Star name={c.name} />
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {builtin.length > 0 && (
-        <div className="mb-3">
+        <div>
           <div className="mb-1 flex items-center gap-2">
             <span className="text-[11px] uppercase tracking-widest text-accent">골프장 DB</span>
             {pickClub && (
@@ -500,33 +532,16 @@ function CoursePresets({ courses, builtin = [], onSave, onRemove, onLoad }) {
               <div className="mb-1 text-[12px] text-txt-soft">{pickClub} · 조합 선택</div>
               <div className="flex flex-wrap gap-2">
                 {clubCourses.map((c) => (
-                  <button key={c.name} type="button" onClick={() => onLoad(c)}
-                    className="rounded-full border border-line-2 bg-panel-2 px-3 py-1 text-sm text-txt transition hover:border-accent hover:text-accent">
-                    {c.out && c.in ? `${c.out}+${c.in}` : c.name}
-                  </button>
+                  <span key={c.name} className="flex items-center gap-0.5 rounded-full border border-line-2 bg-panel-2 py-1 pl-3 pr-1 text-sm">
+                    <button type="button" onClick={() => onLoad(c)} className="text-txt hover:text-accent">
+                      {c.out && c.in ? `${c.out}+${c.in}` : c.name}
+                    </button>
+                    <Star name={c.name} />
+                  </span>
                 ))}
               </div>
             </div>
           )}
-        </div>
-      )}
-
-      <div className="mb-1 text-[11px] uppercase tracking-widest text-txt-faint">내가 저장한 코스</div>
-      {courses.length === 0 ? (
-        <p className="text-[12px] text-txt-faint">저장된 코스가 없습니다.</p>
-      ) : (
-        <div className="flex flex-wrap gap-2">
-          {courses.map((c) => (
-            <span key={c.name}
-              className="flex items-center gap-1 rounded-full border border-line-2 bg-panel-2 py-1 pl-3 pr-1 text-sm">
-              <button type="button" onClick={() => onLoad(c)} className="text-txt hover:text-accent">
-                {c.name}
-              </button>
-              <button type="button" onClick={() => onRemove(c.name)}
-                className="flex h-5 w-5 items-center justify-center rounded-full text-txt-faint hover:bg-line hover:text-txt"
-                aria-label="삭제">×</button>
-            </span>
-          ))}
         </div>
       )}
     </div>
