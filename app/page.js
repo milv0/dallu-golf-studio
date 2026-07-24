@@ -169,7 +169,7 @@ export default function Home() {
             Broadcast Overlay Maker · @dallu_golf
           </div>
           <h1 className="mt-1 font-head text-[40px] font-bold uppercase leading-none tracking-tight text-txt">
-            scoreCard <span className="text-accent">Builder</span>
+            Studio <span className="text-accent">Dallu</span>
           </h1>
           <p className="mt-2 text-sm text-txt-soft">
             골프 영상 편집용 스코어카드 오버레이를 메이저 대회 방송 스타일로 제작 · 투명 PNG로 내보내기

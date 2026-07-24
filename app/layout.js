@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "scoreCard Builder — 골프 스코어카드 오버레이 메이커",
+  title: "Studio Dallu — 골프 스코어카드 오버레이 메이커",
   description:
     "골프 영상 편집용 스코어카드 오버레이(투명 PNG)를 유튜브·릴스 포맷과 메이저 대회 방송 스타일로 제작. @dallu_golf",
 };
