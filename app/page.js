@@ -430,13 +430,20 @@ function ParCell({ par, onSet }) {
     }
   };
 
+  const onKeyDown = (e) => {
+    if (["3", "4", "5"].includes(e.key)) { e.preventDefault(); onSet(e.key); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); onSet(String(clamp(cur - 1))); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); onSet(String(clamp(cur + 1))); }
+  };
+
   return (
-    <button type="button" tabIndex={-1}
+    <button type="button" tabIndex={0}
+      onKeyDown={onKeyDown}
       onPointerDown={onPointerDown} onPointerMove={onPointerMove}
       onPointerUp={onPointerUp} onPointerCancel={onPointerUp}
       style={st ? { background: st.background, color: st.color } : undefined}
-      title="왼쪽=파3 · 가운데=파4 · 오른쪽=파5 (좌우 드래그도 가능)"
-      className={"mb-1.5 w-full cursor-ew-resize touch-none select-none rounded-md py-1.5 text-center font-mono text-base font-bold leading-none transition " +
+      title="3·4·5 키 입력 / 왼쪽=파3·가운데=파4·오른쪽=파5 클릭 / 좌우 드래그"
+      className={"mb-1.5 w-full cursor-ew-resize touch-none select-none rounded-md py-1.5 text-center font-mono text-base font-bold leading-none outline-none transition focus-visible:ring-2 focus-visible:ring-accent " +
         (st ? "" : "text-txt-faint hover:text-txt")}>
       {par || "–"}
     </button>
