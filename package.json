@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "deploy": "next build && npx wrangler pages deploy out --project-name=dallu-golf-studio --branch=main"
   },
   "dependencies": {
     "next": "16.2.11",
