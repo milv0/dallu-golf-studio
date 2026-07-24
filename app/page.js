@@ -416,9 +416,9 @@ function ParCell({ par, onSet }) {
   };
 
   return (
-    <button type="button" tabIndex={0} onClick={onClick} onKeyDown={onKeyDown}
+    <button type="button" tabIndex={-1} onClick={onClick} onKeyDown={onKeyDown}
       style={st ? { background: st.background, color: st.color } : undefined}
-      title="클릭: 왼쪽=파3·가운데=파4·오른쪽=파5 / 키보드: 3·4·5 (←→ 조절)"
+      title="클릭: 왼쪽=파3·가운데=파4·오른쪽=파5 (클릭 후 3·4·5 키도 가능)"
       className={"mb-1.5 w-full select-none rounded-md py-1.5 text-center font-mono text-base font-bold leading-none outline-none transition focus-visible:ring-2 focus-visible:ring-accent " +
         (st ? "" : "text-txt-faint hover:text-txt")}>
       {par || "–"}
