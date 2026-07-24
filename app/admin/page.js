@@ -11,10 +11,11 @@ const DEFAULT9 = () => Array(9).fill("4");
 const sum = (a) => a.reduce((s, x) => s + (Number(x) || 0), 0);
 
 // 나인 한 행 (모듈 최상위 정의 — Admin 내부에 두면 리렌더마다 remount되어 입력 포커스가 풀림)
-const NINE_CELL = "w-full rounded bg-panel py-1.5 text-center font-mono text-sm font-bold text-txt outline-none focus:ring-2 focus:ring-accent";
+const PAR_COLOR = { 3: "text-[#7fd1ff]", 4: "text-txt", 5: "text-[#ffd27f]" };
 function NineRow({ n, pars, onName, onPar, onDel, isNew }) {
   const total = sum(pars);
   const bad = total !== 36;
+  const cycle = (p) => { const c = Number(p) || 4; return String(c >= 5 ? 3 : c + 1); };
   return (
     <div className="flex items-center gap-2 border-t border-line px-3 py-2 first:border-t-0">
       {isNew ? (
@@ -27,9 +28,11 @@ function NineRow({ n, pars, onName, onPar, onDel, isNew }) {
       )}
       <div className="grid flex-1 grid-cols-9 gap-1">
         {pars.map((p, i) => (
-          <input key={i} value={p} inputMode="numeric" maxLength={1}
-            onChange={(e) => onPar(i, e.target.value.replace(/[^0-9]/g, ""))}
-            onFocus={(e) => e.target.select()} className={NINE_CELL} />
+          <button key={i} type="button" onClick={() => onPar(i, cycle(p))}
+            title="클릭: 3 → 4 → 5 순환"
+            className={"select-none rounded bg-panel py-1.5 text-center font-mono text-sm font-bold outline-none transition hover:ring-2 hover:ring-accent focus:ring-2 focus:ring-accent " + (PAR_COLOR[Number(p)] || "text-txt")}>
+            {p || "–"}
+          </button>
         ))}
       </div>
       <span className={"w-12 shrink-0 text-center font-mono text-xs " + (bad ? "text-[#ffb648]" : "text-txt-faint")} title="9홀 합(기대 36)">
@@ -312,7 +315,7 @@ export default function Admin() {
                       </span>
                     )}
                   </span>
-                  <span className="font-mono text-[11px] text-txt-faint">이름·PAR 직접 수정 · Enter 확정</span>
+                  <span className="font-mono text-[11px] text-txt-faint">이름 클릭 수정 · PAR 칸 클릭 = 3→4→5</span>
                 </div>
                 {nineMismatch && (
                   <div className="border-b border-line bg-[#ffb648]/10 px-4 py-2 text-[12px] text-[#ffb648]">
