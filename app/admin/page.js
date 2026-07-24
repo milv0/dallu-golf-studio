@@ -109,7 +109,8 @@ export default function Admin() {
   const enteredClubs = useMemo(() => new Set(Object.keys(db)), [db]);
   const nineCount = useMemo(() => Object.values(db).reduce((s, c) => s + Object.keys(c.nines || {}).length, 0), [db]);
   const comboCount = useMemo(() => Object.values(db).reduce((s, c) => s + (c.combos || []).length, 0), [db]);
-  // 완성도: 나인 개수(홀수 대비) + 제공 조합까지 있으면 complete
+  // 완성도: 나인 개수(홀수 대비) 충족 + (나인 2개↑일 때만) 제공 조합 필요.
+  // 9홀 구장(나인 1개)은 조합 개념이 없으므로 조합 없이도 완비.
   const clubStatus = (name) => {
     const c = db[name];
     if (!c) return "none";
@@ -119,7 +120,8 @@ export default function Admin() {
     const dirName = c.orig || name;   // 이름 바꿨어도 원본 디렉토리명으로 홀수 판정
     const exp = holesByClub[dirName] ? Math.round(holesByClub[dirName] / 9) : null;
     const okNines = exp == null ? nineN > 0 : nineN === exp;
-    return okNines && comboN > 0 ? "complete" : "incomplete";
+    const needCombo = nineN >= 2;     // 나인 1개(9홀)면 조합 불필요
+    return okNines && (!needCombo || comboN > 0) ? "complete" : "incomplete";
   };
   // 원본 디렉토리명 → 사용자가 바꾼 이름(별칭)
   const aliasByOrig = useMemo(() => {
@@ -397,6 +399,10 @@ export default function Admin() {
               {/* 조합 */}
               <div className="rounded-2xl border border-line bg-panel p-5">
                 <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">제공 조합 (전/후반)</div>
+                {nines.length < 2 ? (
+                  <p className="font-mono text-[12px] text-txt-faint">9홀 구장은 전/후반 조합이 필요 없습니다. (나인 1개면 완비)</p>
+                ) : (
+                <>
                 <div className="mb-3 grid grid-cols-[1fr_1fr_auto] gap-2">
                   <select value={cOut} onChange={(e) => setCOut(e.target.value)} className="rounded-lg border border-line-2 bg-panel-2 px-2 py-2 text-sm text-txt outline-none focus:border-accent">
                     <option value="">전반</option>
@@ -423,6 +429,8 @@ export default function Admin() {
                       );
                     })}
                   </div>
+                )}
+                </>
                 )}
               </div>
             </>
