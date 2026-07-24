@@ -7,6 +7,7 @@ import ReelsScorecard, { SIZE as SIZE_REELS } from "../components/presets/ReelsS
 import HoleCard, { SIZE as SIZE_HOLE } from "../components/presets/HoleCard";
 import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../lib/score";
 import { COURSE_DB } from "../lib/coursesDb";
+import { COURSE_DIRECTORY } from "../lib/courseDirectory";
 
 const FORMATS = {
   youtube: { label: "YouTube", ratio: "가로 16:9", Comp: HoleByHoleStrip, size: SIZE_YT },
@@ -57,6 +58,16 @@ export default function Home() {
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
 
   const summary = useMemo(() => summarize(round.holes), [round]);
+
+  // 골프장 이름 자동완성 목록 (디렉토리 541곳 + 기본DB + 저장코스, 이름 중복 제거)
+  const courseNameList = useMemo(() => {
+    const seen = new Set();
+    const out = [];
+    for (const c of [...COURSE_DB, ...savedCourses, ...COURSE_DIRECTORY]) {
+      if (c.name && !seen.has(c.name)) { seen.add(c.name); out.push(c.name); }
+    }
+    return out;
+  }, [savedCourses]);
 
   const setMeta = (key, val) => setRound((r) => ({ ...r, [key]: val }));
   const setHC = (key, val) => setHoleCard((s) => ({ ...s, [key]: val }));
@@ -232,7 +243,7 @@ export default function Home() {
                          onBlur={() => maybeLoadCourse(round.course)}
                          list="saved-courses" placeholder="골프장 이름 입력" />
                   <datalist id="saved-courses">
-                    {[...COURSE_DB, ...savedCourses].map((c) => <option key={c.name} value={c.name} />)}
+                    {courseNameList.map((n) => <option key={n} value={n} />)}
                   </datalist>
                   <Field label="날짜" type="date" value={round.date}
                          onChange={(v) => setMeta("date", v)} />
