@@ -10,8 +10,9 @@ import { mergeDb, SEED_DB } from "../../lib/coursesDb";
 const DEFAULT9 = () => Array(9).fill("4");
 
 export default function Admin() {
-  const [db, setDb] = useState({ nines: [], combos: [] });
+  const [db, setDb] = useState({});
   const [syncing, setSyncing] = useState(false);
+  const [dirty, setDirty] = useState(false);
   useEffect(() => {
     (async () => {
       let remote;
@@ -19,22 +20,28 @@ export default function Admin() {
       setDb(mergeDb(SEED_DB, remote));
     })();
   }, []);
-  // 저장: 로컬 캐시 + KV 서버(POST). 인증 필요 시 토큰 프롬프트.
-  const persist = async (next) => {
+  // 편집은 로컬(state+캐시)에만 반영. KV 반영은 "전체 저장" 버튼으로.
+  const persist = (next) => {
     setDb(next);
     saveDb(next);
+    setDirty(true);
+  };
+  // KV(서버)에 전체 저장 — 인증 필요 시 토큰 프롬프트
+  const saveAll = async () => {
     setSyncing(true);
     try {
       let token = localStorage.getItem("sc-admin-token") || "";
       try {
-        await pushDb(next, token);
+        await pushDb(db, token);
       } catch (e) {
         if (String(e.message).includes("인증")) {
           token = prompt("관리자 토큰(ADMIN_TOKEN)을 입력하세요") || "";
           localStorage.setItem("sc-admin-token", token);
-          await pushDb(next, token);
+          await pushDb(db, token);
         } else throw e;
       }
+      setDirty(false);
+      alert("KV에 전체 저장 완료 — 모든 사용자에게 반영됩니다");
     } catch (e) {
       alert("서버 저장 실패(로컬엔 저장됨): " + e.message);
     } finally {
@@ -147,9 +154,14 @@ export default function Admin() {
         <div>
           <div className="font-head text-[12px] font-semibold uppercase tracking-[0.28em] text-txt">Admin</div>
           <h1 className="font-head text-3xl font-bold text-txt">코스 DB 관리</h1>
-          <p className="mt-1 text-sm text-txt-soft">나인 {nineCount}개 · 조합 {comboCount}개 · 골프장 {clubsWithNines.length}곳 (Cloudflare KV 서버 연동){syncing ? " · 저장중…" : ""}</p>
+          <p className="mt-1 text-sm text-txt-soft">나인 {nineCount}개 · 조합 {comboCount}개 · 골프장 {clubsWithNines.length}곳 {syncing ? "· 저장 중…" : dirty ? "· ⚠ 저장 필요(전체 저장 누르기)" : "· KV 저장됨"}</p>
         </div>
         <div className="flex items-center gap-3 text-sm">
+          <button onClick={saveAll} disabled={syncing}
+            className={"rounded-lg px-4 py-2 text-sm font-bold transition disabled:opacity-60 " +
+              (dirty ? "bg-accent text-[#06210f] hover:bg-accent-2" : "border border-line text-txt-soft hover:text-txt")}>
+            {syncing ? "저장 중…" : dirty ? "● KV에 전체 저장" : "KV에 전체 저장"}
+          </button>
           <button onClick={downloadSeed} className="rounded-lg border border-accent px-3 py-1.5 text-xs font-semibold text-txt hover:bg-accent hover:text-[#06210f]">seedDb.js 다운로드</button>
           <button onClick={importBackup} className="text-txt-soft hover:text-txt">백업 가져오기</button>
           <button onClick={() => navigator.clipboard?.writeText(backup)} className="text-txt-soft hover:text-txt">백업 복사</button>
