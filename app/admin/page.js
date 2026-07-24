@@ -12,6 +12,7 @@ export default function Admin() {
   const [entries, setEntries] = useState([]); // 사용자가 입력한 par DB (localStorage)
   const [region, setRegion] = useState("");
   const [q, setQ] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all"); // all | done | todo
   const [club, setClub] = useState("");
   const [outC, setOutC] = useState("");
   const [inC, setInC] = useState("");
@@ -35,10 +36,19 @@ export default function Admin() {
   );
   const filtered = useMemo(() => {
     const kw = q.trim();
-    return COURSE_DIRECTORY.filter(
-      (c) => (!region || c.region === region) && (!kw || c.name.includes(kw))
-    ).slice(0, 300);
-  }, [region, q]);
+    return COURSE_DIRECTORY.filter((c) => {
+      if (region && c.region !== region) return false;
+      if (kw && !c.name.includes(kw)) return false;
+      const done = enteredClubs.has(c.name);
+      if (statusFilter === "done" && !done) return false;
+      if (statusFilter === "todo" && done) return false;
+      return true;
+    }).slice(0, 400);
+  }, [region, q, statusFilter, enteredClubs]);
+  const doneCount = useMemo(
+    () => COURSE_DIRECTORY.filter((c) => enteredClubs.has(c.name)).length,
+    [enteredClubs]
+  );
 
   // 디렉토리에서 골프장 클릭 → 클럽명 채우고, 그 클럽의 저장 항목이 있으면 로드
   const loadClub = (clubName) => {
@@ -101,17 +111,34 @@ export default function Admin() {
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="골프장 검색"
               className="flex-1 rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
           </div>
-          <div className="max-h-[60vh] overflow-auto rounded-lg border border-line">
-            {filtered.map((c) => (
-              <button key={c.name + c.address} type="button" onClick={() => loadClub(c.name)}
-                className="flex w-full items-center justify-between border-b border-line px-3 py-2 text-left last:border-0 hover:bg-panel-2">
-                <span className="text-sm text-txt">
-                  {enteredClubs.has(c.name) && <span className="mr-1 text-accent">✓</span>}
-                  {c.name}
-                </span>
-                <span className="text-[11px] text-txt-faint">{c.region} · {c.holes}H</span>
+          <div className="mb-2 flex items-center gap-1.5">
+            {[["all", "전체"], ["done", "입력완료"], ["todo", "미입력"]].map(([k, lbl]) => (
+              <button key={k} type="button" onClick={() => setStatusFilter(k)}
+                className={"rounded-md px-2.5 py-1 text-xs font-semibold transition " +
+                  (statusFilter === k ? "bg-accent text-[#06210f]" : "border border-line text-txt-soft hover:text-txt")}>
+                {lbl}
               </button>
             ))}
+            <span className="ml-auto text-[11px] text-txt-faint">
+              완료 <b className="text-accent">{doneCount}</b> / 전체 {COURSE_DIRECTORY.length}
+            </span>
+          </div>
+          <div className="max-h-[56vh] overflow-auto rounded-lg border border-line">
+            {filtered.map((c) => {
+              const done = enteredClubs.has(c.name);
+              return (
+                <button key={c.name + c.address} type="button" onClick={() => loadClub(c.name)}
+                  className={"flex w-full items-center justify-between border-b border-line px-3 py-2 text-left last:border-0 transition " +
+                    (done ? "bg-accent/10 hover:bg-accent/15" : "hover:bg-panel-2")}>
+                  <span className={"flex items-center gap-1.5 text-sm " + (done ? "text-txt" : "text-txt-soft")}>
+                    <span className={"flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] " +
+                      (done ? "bg-accent text-[#06210f]" : "border border-line-2 text-transparent")}>✓</span>
+                    {c.name}
+                  </span>
+                  <span className="text-[11px] text-txt-faint">{c.region} · {c.holes}H</span>
+                </button>
+              );
+            })}
             {filtered.length === 0 && <p className="p-3 text-sm text-txt-faint">결과 없음</p>}
           </div>
         </section>
