@@ -111,17 +111,28 @@ export default function Home() {
     }));
   };
 
-  // 코스 DB (localStorage seed + 편집분 병합)
+  // 코스 DB (KV 원격)
   const [builtinCourses, setBuiltinCourses] = useState([]);
   // 즐겨찾기 (코스 이름 배열, localStorage)
   const [favorites, setFavorites] = useState([]);
+  // KV 동기화 상태
+  const [dbStatus, setDbStatus] = useState({ state: "loading", count: 0, at: null });
+  const loadCourseDb = async () => {
+    setDbStatus((s) => ({ ...s, state: "loading" }));
+    try {
+      const remote = await fetchDb();
+      saveDb(remote);
+      const courses = coursesFromDb(effectiveDb(remote));
+      setBuiltinCourses(courses);
+      setDbStatus({ state: "online", count: courses.length, at: new Date() });
+    } catch {
+      const courses = coursesFromDb(effectiveDb(loadDb()));
+      setBuiltinCourses(courses);
+      setDbStatus({ state: "offline", count: courses.length, at: new Date() });
+    }
+  };
   useEffect(() => {
-    (async () => {
-      let remote;
-      try { remote = await fetchDb(); saveDb(remote); }   // KV → 로컬 캐시
-      catch { remote = loadDb(); }                          // 오프라인/로컬: 캐시 사용
-      setBuiltinCourses(coursesFromDb(effectiveDb(remote)));
-    })();
+    loadCourseDb();
     try { setFavorites(JSON.parse(localStorage.getItem("sc-favorites") || "[]")); }
     catch { setFavorites([]); }
   }, []);
@@ -193,11 +204,23 @@ export default function Home() {
             골프 영상 편집용 스코어카드 오버레이를 메이저 대회 방송 스타일로 제작 · 투명 PNG로 내보내기
           </p>
         </div>
-        <button onClick={toggleTheme} aria-label="테마 전환"
-          className="flex shrink-0 items-center gap-2 rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
-          <span className="text-base">{theme === "dark" ? "☀️" : "🌙"}</span>
-          {theme === "dark" ? "라이트" : "다크"}
-        </button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button onClick={loadCourseDb} title="코스 DB 새로고침"
+            className="flex items-center gap-2 rounded-lg border border-line bg-panel px-3 py-2 text-xs font-semibold transition hover:text-txt">
+            <span className={"inline-block h-2 w-2 rounded-full " +
+              (dbStatus.state === "online" ? "bg-accent" : dbStatus.state === "offline" ? "bg-[#ffb648]" : "bg-txt-faint animate-pulse")} />
+            <span className="text-txt-soft">
+              {dbStatus.state === "online" ? `코스 DB 동기화됨 · ${dbStatus.count}` :
+               dbStatus.state === "offline" ? "오프라인(캐시)" : "동기화 중…"}
+            </span>
+            <span className="text-txt-faint">↻</span>
+          </button>
+          <button onClick={toggleTheme} aria-label="테마 전환"
+            className="flex shrink-0 items-center gap-2 rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
+            <span className="text-base">{theme === "dark" ? "☀️" : "🌙"}</span>
+            {theme === "dark" ? "라이트" : "다크"}
+          </button>
+        </div>
       </div>
 
       {/* 레이아웃 선택 */}
@@ -219,33 +242,35 @@ export default function Home() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[680px_1fr]">
         {/* ── 입력 패널 ── */}
         <section className="space-y-6">
-          {/* 기본 정보 */}
-          <div className="rounded-xl border border-line bg-panel p-4">
-            <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-              기본 정보
+          {/* 기본 정보 + 코스 (좌우 배치) */}
+          <div className={!isHole ? "grid items-start gap-4 md:grid-cols-2" : ""}>
+            <div className="rounded-xl border border-line bg-panel p-4">
+              <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
+                기본 정보
+              </div>
+              <div className="grid grid-cols-1 gap-3">
+                <Field label="선수명" full value={round.player}
+                       onChange={(v) => setMeta("player", v)} placeholder="선수 이름 입력" />
+                {!isHole && (
+                  <>
+                    <ClubAutocomplete value={round.course} onChange={(v) => setMeta("course", v)}
+                      onPick={(v) => setMeta("course", v)} options={clubNameList} />
+                    <Field label="날짜" type="date" value={round.date}
+                           onChange={(v) => setMeta("date", v)} />
+                  </>
+                )}
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="선수명" full value={round.player}
-                     onChange={(v) => setMeta("player", v)} placeholder="선수 이름 입력" />
-              {!isHole && (
-                <>
-                  <ClubAutocomplete value={round.course} onChange={(v) => setMeta("course", v)}
-                    onPick={(v) => setMeta("course", v)} options={clubNameList} />
-                  <Field label="날짜" type="date" value={round.date}
-                         onChange={(v) => setMeta("date", v)} />
-                </>
-              )}
-            </div>
+            {!isHole && (
+              <CoursePresets builtin={builtinCourses} favorites={favorites}
+                             selectedClub={round.course}
+                             onToggleFav={toggleFav} onLoad={applyPreset} />
+            )}
           </div>
 
           {/* 라운드 스코어카드: 홀별 입력 */}
           {!isHole && (
             <>
-              {/* OpenGolfAPI 코스 검색(미국)은 한국 배포용으로 임시 숨김 — 나중에 복구
-              <CourseSearch onPick={applyCourse} /> */}
-              <CoursePresets builtin={builtinCourses} favorites={favorites}
-                             selectedClub={round.course}
-                             onToggleFav={toggleFav} onLoad={applyPreset} />
               <div className="rounded-xl border border-line bg-panel p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">

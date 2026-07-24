@@ -14,6 +14,7 @@ export default function Admin() {
   const [db, setDb] = useState({});
   const [syncing, setSyncing] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [conn, setConn] = useState({ state: "loading", at: null });
 
   const [region, setRegion] = useState("");
   const [q, setQ] = useState("");
@@ -24,13 +25,19 @@ export default function Admin() {
   const [cOut, setCOut] = useState("");
   const [cIn, setCIn] = useState("");
 
-  useEffect(() => {
-    (async () => {
-      let remote;
-      try { remote = await fetchDb(); } catch { remote = loadDb(); }
-      setDb(effectiveDb(remote));
-    })();
-  }, []);
+  const reload = async () => {
+    setConn((c) => ({ ...c, state: "loading" }));
+    try {
+      const remote = await fetchDb();
+      setDb(effectiveDb(remote)); saveDb(remote);
+      setDirty(false);
+      setConn({ state: "online", at: new Date() });
+    } catch {
+      setDb(effectiveDb(loadDb()));
+      setConn({ state: "offline", at: new Date() });
+    }
+  };
+  useEffect(() => { reload(); }, []);
   const persist = (next) => { setDb(next); saveDb(next); setDirty(true); };
   const saveAll = async () => {
     setSyncing(true);
@@ -45,12 +52,18 @@ export default function Admin() {
         } else throw e;
       }
       setDirty(false);
+      setConn({ state: "online", at: new Date() });
       alert("KV에 저장 완료 — 모든 사용자에게 반영됩니다");
     } catch (e) { alert("서버 저장 실패(로컬엔 저장됨): " + e.message); }
     finally { setSyncing(false); }
   };
 
   const regions = useMemo(() => [...new Set(COURSE_DIRECTORY.map((c) => c.region))].sort(), []);
+  const holesByClub = useMemo(() => {
+    const m = {};
+    for (const c of COURSE_DIRECTORY) m[c.name] = c.holes;
+    return m;
+  }, []);
   const clubsWithNines = useMemo(() => Object.keys(db), [db]);
   const enteredClubs = useMemo(() => new Set(Object.keys(db)), [db]);
   const nineCount = useMemo(() => Object.values(db).reduce((s, c) => s + Object.keys(c.nines || {}).length, 0), [db]);
@@ -69,6 +82,10 @@ export default function Admin() {
   const cur = db[selClub] || { nines: {}, combos: [] };
   const nines = Object.entries(cur.nines || {}).map(([nine, pars]) => ({ nine, pars }));
   const combos = cur.combos || [];
+  // 홀 수(디렉토리) 대비 나인 개수 검증: 27홀=3나인, 36홀=4나인, 18홀=2나인
+  const expectedHoles = holesByClub[selClub] || null;
+  const expectedNines = expectedHoles ? Math.round(expectedHoles / 9) : null;
+  const nineMismatch = expectedNines != null && nines.length !== expectedNines;
 
   // ---- 나인 편집 (인라인) ----
   const writeClub = (nextNines, nextCombos) =>
@@ -191,9 +208,16 @@ export default function Admin() {
           <div>
             <div className="font-head text-[11px] font-semibold uppercase tracking-[0.3em] text-accent">Admin · Course DB</div>
             <h1 className="font-head text-2xl font-bold leading-tight text-txt">코스 DB 관리</h1>
-            <div className="mt-0.5 font-mono text-[11px] text-txt-faint">
-              골프장 {clubsWithNines.length} · 나인 {nineCount} · 조합 {comboCount}
-              <span className={dirty ? "text-[#ffb648]" : "text-accent"}> · {syncing ? "저장 중…" : dirty ? "⚠ 미저장" : "동기화됨"}</span>
+            <div className="mt-0.5 flex items-center gap-2 font-mono text-[11px] text-txt-faint">
+              <button onClick={reload} title="KV 새로고침" className="flex items-center gap-1.5 rounded border border-line px-2 py-0.5 hover:text-txt">
+                <span className={"inline-block h-2 w-2 rounded-full " +
+                  (conn.state === "online" ? "bg-accent" : conn.state === "offline" ? "bg-[#ffb648]" : "bg-txt-faint animate-pulse")} />
+                {conn.state === "online" ? "KV 연결됨" : conn.state === "offline" ? "오프라인" : "연결 중…"}
+                {conn.at && conn.state !== "loading" ? " · " + conn.at.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}
+                <span className="text-txt-faint">↻</span>
+              </button>
+              <span>골프장 {clubsWithNines.length} · 나인 {nineCount} · 조합 {comboCount}</span>
+              <span className={dirty ? "text-[#ffb648]" : "text-accent"}>· {syncing ? "저장 중…" : dirty ? "⚠ 미저장" : "동기화됨"}</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -242,11 +266,16 @@ export default function Admin() {
             {filtered.map((c) => {
               const done = enteredClubs.has(c.name);
               const active = selClub === c.name;
+              const exp = c.holes ? Math.round(c.holes / 9) : null;
+              const incomplete = done && exp != null && Object.keys((db[c.name] && db[c.name].nines) || {}).length !== exp;
               return (
                 <button key={c.name + c.address} type="button" onClick={() => setClub(c.name)}
                   className={"flex w-full items-center justify-between border-b border-line px-3 py-2 text-left last:border-0 transition " + (active ? "bg-accent/15" : done ? "bg-accent/[0.06] hover:bg-accent/10" : "hover:bg-panel-2")}>
                   <span className={"flex items-center gap-1.5 text-sm " + (done ? "text-txt" : "text-txt-soft")}>
-                    <span className={"flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] " + (done ? "bg-accent text-[#06210f]" : "border border-line-2 text-transparent")}>✓</span>
+                    <span className={"flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] " +
+                      (incomplete ? "bg-[#ffb648] text-[#2a1a00]" : done ? "bg-accent text-[#06210f]" : "border border-line-2 text-transparent")}>
+                      {incomplete ? "!" : "✓"}
+                    </span>
                     {c.name}
                   </span>
                   <span className="font-mono text-[10px] text-txt-faint">{c.region}·{c.holes}H</span>
@@ -274,9 +303,22 @@ export default function Admin() {
               {/* 나인 (인라인 편집 테이블) */}
               <div className="rounded-2xl border border-line bg-panel p-0">
                 <div className="flex items-center justify-between border-b border-line px-4 py-3">
-                  <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">나인 (9홀 코스)</span>
+                  <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
+                    나인 (9홀 코스)
+                    {expectedNines != null && (
+                      <span className={"ml-2 font-mono text-[11px] normal-case tracking-normal " + (nineMismatch ? "text-[#ffb648]" : "text-accent")}>
+                        {nines.length}/{expectedNines}
+                      </span>
+                    )}
+                  </span>
                   <span className="font-mono text-[11px] text-txt-faint">이름·PAR 직접 수정 · Enter 확정</span>
                 </div>
+                {nineMismatch && (
+                  <div className="border-b border-line bg-[#ffb648]/10 px-4 py-2 text-[12px] text-[#ffb648]">
+                    ⚠ 이 골프장은 <b>{expectedHoles}홀</b>이라 나인이 <b>{expectedNines}개</b> 필요한데 현재 <b>{nines.length}개</b>입니다.
+                    {nines.length < expectedNines ? ` ${expectedNines - nines.length}개 더 추가하세요.` : " 초과된 코스를 확인하세요."}
+                  </div>
+                )}
                 {/* 홀 헤더 */}
                 <div className="flex items-center gap-2 px-3 py-1.5 text-txt-faint">
                   <span className="w-28 shrink-0 font-mono text-[10px] uppercase tracking-widest">코스</span>
