@@ -321,10 +321,7 @@ export default function Admin() {
                       (st === "complete" ? "bg-accent text-[#06210f]" : st === "incomplete" ? "bg-[#ffb648] text-[#2a1a00]" : "border border-line-2 text-transparent")}>
                       {st === "incomplete" ? "!" : "✓"}
                     </span>
-                    <span className="truncate">
-                      {key}
-                      {alias && <span className="ml-1 text-[10px] text-txt-faint">({c.name})</span>}
-                    </span>
+                    <span className="truncate">{key}</span>
                   </span>
                   <span className="shrink-0 font-mono text-[10px] text-txt-faint">{c.region}·{c.holes}H</span>
                 </button>
@@ -342,7 +339,10 @@ export default function Admin() {
           ) : (
             <>
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="font-head text-xl font-bold text-txt">{selClub}</h2>
+                <div className="flex flex-col">
+                  <h2 className="font-head text-xl font-bold leading-tight text-txt">{selClub}</h2>
+                  {cur.orig && <span className="font-mono text-[11px] text-txt-faint">문체부 원본: {cur.orig}</span>}
+                </div>
                 {(() => { const st = clubStatus(selClub); return (
                   <span className={"flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold " +
                     (st === "complete" ? "bg-accent/20 text-accent" : "bg-[#ffb648]/20 text-[#ffb648]")}>
