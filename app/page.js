@@ -98,6 +98,20 @@ export default function Home() {
     });
   };
 
+  // 붙여넣은 PAR 시퀀스를 지정 범위(offset부터 count개)에 적용
+  const applyParsToRange = (pars, offset, count) => {
+    setRound((r) => ({
+      ...r,
+      holes: r.holes.map((h, i) => {
+        const k = i - offset;
+        if (k >= 0 && k < count && pars[k] != null && /^[345]$/.test(String(pars[k]))) {
+          return { ...h, par: String(pars[k]) };
+        }
+        return h;
+      }),
+    }));
+  };
+
   // 저장된 내 코스(18홀) 불러오기
   const applyPreset = (c) => {
     setRound((r) => ({
@@ -252,6 +266,7 @@ export default function Home() {
                     파대비 입력 — 버디 <b className="text-txt-soft">-1</b> · 파 <b className="text-txt-soft">0</b> · 보기 <b className="text-txt-soft">1</b> 또는 <b className="text-txt-soft">+1</b>
                   </p>
                 )}
+                <ParPasteImport onApply={applyParsToRange} />
                 <HoleGroup label="FRONT 9" holes={Front} offset={0} setHole={setHole}
                            scoreRefs={scoreRefs} onScoreKey={handleScoreKey} scoreMode={scoreMode} />
                 <HoleGroup label="BACK 9" holes={Back} offset={9} setHole={setHole}
@@ -532,6 +547,39 @@ function CourseSearch({ onPick }) {
         </ul>
       )}
     </div>
+  );
+}
+
+// 붙여넣은 텍스트에서 PAR 시퀀스 추출 (네이버 "PAR4" 형식 또는 "4 5 3..." 순수 시퀀스)
+function parsePars(text) {
+  const byPar = [...String(text).matchAll(/par\s*([345])/gi)].map((x) => x[1]);
+  if (byPar.length) return byPar;
+  return String(text).trim().split(/[\s,]+/).filter((t) => /^[345]$/.test(t));
+}
+
+// 텍스트 붙여넣기 → PAR 자동 채우기 (크롤링 아님: 사용자가 붙여넣은 텍스트를 파싱)
+function ParPasteImport({ onApply }) {
+  const [text, setText] = useState("");
+  const pars = parsePars(text);
+  const btn = "rounded border border-line-2 px-2.5 py-1 text-xs font-semibold text-txt-soft transition hover:border-accent hover:text-txt disabled:opacity-40";
+  return (
+    <details className="mb-3 rounded-lg border border-line bg-panel-2 p-3">
+      <summary className="cursor-pointer text-[13px] font-semibold text-txt-soft">
+        텍스트로 PAR 붙여넣기 <span className="font-normal text-txt-faint">(네이버 코스·홀 등 참고해서)</span>
+      </summary>
+      <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3}
+        placeholder="네이버 홀 정보를 복사해 붙여넣거나  4 5 3 4 4 3 5 4 4  처럼 PAR만 입력"
+        className="mt-2 w-full rounded-md border border-line-2 bg-panel px-3 py-2 text-sm text-txt outline-none transition focus:border-accent" />
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <span className="mr-1 text-[12px] text-txt-faint">인식된 PAR: <b className="text-txt">{pars.length}</b>개</span>
+        <button type="button" className={btn} disabled={!pars.length} onClick={() => onApply(pars, 0, 9)}>1–9 적용</button>
+        <button type="button" className={btn} disabled={!pars.length} onClick={() => onApply(pars, 9, 9)}>10–18 적용</button>
+        <button type="button" className={btn} disabled={!pars.length} onClick={() => onApply(pars, 0, 18)}>전체 적용</button>
+      </div>
+      <p className="mt-1.5 text-[11px] text-txt-faint">
+        네이버는 홀을 하나씩 보여줘서, 9홀치 PAR가 담기게 복사하거나 숫자만 나열해 붙여넣으세요.
+      </p>
+    </details>
   );
 }
 
