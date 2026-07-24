@@ -606,24 +606,55 @@ function Field({ label, value, onChange, onBlur, placeholder, full, type = "text
 }
 
 function HoleGroup({ label, holes, offset, setHole, scoreRefs, onScoreKey, scoreMode }) {
+  const isBack = offset === 9;
+  const parSum = holes.reduce((a, h) => a + (Number(h.par) || 0), 0);
+  const scoreSum = holes.reduce((a, h) => a + (Number(h.score) || 0), 0);
+  const hasScore = holes.some((h) => h.score !== "" && h.score != null);
   return (
-    <div className="mb-4 last:mb-0">
-      <div className="mb-1.5 font-head text-[11px] uppercase tracking-widest text-accent">{label}</div>
-      <div className="grid grid-cols-9 gap-2">
+    <div className="mb-3 overflow-hidden rounded-lg border border-line last:mb-0">
+      <div className="grid" style={{ gridTemplateColumns: "46px repeat(9, minmax(0,1fr)) 50px" }}>
+        {/* 홀 번호 헤더 (칸 위) */}
+        <div className="flex items-center justify-center bg-panel py-1.5 font-head text-[10px] font-bold uppercase tracking-wider text-accent">
+          {isBack ? "IN" : "OUT"}
+        </div>
+        {holes.map((h, i) => (
+          <div key={"n" + i} className="flex items-center justify-center border-l border-line bg-panel py-1.5 font-mono text-[11px] font-semibold text-txt-soft">
+            {offset + i + 1}
+          </div>
+        ))}
+        <div className="flex items-center justify-center border-l border-line bg-panel py-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-txt-faint">
+          합
+        </div>
+
+        {/* PAR 행 */}
+        <div className="flex items-center justify-center border-t border-line bg-panel-2 py-1 font-mono text-[10px] uppercase tracking-wider text-txt-faint">
+          PAR
+        </div>
+        {holes.map((h, i) => (
+          <div key={"p" + i} className="flex items-center justify-center border-l border-t border-line bg-panel-2 py-1 font-mono text-sm font-semibold text-txt-soft">
+            {h.par || "–"}
+          </div>
+        ))}
+        <div className="flex items-center justify-center border-l border-t border-line bg-panel-2 py-1 font-mono text-sm font-bold text-txt">
+          {parSum || "–"}
+        </div>
+
+        {/* 스코어 입력 행 */}
+        <div className="flex items-center justify-center border-t border-line py-1 font-mono text-[10px] uppercase tracking-wider text-txt-faint">
+          {scoreMode === "relative" ? "파대비" : "타수"}
+        </div>
         {holes.map((h, i) => {
           const idx = offset + i;
           return (
-            <div key={idx} className="rounded-lg border border-line bg-panel-2 pb-2 text-center">
-              <div className="mb-1.5 rounded-t-md bg-panel py-1 font-mono text-[10px] text-txt-faint">
-                {idx + 1}<span className="text-txt-soft"> · P{h.par || "–"}</span>
-              </div>
-              <div className="px-1">
-                <ScoreInput idx={idx} par={h.par} score={h.score} mode={scoreMode}
-                  setHole={setHole} scoreRefs={scoreRefs} onScoreKey={onScoreKey} />
-              </div>
+            <div key={"s" + i} className="border-l border-t border-line">
+              <ScoreInput idx={idx} par={h.par} score={h.score} mode={scoreMode}
+                setHole={setHole} scoreRefs={scoreRefs} onScoreKey={onScoreKey} />
             </div>
           );
         })}
+        <div className="flex items-center justify-center border-l border-t border-line font-mono text-base font-bold text-txt">
+          {hasScore ? scoreSum : "–"}
+        </div>
       </div>
     </div>
   );
@@ -661,7 +692,7 @@ function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreKey }) {
       onKeyDown={(e) => onScoreKey && onScoreKey(e, idx)}
       onChange={(e) => handle(e.target.value)}
       placeholder="–"
-      className="w-full rounded-md bg-panel px-1 py-2 text-center font-mono text-xl font-bold text-txt outline-none placeholder:text-txt-faint focus:ring-2 focus:ring-accent"
+      className="w-full bg-transparent py-2.5 text-center font-mono text-lg font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent"
     />
   );
 }
