@@ -109,6 +109,18 @@ export default function Admin() {
   const enteredClubs = useMemo(() => new Set(Object.keys(db)), [db]);
   const nineCount = useMemo(() => Object.values(db).reduce((s, c) => s + Object.keys(c.nines || {}).length, 0), [db]);
   const comboCount = useMemo(() => Object.values(db).reduce((s, c) => s + (c.combos || []).length, 0), [db]);
+  // 완성도: 나인 개수(홀수 대비) + 제공 조합까지 있으면 complete
+  const clubStatus = (name) => {
+    const c = db[name];
+    if (!c) return "none";
+    const nineN = Object.keys(c.nines || {}).length;
+    const comboN = (c.combos || []).length;
+    if (nineN === 0 && comboN === 0) return "none";
+    const exp = holesByClub[name] ? Math.round(holesByClub[name] / 9) : null;
+    const okNines = exp == null ? nineN > 0 : nineN === exp;
+    return okNines && comboN > 0 ? "complete" : "incomplete";
+  };
+
   const filtered = useMemo(() => {
     const kw = q.trim();
     return COURSE_DIRECTORY.filter((c) => (!region || c.region === region) && (!kw || c.name.includes(kw))).slice(0, 400);
@@ -262,27 +274,34 @@ export default function Admin() {
             {dbOnly.length > 0 && (
               <div className="border-b border-line-2 bg-panel-2/60">
                 <div className="px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-accent">내 DB (커스텀·변경됨)</div>
-                {dbOnly.map((cl) => (
-                  <button key={"o-" + cl} type="button" onClick={() => setClub(cl)}
-                    className={"flex w-full items-center justify-between border-b border-line px-3 py-2 text-left transition " + (selClub === cl ? "bg-accent/15" : "hover:bg-panel-2")}>
-                    <span className="flex items-center gap-1.5 text-sm text-txt"><span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[10px] text-[#06210f]">✓</span>{cl}</span>
-                    <span className="font-mono text-[10px] text-txt-faint">custom</span>
-                  </button>
-                ))}
+                {dbOnly.map((cl) => {
+                  const st = clubStatus(cl);
+                  return (
+                    <button key={"o-" + cl} type="button" onClick={() => setClub(cl)}
+                      className={"flex w-full items-center justify-between border-b border-line px-3 py-2 text-left transition " + (selClub === cl ? "bg-accent/15" : "hover:bg-panel-2")}>
+                      <span className="flex items-center gap-1.5 text-sm text-txt">
+                        <span className={"flex h-4 w-4 items-center justify-center rounded-full text-[10px] " +
+                          (st === "incomplete" ? "bg-[#ffb648] text-[#2a1a00]" : "bg-accent text-[#06210f]")}>
+                          {st === "incomplete" ? "!" : "✓"}
+                        </span>{cl}
+                      </span>
+                      <span className="font-mono text-[10px] text-txt-faint">custom</span>
+                    </button>
+                  );
+                })}
               </div>
             )}
             {filtered.map((c) => {
-              const done = enteredClubs.has(c.name);
+              const st = clubStatus(c.name);
+              const done = st !== "none";
               const active = selClub === c.name;
-              const exp = c.holes ? Math.round(c.holes / 9) : null;
-              const incomplete = done && exp != null && Object.keys((db[c.name] && db[c.name].nines) || {}).length !== exp;
               return (
                 <button key={c.name + c.address} type="button" onClick={() => setClub(c.name)}
                   className={"flex w-full items-center justify-between border-b border-line px-3 py-2 text-left last:border-0 transition " + (active ? "bg-accent/15" : done ? "bg-accent/[0.06] hover:bg-accent/10" : "hover:bg-panel-2")}>
                   <span className={"flex items-center gap-1.5 text-sm " + (done ? "text-txt" : "text-txt-soft")}>
                     <span className={"flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] " +
-                      (incomplete ? "bg-[#ffb648] text-[#2a1a00]" : done ? "bg-accent text-[#06210f]" : "border border-line-2 text-transparent")}>
-                      {incomplete ? "!" : "✓"}
+                      (st === "complete" ? "bg-accent text-[#06210f]" : st === "incomplete" ? "bg-[#ffb648] text-[#2a1a00]" : "border border-line-2 text-transparent")}>
+                      {st === "incomplete" ? "!" : "✓"}
                     </span>
                     {c.name}
                   </span>
@@ -303,6 +322,12 @@ export default function Admin() {
             <>
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="font-head text-xl font-bold text-txt">{selClub}</h2>
+                {(() => { const st = clubStatus(selClub); return (
+                  <span className={"flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold " +
+                    (st === "complete" ? "bg-accent/20 text-accent" : "bg-[#ffb648]/20 text-[#ffb648]")}>
+                    {st === "complete" ? "✓ 완비" : "! 미완성"}
+                  </span>
+                ); })()}
                 <button onClick={renameClub} className={ghost}>이름 수정</button>
                 <button onClick={deleteClub} className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-txt-soft hover:border-[#ff6b57] hover:text-[#ff6b57]">골프장 삭제</button>
                 <button onClick={() => setClub("")} className="ml-auto text-[12px] text-txt-faint hover:text-txt">다른 골프장</button>
