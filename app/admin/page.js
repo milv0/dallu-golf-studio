@@ -82,9 +82,19 @@ export default function Admin() {
     catch { alert("JSON 파싱 실패"); }
   };
   const downloadSeed = () => {
+    const q = (s) => JSON.stringify(s ?? "");
+    const nineLines = (db.nines || [])
+      .map((n) => `    { "club": ${q(n.club)}, "nine": ${q(n.nine)}, "pars": [${(n.pars || []).join(", ")}] }`)
+      .join(",\n");
+    const comboLines = (db.combos || [])
+      .map((c) => `    { "club": ${q(c.club)}, "out": ${q(c.out)}, "in": ${q(c.in)} }`)
+      .join(",\n");
     const text =
       "// 코스 시드 DB (데이터 전용) — /admin 에서 생성. 이 파일(lib/seedDb.js)을 교체 후 배포하면 모든 사용자에게 공유됩니다.\n" +
-      "export const SEED_DB = " + JSON.stringify(db, null, 2) + ";\n";
+      "export const SEED_DB = {\n" +
+      `  "nines": [\n${nineLines}${nineLines ? "\n" : ""}  ],\n` +
+      `  "combos": [\n${comboLines}${comboLines ? "\n" : ""}  ]\n` +
+      "};\n";
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([text], { type: "text/javascript" }));
     a.download = "seedDb.js";
