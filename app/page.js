@@ -6,6 +6,7 @@ import HoleByHoleStrip, { SIZE as SIZE_YT } from "../components/presets/HoleByHo
 import ReelsScorecard, { SIZE as SIZE_REELS } from "../components/presets/ReelsScorecard";
 import HoleCard, { SIZE as SIZE_HOLE } from "../components/presets/HoleCard";
 import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../lib/score";
+import { COURSE_DB } from "../lib/coursesDb";
 
 const FORMATS = {
   youtube: { label: "YouTube", ratio: "가로 16:9", Comp: HoleByHoleStrip, size: SIZE_YT },
@@ -139,9 +140,10 @@ export default function Home() {
     alert(`"${name}" 코스의 PAR를 저장했습니다.`);
   };
   const removeCourse = (name) => persistCourses(savedCourses.filter((c) => c.name !== name));
-  // 골프장 이름이 저장된 코스와 일치하면 par 자동 로드
+  // 골프장 이름이 (DB 또는 저장한 코스)와 일치하면 par 자동 로드
   const maybeLoadCourse = (name) => {
-    const c = savedCourses.find((x) => x.name === (name || "").trim());
+    const key = (name || "").trim();
+    const c = savedCourses.find((x) => x.name === key) || COURSE_DB.find((x) => x.name === key);
     if (c) applyPreset(c);
   };
 
@@ -230,7 +232,7 @@ export default function Home() {
                          onBlur={() => maybeLoadCourse(round.course)}
                          list="saved-courses" placeholder="골프장 이름 입력" />
                   <datalist id="saved-courses">
-                    {savedCourses.map((c) => <option key={c.name} value={c.name} />)}
+                    {[...COURSE_DB, ...savedCourses].map((c) => <option key={c.name} value={c.name} />)}
                   </datalist>
                   <Field label="날짜" type="date" value={round.date}
                          onChange={(v) => setMeta("date", v)} />
@@ -244,7 +246,7 @@ export default function Home() {
             <>
               {/* OpenGolfAPI 코스 검색(미국)은 한국 배포용으로 임시 숨김 — 나중에 복구
               <CourseSearch onPick={applyCourse} /> */}
-              <CoursePresets courses={savedCourses} onSave={saveCurrentCourse}
+              <CoursePresets courses={savedCourses} builtin={COURSE_DB} onSave={saveCurrentCourse}
                              onRemove={removeCourse} onLoad={applyPreset} />
               <div className="rounded-xl border border-line bg-panel p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
@@ -441,13 +443,13 @@ function ParCell({ par, onSet }) {
   );
 }
 
-// 내 코스 저장/불러오기 — 골프장 이름 기준 18홀 par 기억
-function CoursePresets({ courses, onSave, onRemove, onLoad }) {
+// 내 코스 저장/불러오기 — 기본 DB(coursesDb) + 사용자가 저장한 코스
+function CoursePresets({ courses, builtin = [], onSave, onRemove, onLoad }) {
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
       <div className="mb-1 flex items-center justify-between">
         <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-          내 코스 <span className="normal-case tracking-normal text-txt-faint">(저장·불러오기)</span>
+          코스 <span className="normal-case tracking-normal text-txt-faint">(선택·저장)</span>
         </span>
         <button type="button" onClick={onSave}
           className="rounded-lg border border-accent px-3 py-1 text-xs font-semibold text-accent transition hover:bg-accent hover:text-[#06210f]">
@@ -455,9 +457,24 @@ function CoursePresets({ courses, onSave, onRemove, onLoad }) {
         </button>
       </div>
       <p className="mb-2 text-[12px] text-txt-faint">
-        골프장 이름 + 18홀 PAR를 저장 → 같은 이름을 입력하면 PAR 자동 로드, 칩 클릭으로도 불러오기.
-        (27·36홀은 조합별로 저장: 예 “제이드 레이크+마운틴”)
+        코스를 누르면 18홀 PAR가 채워집니다. 기본 DB는 코드에서 관리(lib/coursesDb.js), 내가 저장한 코스는 이 브라우저에 보관됩니다.
       </p>
+
+      {builtin.length > 0 && (
+        <div className="mb-2">
+          <div className="mb-1 text-[11px] uppercase tracking-widest text-accent">기본 DB</div>
+          <div className="flex flex-wrap gap-2">
+            {builtin.map((c) => (
+              <button key={c.name} type="button" onClick={() => onLoad(c)}
+                className="rounded-full border border-line-2 bg-panel-2 px-3 py-1 text-sm text-txt transition hover:border-accent hover:text-accent">
+                {c.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="mb-1 text-[11px] uppercase tracking-widest text-txt-faint">내가 저장한 코스</div>
       {courses.length === 0 ? (
         <p className="text-[12px] text-txt-faint">저장된 코스가 없습니다.</p>
       ) : (
