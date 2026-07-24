@@ -1,0 +1,23 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+*.log
+npm-debug.log*
+
+# Env / secrets
+.env
+.env.local
+a.txt
+
+# 개발용 샘플/테스트 이미지 (앱 코드 아님)
+main.jpeg
+sample.jpeg
+sample.jpg
+KakaoTalk_Photo_*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
