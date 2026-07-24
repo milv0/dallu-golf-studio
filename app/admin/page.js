@@ -12,8 +12,13 @@ export default function Admin() {
   const [entries, setEntries] = useState([]); // 사용자가 입력한 par DB (localStorage)
   const [region, setRegion] = useState("");
   const [q, setQ] = useState("");
-  const [name, setName] = useState("");
+  const [club, setClub] = useState("");
+  const [outC, setOutC] = useState("");
+  const [inC, setInC] = useState("");
   const [pars, setPars] = useState(DEFAULT());
+
+  // 표시 이름 자동 생성: 골프장 + 전반+후반 코스명
+  const displayName = (club.trim() + (outC.trim() || inC.trim() ? ` ${outC.trim()}+${inC.trim()}` : "")).trim();
 
   useEffect(() => {
     try { setEntries(JSON.parse(localStorage.getItem(LS) || "[]")); } catch { setEntries([]); }
@@ -24,8 +29,8 @@ export default function Admin() {
     () => [...new Set(COURSE_DIRECTORY.map((c) => c.region))].sort(),
     []
   );
-  const enteredNames = useMemo(
-    () => new Set([...entries.map((e) => e.name), ...COURSE_DB.map((c) => c.name)]),
+  const enteredClubs = useMemo(
+    () => new Set([...entries.map((e) => e.club || e.name), ...COURSE_DB.map((c) => c.club || c.name)]),
     [entries]
   );
   const filtered = useMemo(() => {
@@ -35,16 +40,24 @@ export default function Admin() {
     ).slice(0, 300);
   }, [region, q]);
 
-  const load = (nm) => {
-    setName(nm);
-    const found = entries.find((e) => e.name === nm) || COURSE_DB.find((c) => c.name === nm);
-    setPars(found ? [...found.pars] : DEFAULT());
+  // 디렉토리에서 골프장 클릭 → 클럽명 채우고, 그 클럽의 저장 항목이 있으면 로드
+  const loadClub = (clubName) => {
+    setClub(clubName);
+    const found = entries.find((e) => (e.club || e.name) === clubName)
+      || COURSE_DB.find((c) => (c.club || c.name) === clubName);
+    if (found) {
+      setOutC(found.out || "");
+      setInC(found.in || "");
+      setPars([...found.pars]);
+    } else {
+      setOutC(""); setInC(""); setPars(DEFAULT());
+    }
   };
   const save = () => {
-    const nm = name.trim();
-    if (!nm) { alert("코스 이름을 입력하세요"); return; }
-    persist([{ name: nm, pars: pars.map(Number) }, ...entries.filter((e) => e.name !== nm)]);
-    alert(`저장: ${nm}`);
+    if (!club.trim()) { alert("골프장(클럽) 이름을 입력하세요"); return; }
+    const entry = { name: displayName, club: club.trim(), out: outC.trim(), in: inC.trim(), pars: pars.map(Number) };
+    persist([entry, ...entries.filter((e) => e.name !== entry.name)]);
+    alert(`저장: ${entry.name}`);
   };
   const remove = (nm) => persist(entries.filter((e) => e.name !== nm));
 
@@ -56,10 +69,11 @@ export default function Admin() {
   // coursesDb.js 에 붙여넣을 JS 배열 텍스트 생성 (기존 COURSE_DB + 입력분 병합, 이름 중복 시 입력분 우선)
   const exportText = useMemo(() => {
     const map = new Map();
-    for (const c of COURSE_DB) map.set(c.name, c.pars);
-    for (const e of entries) map.set(e.name, e.pars);
-    const lines = [...map.entries()].map(
-      ([nm, ps]) => `  { name: ${JSON.stringify(nm)}, pars: [${ps.join(", ")}] },`
+    const put = (c) => map.set(c.name, c);
+    for (const c of COURSE_DB) put(c);
+    for (const e of entries) put(e);
+    const lines = [...map.values()].map(
+      (c) => `  { name: ${JSON.stringify(c.name)}, club: ${JSON.stringify(c.club || c.name)}, out: ${JSON.stringify(c.out || "")}, in: ${JSON.stringify(c.in || "")}, pars: [${c.pars.join(", ")}] },`
     );
     return "export const COURSE_DB = [\n" + lines.join("\n") + "\n];\n";
   }, [entries]);
@@ -89,10 +103,10 @@ export default function Admin() {
           </div>
           <div className="max-h-[60vh] overflow-auto rounded-lg border border-line">
             {filtered.map((c) => (
-              <button key={c.name + c.address} type="button" onClick={() => load(c.name)}
+              <button key={c.name + c.address} type="button" onClick={() => loadClub(c.name)}
                 className="flex w-full items-center justify-between border-b border-line px-3 py-2 text-left last:border-0 hover:bg-panel-2">
                 <span className="text-sm text-txt">
-                  {enteredNames.has(c.name) && <span className="mr-1 text-accent">✓</span>}
+                  {enteredClubs.has(c.name) && <span className="mr-1 text-accent">✓</span>}
                   {c.name}
                 </span>
                 <span className="text-[11px] text-txt-faint">{c.region} · {c.holes}H</span>
@@ -105,11 +119,24 @@ export default function Admin() {
         {/* PAR 편집 */}
         <section className="space-y-4">
           <div className="rounded-xl border border-line bg-panel p-4">
-            <label className="mb-3 block">
-              <span className="mb-1 block text-[11px] uppercase tracking-widest text-txt-faint">코스 이름 (27·36홀은 조합명: 예 "YJC ACE+CHALLENGE")</span>
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="코스 이름"
-                className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
-            </label>
+            <div className="mb-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <label className="block sm:col-span-1">
+                <span className="mb-1 block text-[11px] uppercase tracking-widest text-txt-faint">골프장(클럽)</span>
+                <input value={club} onChange={(e) => setClub(e.target.value)} placeholder="예: YJC골프클럽"
+                  className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[11px] uppercase tracking-widest text-txt-faint">전반(OUT) 코스명</span>
+                <input value={outC} onChange={(e) => setOutC(e.target.value)} placeholder="예: ACE"
+                  className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
+              </label>
+              <label className="block">
+                <span className="mb-1 block text-[11px] uppercase tracking-widest text-txt-faint">후반(IN) 코스명</span>
+                <input value={inC} onChange={(e) => setInC(e.target.value)} placeholder="예: CHALLENGE"
+                  className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
+              </label>
+            </div>
+            <p className="mb-3 text-[12px] text-txt-faint">저장 이름: <b className="text-txt">{displayName || "(골프장 입력)"}</b></p>
 
             {[0, 9].map((off) => (
               <div key={off} className="mb-3">
@@ -139,8 +166,8 @@ export default function Admin() {
                 {total !== 72 && <span className="ml-1 text-[#ffb648]">⚠</span>}
               </span>
               <div className="flex gap-2">
-                {name && entries.some((e) => e.name === name.trim()) && (
-                  <button type="button" onClick={() => { remove(name.trim()); }}
+                {displayName && entries.some((e) => e.name === displayName) && (
+                  <button type="button" onClick={() => { remove(displayName); }}
                     className="rounded-lg border border-line px-3 py-2 text-sm text-txt-soft hover:text-txt">삭제</button>
                 )}
                 <button type="button" onClick={save}
