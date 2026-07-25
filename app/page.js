@@ -494,10 +494,10 @@ function PlacementPreview({ format, size, children }) {
   const isYt = format === "youtube";
   // 실제 영상 위에 얹을 때 보통 가장자리 여백을 둠 → 권장 배치 폭(%)
   const overlayPct = isYt ? 82 : 66;
-  // 유튜브: 좌측 상단 / 릴스: 하단 중앙
+  // 둘 다 상단 배치 — 유튜브: 좌측 상단 / 릴스: 상단 중앙
   const pos = isYt
     ? { left: "3%", top: "5%" }
-    : { left: "50%", bottom: "14%", transform: "translateX(-50%)" };
+    : { left: "50%", top: "6%", transform: "translateX(-50%)" };
   return (
     <div className={"mx-auto w-full " + (isYt ? "max-w-[560px]" : "max-w-[300px]")}>
       <div className="relative overflow-hidden rounded-2xl border border-line shadow-xl"
