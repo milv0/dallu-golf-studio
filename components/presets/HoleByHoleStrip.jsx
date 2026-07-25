@@ -63,15 +63,15 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
       style={{ display: "block" }}
     >
       {/* 카드 배경 */}
-      <rect x="0" y="0" width={w} height={h} fill={c.bg} opacity="0.92" />
+      <rect x="0" y="0" width={w} height={h} rx="20" fill={c.bg} opacity="0.92" />
       {/* 좌/우 구분선 */}
       <line x1={LP} y1="28" x2={LP} y2={h - 28} stroke={c.line} strokeWidth="2" />
 
       {/* ── 좌측 선수 패널 (섹션 구분) ── */}
-      {/* 1) 골프장 · 날짜 */}
+      {/* 1) 범위 라벨 */}
       <text x={LP / 2} y="30" textAnchor="middle" fill={c.accent} fontFamily={HEAD} fontSize="14" fontWeight="600"
             letterSpacing="1">
-        {(round.course || "").toUpperCase()}{rangeLabel ? `  ·  ${rangeLabel}` : ""}
+        {rangeLabel}
       </text>
 
       {/* 2) 선수명 */}

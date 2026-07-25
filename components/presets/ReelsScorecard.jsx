@@ -89,7 +89,7 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
       {/* 헤더 */}
       <text x={pad} y="70" fill={c.accent} fontFamily={HEAD} fontSize="30" fontWeight="600"
             letterSpacing="4">
-        {(round.course || "").toUpperCase()} {round.date ? `· ${round.date.replaceAll("-", ".")}` : ""}{rangeLabel ? ` · ${rangeLabel}` : ""}
+        {[round.date ? round.date.replaceAll("-", ".") : "", rangeLabel].filter(Boolean).join(" · ")}
       </text>
       <text x={pad} y="150" fill={c.text} fontFamily={HEAD} fontSize="78" fontWeight="700"
             letterSpacing="1">
