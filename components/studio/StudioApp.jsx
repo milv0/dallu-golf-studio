@@ -756,7 +756,7 @@ function StudioWorkspace({ mode }) {
               <span className="font-mono text-[13px]">투명 PNG · {size.w * exportScale}×{size.h * exportScale}px</span>
             </div>
             <div className="mt-2 text-[12px] text-txt-faint">
-              색상: 버디=빨강 / 이글=골드 / 보기=파랑 · 방송 관례 기준
+              색상: 버디=빨강 / 이글=골드 / 보기=파랑
             </div>
             {!canExport && exportBlockReason && (
               <div className="mt-2 rounded-md border border-[#ffb648]/40 bg-[#ffb648]/10 px-2.5 py-1.5 text-[12px] font-semibold text-[#ffb648]">
