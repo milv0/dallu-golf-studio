@@ -647,7 +647,7 @@ function PlacementPreview({ format, size, reelsV2, children }) {
   // 유튜브: 좌측 상단 / 릴스: 상단(인스타 상단 버튼과 안 겹치게 더 아래로)
   const pos = isYt
     ? { left: "3%", top: "5%" }
-    : { left: "50%", top: "16%", transform: "translateX(-50%)" };
+    : { left: "50%", top: "14%", transform: "translateX(-50%)" };
   return (
     <div className={"mx-auto w-full " + (isYt ? "max-w-[560px]" : "max-w-[300px]")}>
       <div className="relative overflow-hidden rounded-2xl border border-line shadow-xl"
