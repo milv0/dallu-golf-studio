@@ -348,8 +348,8 @@ export default function Home() {
             </>
           )}
 
-          {/* 홀 카드: 현재 홀 정보 (홀카드 레이아웃 또는 릴스 v2) */}
-          {(isHole || reelsV2) && (
+          {/* 홀 카드: 현재 홀 정보 (홀 카드 레이아웃 전용) */}
+          {isHole && (
             <div className="rounded-xl border border-line bg-panel p-4">
               <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
                 현재 홀 정보
@@ -414,6 +414,61 @@ export default function Home() {
               <p className="mt-2 text-[12px] text-txt-faint">
                 홀 선택 → PAR·토탈·타수 자동 반영 · 현재 샷 버튼으로 지금 몇 번째 치는지 표시 · 거리/클럽은 직접 입력
               </p>
+            </div>
+          )}
+
+          {/* 릴스 V2 전용 패널 — 입력한 라운드 데이터에서 홀 선택 → 개별 홀 작업 */}
+          {reelsV2 && (
+            <div className="rounded-xl border border-line bg-panel p-4">
+              <div className="mb-1 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
+                홀 배너 설정 · <span className="text-accent">V2</span>
+              </div>
+              <p className="mb-3 text-[12px] text-txt-faint">라운드에 입력한 홀 스코어를 불러와 개별 홀 배너를 만듭니다.</p>
+
+              {/* 1) 홀 선택 */}
+              <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">① 홀 선택 (스코어 자동 반영)</span>
+              <div className="grid grid-cols-9 gap-1">
+                {round.holes.map((h, i) => {
+                  const n = i + 1;
+                  const active = String(n) === String(holeCard.hole);
+                  const has = h.score !== "" && h.score != null;
+                  return (
+                    <button key={i} type="button" onClick={() => loadHoleFromRound(n)}
+                      title={`${n}번 홀 · Par ${h.par}${has ? ` · ${h.score}타` : ""}`}
+                      className={"rounded-md py-1.5 text-center font-mono text-[13px] font-bold transition " +
+                        (active ? "bg-accent text-[#06210f]"
+                          : has ? "border border-accent/40 bg-panel-2 text-accent hover:border-accent"
+                            : "border border-line bg-panel-2 text-txt-faint hover:text-txt")}>
+                      {n}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="mt-1 text-[11px] text-txt-faint">라임 = 선택된 홀 · 초록 테두리 = 스코어 입력된 홀</div>
+
+              {/* 2) 현재 샷 */}
+              <div className="mt-4">
+                <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">② 현재 샷 (몇 번째 치는지)</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {Array.from({ length: Math.min(Math.max((Number(holeCard.par) || 4) + 2, 6), 9) }, (_, i) => i + 1).map((n) => (
+                    <button key={n} type="button" onClick={() => setHC("currentShot", String(n))}
+                      className={"h-9 w-9 rounded-md font-mono text-sm font-bold transition " +
+                        (String(n) === String(holeCard.currentShot)
+                          ? "bg-accent text-[#06210f]"
+                          : "border border-line bg-panel-2 text-txt-soft hover:text-txt")}>
+                      {n}
+                    </button>
+                  ))}
+                  <button type="button" onClick={() => setHC("currentShot", "")}
+                    className="h-9 rounded-md border border-line bg-panel-2 px-3 text-xs font-semibold text-txt-faint hover:text-txt">없음</button>
+                </div>
+              </div>
+
+              {/* 3) 거리 */}
+              <div className="mt-4 grid grid-cols-2 gap-3">
+                <Field label="거리" value={holeCard.distance} onChange={(v) => setHC("distance", v)} placeholder="212 / 350M" />
+                <Field label="토탈 (E, -2…)" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="E" />
+              </div>
             </div>
           )}
         </section>
