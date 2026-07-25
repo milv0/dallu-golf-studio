@@ -518,7 +518,7 @@ function PlacementPreview({ format, size, children }) {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-black/40" />
         )}
         {/* 오버레이 (여백 둔 예시 배치) */}
-        <div className="absolute left-1/2 -translate-x-1/2"
+        <div className="preview-svg absolute left-1/2 -translate-x-1/2"
              style={{ bottom: bottomPct + "%", width: overlayPct + "%" }}>
           {children}
         </div>
