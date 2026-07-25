@@ -444,6 +444,24 @@ export default function Home() {
               색상: 버디=빨강 / 이글=골드 / 보기=파랑 · 방송 관례 기준
             </div>
           </div>
+
+          {/* 실제 화면 배치 미리보기 */}
+          {!isHole && (
+            <div className="mt-6">
+              <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
+                실제 배치 미리보기
+                <span className="ml-2 normal-case tracking-normal text-txt-faint">
+                  {format === "youtube" ? "유튜브 16:9 화면 기준" : "릴스 9:16 화면 기준"}
+                </span>
+              </div>
+              <PlacementPreview format={format} size={size}>
+                {(() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={holeRange} />; })()}
+              </PlacementPreview>
+              <p className="mt-2 text-[12px] text-txt-faint">
+                실제 영상 위에 얹었을 때의 상대 크기·위치 예시입니다. (오버레이 폭 ≈ 화면의 {Math.round(size.w / (format === "youtube" ? 1920 : 1080) * 100)}%)
+              </p>
+            </div>
+          )}
         </section>
       </div>
     </main>
@@ -452,6 +470,44 @@ export default function Home() {
 
 // 스코어카드 이미지 업로드 + 미리보기 + 추출
 // par 빠른 지정: 3/4/5 인라인 세그먼트 — 회색 명도로 구분 (초록X)
+// 실제 화면 배치 미리보기: 유튜브(16:9)/릴스(9:16) 목업 위에 오버레이를 실제 상대 크기로 배치
+function PlacementPreview({ format, size, children }) {
+  const isYt = format === "youtube";
+  const videoW = isYt ? 1920 : 1080;             // 기준 영상 해상도
+  const overlayPct = (size.w / videoW) * 100;    // 화면 대비 오버레이 폭 %
+  const bottomPct = isYt ? 6 : 20;               // 하단에서 띄우는 위치
+  return (
+    <div className={"mx-auto w-full " + (isYt ? "max-w-[560px]" : "max-w-[300px]")}>
+      <div className="relative overflow-hidden rounded-2xl border border-line shadow-xl"
+           style={{ aspectRatio: isYt ? "16 / 9" : "9 / 16",
+                    background: "linear-gradient(150deg,#1b2733 0%,#0e151d 45%,#161f2b 100%)" }}>
+        {/* 영상 자리 표시 */}
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 text-txt-faint">
+          <span className="text-2xl opacity-40">▶</span>
+          <span className="font-mono text-[10px] tracking-widest opacity-50">{isYt ? "1920 × 1080" : "1080 × 1920"}</span>
+        </div>
+        {/* 릴스 UI 힌트(우측 액션 · 하단 캡션바) */}
+        {!isYt && (
+          <>
+            <div className="pointer-events-none absolute bottom-24 right-2 flex flex-col items-center gap-3 opacity-40">
+              {["♥", "💬", "↗", "⋯"].map((s, i) => <span key={i} className="text-lg">{s}</span>)}
+            </div>
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/50 to-transparent" />
+          </>
+        )}
+        {isYt && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-black/40" />
+        )}
+        {/* 오버레이 (실제 상대 크기) */}
+        <div className="absolute left-1/2 -translate-x-1/2"
+             style={{ bottom: bottomPct + "%", width: overlayPct + "%" }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // 내 코스 저장/불러오기 — 기본 DB(coursesDb) + 사용자가 저장한 코스
 // 골프장명 자동완성 — 입력하면 연관 골프장만 드롭다운
 function ClubAutocomplete({ value, onChange, onPick, options }) {
