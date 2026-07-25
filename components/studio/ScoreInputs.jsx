@@ -25,6 +25,14 @@ const roundScoreClass =
 export const manualScoreClass =
   "border-l border-line bg-transparent px-2 py-2.5 text-center font-mono text-sm font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent";
 
+export function RelativeScoreHint({ className = "mb-2" }) {
+  return (
+    <p className={`${className} text-[11px] text-txt-faint`}>
+      파 기준 입력: 버디 <b className="text-txt-soft">-1</b> · 파 <b className="text-txt-soft">0</b> · 보기 <b className="text-txt-soft">1</b> · ←/→ 조정
+    </p>
+  );
+}
+
 export function RelativeScoreInput({
   idx,
   par,
@@ -72,6 +80,9 @@ export function RelativeScoreInput({
       const base = current == null ? 0 : current;
       applyRelative(base + (e.key === "ArrowLeft" ? -1 : 1));
       return;
+    }
+    if ((e.key === "Enter" || e.key === "Tab") && parseRelativeScore(buf) == null) {
+      applyRelative(0);
     }
     onScoreKey?.(e, idx);
   };

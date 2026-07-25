@@ -5,6 +5,7 @@ import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import { createRoundRecordRemote, deleteRoundRecordRemote, fetchRoundRecords } from "../../lib/api";
 import { deleteRoundRecord, migrateLegacyRoundHistory } from "../../lib/roundHistory";
 import { toParLabel } from "../../lib/score";
+import StudioNav from "./StudioNav";
 
 function formatDate(value) {
   if (!value) return "-";
@@ -117,25 +118,7 @@ export default function RoundRecords() {
         </div>
       </div>
 
-      <nav className="mb-6 flex flex-wrap items-center gap-2">
-        {[
-          ["/score-18", "18홀"],
-          ["/score-9", "9홀"],
-          ["/score-3", "3홀"],
-          ["/hole", "1홀"],
-          ["/records", "내 라운딩"],
-          ["/admin", "코스 DB"],
-          ["/login", currentUser ? "계정" : "로그인"],
-        ].map(([href, label]) => (
-          <a key={href} href={href}
-            className={"rounded-lg border px-3.5 py-2 text-sm font-semibold transition " +
-              (href === "/records"
-                ? "border-accent bg-accent text-[#06210f]"
-                : "border-line bg-panel text-txt-soft hover:text-txt")}>
-            {label}
-          </a>
-        ))}
-      </nav>
+      <StudioNav active="records" currentUser={currentUser} />
 
       {!currentUser ? (
         <div className="rounded-xl border border-line bg-panel p-8 text-center">
