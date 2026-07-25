@@ -74,8 +74,8 @@ export default function ReelsScorecard({ round, summary, range = "all" }) {
         <text x={scx} y="108" textAnchor="middle" fill={toParColor} fontFamily={HEAD} fontSize="72" fontWeight="700">
           {hasNine ? toParLabel(toPar) : "–"}
         </text>
-        <text x={scx} y="150" textAnchor="middle" fill="#9aa6b4" fontFamily={MONO} fontSize="26" fontWeight="600">
-          {hasNine ? `${nineScore}타` : ""}
+        <text x={scx} y="150" textAnchor="middle" fill="#9aa6b4" fontFamily={MONO} fontSize="24" fontWeight="600" letterSpacing="0.5">
+          {hasNine ? `${nineScore} STROKES` : ""}
         </text>
       </svg>
     );
