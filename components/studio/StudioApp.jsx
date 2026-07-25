@@ -325,6 +325,19 @@ function StudioWorkspace({ mode }) {
         setSavedRoundAt(record.savedAt);
       });
   };
+  const handleLoadRoundRecord = (nextRound) => {
+    if (!nextRound || !Array.isArray(nextRound.holes)) return;
+    const baseRound = emptyRound();
+    setRound({
+      ...baseRound,
+      ...nextRound,
+      holes: baseRound.holes.map((hole, i) => ({
+        ...hole,
+        ...(nextRound.holes[i] || {}),
+      })),
+    });
+    setSavedRoundAt("");
+  };
 
   const Front = round.holes.slice(0, 9);
   const Back = round.holes.slice(9, 18);
@@ -456,6 +469,9 @@ function StudioWorkspace({ mode }) {
               requiresScores={isReelsSizedScore}
               hasRoundData={hasRoundData}
               hasRoundScores={hasRoundScores}
+              currentUser={currentUser}
+              onLoadRound={handleLoadRoundRecord}
+              loginNext={isScore9 ? "/score-9" : isScore3 ? "/score-3" : "/hole"}
             />
           ) : null}
 
