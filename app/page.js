@@ -98,6 +98,14 @@ export default function Home() {
       toPar: toParLabel(cumulativeToPar(round.holes, idx)),
     }));
   };
+  // 릴스 v2로 전환 시, 마지막으로 스코어 입력된 홀을 자동 로드
+  useEffect(() => {
+    if (!reelsV2) return;
+    let last = -1;
+    round.holes.forEach((h, i) => { if (h.score !== "" && h.score != null) last = i; });
+    if (last >= 0) loadHoleFromRound(last + 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reelsV2]);
   const setHole = (i, key, val) =>
     setRound((r) => ({
       ...r,
