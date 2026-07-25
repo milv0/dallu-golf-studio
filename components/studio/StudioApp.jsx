@@ -533,7 +533,7 @@ function StudioWorkspace({ mode }) {
                 </div>
                 {scoreMode === "relative" && (
                   <p className="mb-2 text-[11px] text-txt-faint">
-                    파대비 입력 — <b className="text-txt-soft">-3</b>부터 <b className="text-txt-soft">5</b>까지 숫자만 입력
+                    파 기준 입력: 버디 <b className="text-txt-soft">-1</b> · 파 <b className="text-txt-soft">0</b> · 보기 <b className="text-txt-soft">1</b> · ←/→ 조정
                   </p>
                 )}
                 <HoleGroup label="FRONT 9" holes={Front} offset={0} setHole={setHole}
@@ -766,26 +766,26 @@ function StudioWorkspace({ mode }) {
           </div>
 
           {/* 실제 화면 배치 미리보기 */}
-          {!isHole && (
-            <div className="mt-6">
-              <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-                실제 배치 미리보기
-                <span className="ml-2 normal-case tracking-normal text-txt-faint">
-                  {format === "youtube" ? "16:9 영상 기준" : "9:16 영상 기준"}
-                </span>
-              </div>
-              <PlacementPreview format={format} size={size}>
-                {reelsV3
-                  ? <ReelsThreeHoleCard data={reelsCustom ? threeHole : linkedThreeData} theme={cardTheme} />
-                  : reelsCustom
-                  ? <ReelsScorecard round={manualNineRound} summary={manualNineSummary} range="front" theme={cardTheme} />
-                  : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={effRange} theme={cardTheme} />; })()}
-              </PlacementPreview>
-              <p className="mt-2 text-[12px] text-txt-faint">
-                실제 영상 위 배치 예시입니다 — 편집 프로그램에서 크기·위치는 자유롭게 조절하세요. (권장: 하단 배치)
-              </p>
+          <div className="mt-6">
+            <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
+              실제 배치 미리보기
+              <span className="ml-2 normal-case tracking-normal text-txt-faint">
+                {format === "youtube" ? "16:9 영상 기준" : "9:16 영상 기준"}
+              </span>
             </div>
-          )}
+            <PlacementPreview format={format} size={size} isHole={isHole}>
+              {isHole
+                ? <HoleCard data={holeData} theme={cardTheme} />
+                : reelsV3
+                ? <ReelsThreeHoleCard data={reelsCustom ? threeHole : linkedThreeData} theme={cardTheme} />
+                : reelsCustom
+                ? <ReelsScorecard round={manualNineRound} summary={manualNineSummary} range="front" theme={cardTheme} />
+                : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={effRange} theme={cardTheme} />; })()}
+            </PlacementPreview>
+            <p className="mt-2 text-[12px] text-txt-faint">
+              실제 영상 위 배치 예시입니다 — 편집 프로그램에서 크기·위치는 자유롭게 조절하세요. (권장: 하단 배치)
+            </p>
+          </div>
         </section>
       </div>
     </main>
@@ -795,12 +795,14 @@ function StudioWorkspace({ mode }) {
 // 스코어카드 이미지 업로드 + 미리보기 + 추출
 // par 빠른 지정: 3/4/5 인라인 세그먼트 — 회색 명도로 구분 (초록X)
 // 실제 화면 배치 미리보기: 유튜브(16:9)/릴스(9:16) 목업 위에 오버레이를 여백 둔 예시 크기로 배치
-function PlacementPreview({ format, size, children }) {
+function PlacementPreview({ format, size, isHole = false, children }) {
   const isYt = format === "youtube";
   // 유튜브 9홀 카드는 18홀보다 가로가 짧으므로 배치 폭도 비례
-  const overlayPct = isYt ? 82 * (size.w / 1761) : 88 * (size.w / 1080);
+  const overlayPct = isHole ? 44 : isYt ? 82 * (size.w / 1761) : 88 * (size.w / 1080);
   // 유튜브: 좌측 상단 / 릴스: 상단(인스타 상단 버튼과 안 겹치게 더 아래로)
-  const pos = isYt
+  const pos = isHole
+    ? { left: "4%", bottom: "13%" }
+    : isYt
     ? { left: "3%", top: "5%" }
     : { left: "50%", top: "14%", transform: "translateX(-50%)" };
   return (
