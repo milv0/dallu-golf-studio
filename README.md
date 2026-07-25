@@ -6,6 +6,7 @@
 ## 주요 기능
 - **라운드 입력**: 선수·골프장·날짜와 18홀 PAR/스코어를 `/round`에서 관리
 - **내 라운딩**: `/round`에서 저장한 라운딩 기록을 `/records`에서 불러오기/삭제
+- **로그인**: 현재는 이름+이메일 기반 임시 로그인으로 Cloudflare D1에 사용자별 기록 저장, 추후 이메일 매직링크 인증 연결 예정
 - **릴스 오버레이**: `/reels`에서 라운드 연동 또는 직접 입력으로 9홀/3홀 스코어 오버레이 제작
 - **홀 카드**: `/hole`에서 현재 홀, 거리, 타수, 클럽을 보여주는 라이브 오버레이 제작
 - **코스 DB**: 관리자 화면에서 골프장 나인/조합/PAR 데이터를 편집하고 KV에 저장
@@ -15,7 +16,7 @@
 ## 기술 스택
 - Next.js (App Router) + Tailwind CSS v4
 - 클라이언트 렌더 SVG → `html-to-image`로 투명 PNG 추출
-- 정적 사이트(`output: export`) + Cloudflare Pages Function/KV 코스 DB
+- 정적 사이트(`output: export`) + Cloudflare Pages Function/KV 코스 DB + D1 라운딩 기록 DB
 
 ## 구조
 - `app/`: 홈, 라운드, 릴스, 홀 카드, 내 라운딩, 관리자 라우트
@@ -31,10 +32,10 @@ npm install
 npm run dev      # http://localhost:3000
 ```
 
-Cloudflare Pages Function(`/api/db`)과 KV까지 함께 확인할 때:
+Cloudflare Pages Function(`/api/db`, `/api/auth/login`, `/api/round-records`)까지 함께 확인할 때:
 ```bash
 npm run build
-npx wrangler pages dev out --kv COURSE_KV
+npx wrangler pages dev out
 ```
 
 로컬 Pages Function 저장 테스트에는 `.dev.vars` 파일에 관리자 토큰을 둡니다.
@@ -57,6 +58,7 @@ npm run build    # out/ 에 정적 사이트 생성
 - 출력 디렉토리: `out`
 - 프레임워크 프리셋: Next.js (Static HTML Export)
 - KV 바인딩: `COURSE_KV`
+- D1 바인딩: `APP_DB`
 - 관리자 저장용 secret 필수:
 ```bash
 npx wrangler pages secret put ADMIN_TOKEN --project-name=dallu-golf-studio

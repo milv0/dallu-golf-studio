@@ -9,8 +9,9 @@ import ReelsThreeHoleCard, { SIZE as SIZE_REELS_THREE } from "../presets/ReelsTh
 import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../../lib/score";
 import { coursesFromDb, effectiveDb } from "../../lib/coursesDb";
 import { loadDb, saveDb } from "../../lib/nineStore";
-import { fetchDb } from "../../lib/api";
+import { createRoundRecordRemote, fetchDb } from "../../lib/api";
 import { COURSE_DIRECTORY } from "../../lib/courseDirectory";
+import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import { saveRoundRecord } from "../../lib/roundHistory";
 import HomeHub from "./HomeHub";
 
@@ -89,6 +90,7 @@ function StudioWorkspace({ mode }) {
   const [theme, setTheme] = useState("light");
   const [scoreMode, setScoreMode] = useState("relative"); // 'strokes' | 'relative' (기본: 파대비)
   const [savedRoundAt, setSavedRoundAt] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
   const captureRef = useRef(null);
   const scoreRefs = useRef([]);
 
@@ -107,7 +109,14 @@ function StudioWorkspace({ mode }) {
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
+  useEffect(() => {
+    setCurrentUser(loadCurrentUser());
+  }, []);
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
+  const logout = () => {
+    clearCurrentUser();
+    setCurrentUser(null);
+  };
 
   const summary = useMemo(() => summarize(round.holes), [round]);
   const hasRoundMeta = Boolean((round.player || "").trim() || (round.course || "").trim() || (round.date || "").trim());
@@ -128,7 +137,7 @@ function StudioWorkspace({ mode }) {
       : mode === "hole" && !hasRoundData && !hasHoleCardData
       ? "현재 홀 정보를 먼저 입력하세요."
       : "";
-  const canSaveRound = isRoundEditor && hasRoundScores;
+  const canSaveRound = isRoundEditor && hasRoundScores && Boolean(currentUser);
   const manualNineRound = useMemo(() => ({
     player: "",
     country: "",
@@ -307,8 +316,12 @@ function StudioWorkspace({ mode }) {
 
   const handleSaveRoundRecord = () => {
     if (!canSaveRound) return;
-    const record = saveRoundRecord(round);
-    setSavedRoundAt(record.savedAt);
+    createRoundRecordRemote(currentUser, round)
+      .then((record) => setSavedRoundAt(record.savedAt))
+      .catch(() => {
+        const record = saveRoundRecord(round, currentUser);
+        setSavedRoundAt(record.savedAt);
+      });
   };
 
   const Front = round.holes.slice(0, 9);
@@ -331,6 +344,19 @@ function StudioWorkspace({ mode }) {
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {currentUser ? (
+            <div className="hidden rounded-lg border border-line bg-panel px-3 py-2 text-xs font-semibold text-txt-soft md:block">
+              <span className="text-txt">{currentUser.name || currentUser.email}</span>
+              <button type="button" onClick={logout} className="ml-2 text-txt-faint transition hover:text-txt">
+                로그아웃
+              </button>
+            </div>
+          ) : (
+            <a href={`/login?next=${encodeURIComponent(mode === "round" ? "/round" : mode === "reels" ? "/reels" : "/hole")}`}
+              className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
+              로그인
+            </a>
+          )}
           <button onClick={loadCourseDb} title="코스 DB 새로고침"
             className="flex items-center gap-2 rounded-lg border border-line bg-panel px-3 py-2 text-xs font-semibold transition hover:text-txt">
             <span className={"inline-block h-2 w-2 rounded-full " +
@@ -356,6 +382,7 @@ function StudioWorkspace({ mode }) {
           ["/hole", "홀 카드"],
           ["/records", "내 라운딩"],
           ["/admin", "코스 DB"],
+          ["/login", currentUser ? "계정" : "로그인"],
         ].map(([href, label]) => (
           <a key={href} href={href}
             className={"rounded-lg border px-3.5 py-2 text-sm font-semibold transition " +
@@ -498,17 +525,28 @@ function StudioWorkspace({ mode }) {
                 </div>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
                   <div className="text-[12px] text-txt-faint">
-                    {savedRoundAt ? `내 라운딩에 저장됨 · ${new Date(savedRoundAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}` : "스코어를 입력한 뒤 라운딩 기록으로 저장할 수 있습니다."}
+                    {!currentUser
+                      ? "로그인하면 이메일 기준으로 라운딩 기록이 분리됩니다."
+                      : savedRoundAt
+                      ? `내 라운딩에 저장됨 · ${new Date(savedRoundAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`
+                      : "스코어를 입력한 뒤 라운딩 기록으로 저장할 수 있습니다."}
                   </div>
                   <div className="flex items-center gap-2">
                     <a href="/records"
                       className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-semibold text-txt-soft transition hover:border-accent hover:text-txt">
                       내 라운딩
                     </a>
-                    <button type="button" onClick={handleSaveRoundRecord} disabled={!canSaveRound}
-                      className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] transition hover:bg-accent-2 disabled:opacity-50">
-                      기록 저장
-                    </button>
+                    {currentUser ? (
+                      <button type="button" onClick={handleSaveRoundRecord} disabled={!canSaveRound}
+                        className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] transition hover:bg-accent-2 disabled:opacity-50">
+                        기록 저장
+                      </button>
+                    ) : (
+                      <a href="/login?next=/round"
+                        className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] transition hover:bg-accent-2">
+                        로그인 후 저장
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>

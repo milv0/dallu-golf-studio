@@ -5,3 +5,8 @@ compatibility_date = "2024-11-01"
 [[kv_namespaces]]
 binding = "COURSE_KV"
 id = "f15dacc2003649349f8b8ad72d7fb7ac"
+
+[[d1_databases]]
+binding = "APP_DB"
+database_name = "dallu-golf-studio-db"
+database_id = "0c831e32-8c8d-406b-8fb0-5443082e8b67"

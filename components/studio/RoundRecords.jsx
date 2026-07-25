@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { deleteRoundRecord, loadRoundHistory } from "../../lib/roundHistory";
+import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
+import { createRoundRecordRemote, deleteRoundRecordRemote, fetchRoundRecords } from "../../lib/api";
+import { deleteRoundRecord, migrateLegacyRoundHistory } from "../../lib/roundHistory";
 import { toParLabel } from "../../lib/score";
 
 function formatDate(value) {
@@ -25,19 +27,45 @@ function formatSavedAt(value) {
 
 export default function RoundRecords() {
   const [records, setRecords] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [source, setSource] = useState("local");
 
   useEffect(() => {
-    setRecords(loadRoundHistory());
+    const user = loadCurrentUser();
+    setCurrentUser(user);
+    if (!user) return;
+
+    const local = migrateLegacyRoundHistory(user);
+    fetchRoundRecords(user)
+      .then(async (remote) => {
+        if (remote.length === 0 && local.length > 0) {
+          const uploaded = [];
+          for (const record of local) {
+            try { uploaded.push(await createRoundRecordRemote(user, record.round)); }
+            catch {}
+          }
+          if (uploaded.length > 0) {
+            setRecords(uploaded);
+            setSource("server");
+            return;
+          }
+        }
+        setRecords(remote.length > 0 ? remote : local);
+        setSource(remote.length > 0 ? "server" : "local");
+      })
+      .catch(() => {
+        setRecords(local);
+        setSource("local");
+      });
   }, []);
 
   const stats = useMemo(() => {
-    const played = records.reduce((sum, record) => sum + (record.summary?.thru || 0), 0);
     const completed = records.filter((record) => (record.summary?.thru || 0) >= 18).length;
     const best = records
       .filter((record) => (record.summary?.thru || 0) > 0)
       .map((record) => record.summary.toPar)
       .sort((a, b) => a - b)[0];
-    return { played, completed, best };
+    return { completed, best };
   }, [records]);
 
   const openRecord = (record) => {
@@ -47,7 +75,15 @@ export default function RoundRecords() {
 
   const removeRecord = (id) => {
     if (!window.confirm("이 라운딩 기록을 삭제할까요?")) return;
-    setRecords(deleteRoundRecord(id));
+    deleteRoundRecordRemote(currentUser, id)
+      .then(() => setRecords((prev) => prev.filter((record) => record.id !== id)))
+      .catch(() => setRecords(deleteRoundRecord(id, currentUser)));
+  };
+
+  const logout = () => {
+    clearCurrentUser();
+    setCurrentUser(null);
+    setRecords([]);
   };
 
   return (
@@ -61,11 +97,24 @@ export default function RoundRecords() {
             Dallu Golf <span className="text-accent">Studio</span>
           </a>
           <p className="mt-2 text-sm text-txt-soft">저장한 라운딩 기록을 다시 불러와 오버레이로 사용할 수 있습니다.</p>
+          {currentUser && (
+            <p className="mt-1 text-xs text-txt-faint">
+              저장 위치: {source === "server" ? "Cloudflare DB" : "이 브라우저"}
+            </p>
+          )}
         </div>
-        <a href="/round"
-          className="rounded-lg bg-accent px-4 py-2 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2">
-          라운드 입력
-        </a>
+        <div className="flex items-center gap-2">
+          {currentUser ? (
+            <div className="rounded-lg border border-line bg-panel px-3 py-2 text-xs font-semibold text-txt-soft">
+              <span className="text-txt">{currentUser.name || currentUser.email}</span>
+              <button type="button" onClick={logout} className="ml-2 text-txt-faint transition hover:text-txt">로그아웃</button>
+            </div>
+          ) : null}
+          <a href="/round"
+            className="rounded-lg bg-accent px-4 py-2 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2">
+            라운드 입력
+          </a>
+        </div>
       </div>
 
       <nav className="mb-6 flex flex-wrap items-center gap-2">
@@ -75,6 +124,7 @@ export default function RoundRecords() {
           ["/hole", "홀 카드"],
           ["/records", "내 라운딩"],
           ["/admin", "코스 DB"],
+          ["/login", currentUser ? "계정" : "로그인"],
         ].map(([href, label]) => (
           <a key={href} href={href}
             className={"rounded-lg border px-3.5 py-2 text-sm font-semibold transition " +
@@ -86,13 +136,24 @@ export default function RoundRecords() {
         ))}
       </nav>
 
-      <div className="mb-6 grid gap-3 md:grid-cols-3">
-        <Stat label="저장 라운드" value={records.length} />
-        <Stat label="완주 라운드" value={completedLabel(stats.completed)} />
-        <Stat label="베스트" value={stats.best == null ? "-" : toParLabel(stats.best)} />
-      </div>
+      {!currentUser ? (
+        <div className="rounded-xl border border-line bg-panel p-8 text-center">
+          <div className="font-head text-2xl font-bold text-txt">로그인이 필요합니다</div>
+          <p className="mt-2 text-sm text-txt-soft">이름과 이메일로 로그인하면 내 라운딩 기록을 이메일 기준으로 분리해서 저장합니다.</p>
+          <a href="/login?next=/records"
+            className="mt-5 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-bold text-[#06210f] transition hover:bg-accent-2">
+            로그인하기
+          </a>
+        </div>
+      ) : (
+        <>
+          <div className="mb-6 grid gap-3 md:grid-cols-3">
+            <Stat label="저장 라운드" value={records.length} />
+            <Stat label="완주 라운드" value={completedLabel(stats.completed)} />
+            <Stat label="베스트" value={stats.best == null ? "-" : toParLabel(stats.best)} />
+          </div>
 
-      {records.length === 0 ? (
+          {records.length === 0 ? (
         <div className="rounded-xl border border-line bg-panel p-8 text-center">
           <div className="font-head text-2xl font-bold text-txt">저장된 라운딩이 없습니다</div>
           <p className="mt-2 text-sm text-txt-soft">라운드 탭에서 선수, 코스, 날짜, 스코어를 입력한 뒤 기록으로 저장하세요.</p>
@@ -101,7 +162,7 @@ export default function RoundRecords() {
             라운드 입력하기
           </a>
         </div>
-      ) : (
+          ) : (
         <div className="grid gap-3">
           {records.map((record) => (
             <article key={record.id} className="rounded-xl border border-line bg-panel p-4">
@@ -136,6 +197,8 @@ export default function RoundRecords() {
             </article>
           ))}
         </div>
+      )}
+        </>
       )}
     </main>
   );

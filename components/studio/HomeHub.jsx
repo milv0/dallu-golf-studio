@@ -25,6 +25,12 @@ export default function HomeHub() {
       meta: "개인 기록",
     },
     {
+      href: "/login",
+      title: "로그인",
+      desc: "이름과 이메일로 내 라운딩 기록을 분리해서 저장",
+      meta: "계정",
+    },
+    {
       href: "/admin",
       title: "코스 DB 관리",
       desc: "골프장 나인, 조합, PAR 데이터를 편집하고 KV에 저장",
