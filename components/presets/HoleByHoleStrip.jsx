@@ -5,7 +5,7 @@ import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
 
 // 레이아웃 상수 (모듈 공유) — 칸 폭 고정, 9홀은 세로 동일 & 가로만 짧게
 const H = 232;
-const LP = 190;              // 좌측 선수 패널 폭 (더 컴팩트)
+const LP = 150;              // 좌측 선수 패널 폭 (course/player/TO PAR만)
 const LABEL_W = 64;          // 행 라벨 컬럼
 const TABLE_X = LP + LABEL_W;
 const CW = 74;               // 칸 폭 (스코어 영역 확대)
@@ -82,19 +82,13 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
       {/* 구분선 */}
       <line x1="24" y1="86" x2={LP - 16} y2="86" stroke="#262e3a" strokeWidth="1.5" />
 
-      {/* 3) 하단 스탯: TO PAR(좌) · THRU(우) */}
+      {/* 3) TO PAR */}
       <text x="24" y="116" fill="#9aa6b4" fontFamily={HEAD} fontSize="15" letterSpacing="1.5">
         TO PAR
       </text>
-      <text x="24" y="180" fill={toParColor} fontFamily={HEAD} fontSize="48" fontWeight="700">
+      <text x="24" y="182" fill={toParColor} fontFamily={HEAD} fontSize="54" fontWeight="700">
         {toParLabel(rs.thru === 0 ? null : toPar)}
       </text>
-
-      <line x1={LP - 74} y1="98" x2={LP - 74} y2={h - 18} stroke="#262e3a" strokeWidth="1.5" />
-      <text x={LP - 16} y="116" textAnchor="end" fill="#9aa6b4" fontFamily={HEAD} fontSize="15"
-            letterSpacing="1.5">THRU</text>
-      <text x={LP - 16} y="176" textAnchor="end" fill="#eef2f6" fontFamily={HEAD} fontSize="34"
-            fontWeight="700">{rs.thru}</text>
 
       {/* ── 홀 테이블 ── */}
       {/* 행 라벨 (좌측 작은 태그) */}
