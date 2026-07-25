@@ -3,7 +3,7 @@
 // - 버디=빨강, 보기 계열=파랑, 이글/알바=골드 (방송 색상 코드)
 import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
 
-export const SIZE = { w: 1760, h: 300 };
+export const SIZE = { w: 1760, h: 360 };
 export function sizeFor() { return SIZE; }   // YouTube는 범위와 무관하게 동일(열 수만 변함)
 
 export default function HoleByHoleStrip({ round, summary, range = "all" }) {
@@ -12,8 +12,8 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
   const labelW = 84;          // 행 라벨(HOLE/PAR/SCORE) 전용 컬럼
   const tableX = LP + labelW;
   const tableW = w - tableX - 24;
-  const top = 60;
-  const rowH = 68;
+  const top = 72;
+  const rowH = 82;
   const yHole = top + 24;
   const yPar = yHole + rowH;
   const yScore = yPar + rowH;
@@ -111,15 +111,15 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
               <rect x={cx - cw / 2 + 3} y={top} width={cw - 6} height={rowH * 3 - 8} rx="8"
                     fill="#38e08b" opacity="0.10" />
               <text x={cx} y={yHole + 6} textAnchor="middle" fill="#38e08b"
-                    fontFamily={HEAD} fontSize="22" fontWeight="700" letterSpacing="1">
+                    fontFamily={HEAD} fontSize="26" fontWeight="700" letterSpacing="1">
                 {c.label}
               </text>
               <text x={cx} y={yPar + 6} textAnchor="middle" fill="#9aa6b4"
-                    fontFamily={MONO} fontSize="24">
+                    fontFamily={MONO} fontSize="30">
                 {parVal || ""}
               </text>
-              <text x={cx} y={yScore + 8} textAnchor="middle" fill="#eef2f6"
-                    fontFamily={MONO} fontSize="30" fontWeight="700">
+              <text x={cx} y={yScore + 10} textAnchor="middle" fill="#eef2f6"
+                    fontFamily={MONO} fontSize="40" fontWeight="700">
                 {showSum ? scVal : ""}
               </text>
             </g>
@@ -134,31 +134,31 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
         return (
           <g key={idx}>
             <text x={cx} y={yHole + 6} textAnchor="middle" fill="#c7d0db"
-                  fontFamily={HEAD} fontSize="24" fontWeight="600">
+                  fontFamily={HEAD} fontSize="30" fontWeight="600">
               {c.i + 1}
             </text>
             <text x={cx} y={yPar + 6} textAnchor="middle" fill="#5f6b7a"
-                  fontFamily={MONO} fontSize="22">
+                  fontFamily={MONO} fontSize="26">
               {hole?.par}
             </text>
             {/* 마커: 언더=원, 오버=사각형 */}
             {hasScore && under && (
-              <circle cx={cx} cy={yScore} r="20" fill="none" stroke={color} strokeWidth="2.5" />
+              <circle cx={cx} cy={yScore} r="26" fill="none" stroke={color} strokeWidth="3" />
             )}
             {hasScore && kind === "eagle" && (
-              <circle cx={cx} cy={yScore} r="25" fill="none" stroke={color} strokeWidth="2" />
+              <circle cx={cx} cy={yScore} r="32" fill="none" stroke={color} strokeWidth="2.5" />
             )}
             {hasScore && over && (
-              <rect x={cx - 20} y={yScore - 20} width="40" height="40" rx="3"
-                    fill="none" stroke={color} strokeWidth="2.5" />
+              <rect x={cx - 26} y={yScore - 26} width="52" height="52" rx="4"
+                    fill="none" stroke={color} strokeWidth="3" />
             )}
             {hasScore && (kind === "double" || kind === "triple") && (
-              <rect x={cx - 25} y={yScore - 25} width="50" height="50" rx="3"
-                    fill="none" stroke={color} strokeWidth="2" />
+              <rect x={cx - 32} y={yScore - 32} width="64" height="64" rx="4"
+                    fill="none" stroke={color} strokeWidth="2.5" />
             )}
-            <text x={cx} y={yScore + 9} textAnchor="middle"
+            <text x={cx} y={yScore + 12} textAnchor="middle"
                   fill={hasScore ? (kind === "par" ? "#eef2f6" : color) : "#38404d"}
-                  fontFamily={MONO} fontSize="30" fontWeight="700">
+                  fontFamily={MONO} fontSize="42" fontWeight="700">
               {hasScore ? hole.score : "·"}
             </text>
           </g>
