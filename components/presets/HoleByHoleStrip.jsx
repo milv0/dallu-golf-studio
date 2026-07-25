@@ -3,7 +3,7 @@
 // - 버디=빨강, 보기 계열=파랑, 이글/알바=골드 (방송 색상 코드)
 import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
 
-export const SIZE = { w: 1760, h: 360 };
+export const SIZE = { w: 1760, h: 300 };
 export function sizeFor() { return SIZE; }   // YouTube는 범위와 무관하게 동일(열 수만 변함)
 
 export default function HoleByHoleStrip({ round, summary, range = "all" }) {
@@ -12,8 +12,8 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
   const labelW = 84;          // 행 라벨(HOLE/PAR/SCORE) 전용 컬럼
   const tableX = LP + labelW;
   const tableW = w - tableX - 24;
-  const top = 72;
-  const rowH = 82;
+  const top = 58;
+  const rowH = 66;
   const yHole = top + 24;
   const yPar = yHole + rowH;
   const yScore = yPar + rowH;
