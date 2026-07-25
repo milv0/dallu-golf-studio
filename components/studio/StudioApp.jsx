@@ -33,7 +33,7 @@ const QUALITY = [
 ];
 
 const emptyHoleCard = () => ({
-  hole: "", par: "", distance: "", toPar: "", currentShot: "", club: "", unit: "m",
+  hole: "", par: "", distance: "", toPar: "", currentShot: "", club: "", unit: "m", showResultBanner: true,
 });
 
 const emptyThreeHoleCard = () => ({
@@ -636,6 +636,15 @@ function StudioWorkspace({ mode }) {
                 <Field label="현재 타수" value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="4" />
                 <Field label="선택 클럽" value={holeCard.club} onChange={(v) => setHC("club", v)} placeholder="PUTTER" />
               </div>
+              <label className="mt-3 flex items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm font-semibold text-txt-soft">
+                <input
+                  type="checkbox"
+                  checked={holeCard.showResultBanner !== false}
+                  onChange={(e) => setHC("showResultBanner", e.target.checked)}
+                  className="h-4 w-4 accent-[var(--accent)]"
+                />
+                FOR EAGLE/BIRDIE 배너 표시
+              </label>
               {/* 현재 타수 선택 */}
               <div className="mt-3">
                 <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
