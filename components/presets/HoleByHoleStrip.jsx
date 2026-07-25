@@ -70,7 +70,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
       {/* 1) 골프장 · 날짜 */}
       <text x="24" y="30" fill="#38e08b" fontFamily={HEAD} fontSize="14" fontWeight="600"
             letterSpacing="1">
-        {(round.course || "").toUpperCase()}{round.date ? `  ·  ${round.date.replaceAll("-", ".")}` : ""}{rangeLabel ? `  ·  ${rangeLabel}` : ""}
+        {(round.course || "").toUpperCase()}{rangeLabel ? `  ·  ${rangeLabel}` : ""}
       </text>
 
       {/* 2) 선수명 */}
