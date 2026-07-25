@@ -3,7 +3,7 @@
 import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
 
 export function sizeFor(range = "all") {
-  return range === "all" ? { w: 1080, h: 660 } : { w: 1080, h: 430 };
+  return range === "all" ? { w: 1080, h: 660 } : { w: 1080, h: 360 };
 }
 export const SIZE = sizeFor("all");
 
@@ -48,6 +48,39 @@ export default function ReelsScorecard({ round, summary, range = "all" }) {
   const toPar = rs.toPar;
   const toParColor =
     rs.thru === 0 ? "#eef2f6" : toPar < 0 ? "#38e08b" : toPar > 0 ? "#e5484d" : "#eef2f6";
+
+  // 9홀: 홀 스코어 중심 (선수/코스/날짜 없음)
+  if (!isAll) {
+    const label = range === "front" ? "HOLES 1–9" : "HOLES 10–18";
+    const nineLabel = range === "front" ? "OUT" : "IN";
+    const nineScore = range === "front" ? (summary.hasFront ? summary.outScore : "") : (summary.hasBack ? summary.inScore : "");
+    const rowY = 92;
+    const tY = 252;
+    const tW = (innerW - 16) / 2;
+    return (
+      <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
+           xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
+        <rect x="0" y="0" width={w} height={h} rx="24" fill="#0b0e12" opacity="0.92" />
+        <rect x="0" y="0" width="6" height={h} rx="3" fill="#38e08b" />
+        <text x={pad} y="56" fill="#38e08b" fontFamily={HEAD} fontSize="30" fontWeight="700" letterSpacing="3">
+          {label}
+        </text>
+        {round.holes.slice(rs.start, rs.end).map((hole, i) => (
+          <HoleCell key={i} cx={cx(i)} rowY={rowY} hole={hole} idx={rs.start + i} />
+        ))}
+        {[[nineLabel, nineScore, "#eef2f6"], ["TO PAR", rs.thru > 0 ? toParLabel(toPar) : "", toParColor]].map(([lab, val, col], i) => {
+          const x = pad + i * (tW + 16);
+          return (
+            <g key={lab}>
+              <rect x={x} y={tY} width={tW} height="80" rx="12" fill="#38e08b" opacity={i === 1 ? 0.14 : 0.07} />
+              <text x={x + tW / 2} y={tY + 30} textAnchor="middle" fill="#9aa6b4" fontFamily={HEAD} fontSize="22" letterSpacing="2">{lab}</text>
+              <text x={x + tW / 2} y={tY + 68} textAnchor="middle" fill={col} fontFamily={MONO} fontSize="40" fontWeight="700">{val}</text>
+            </g>
+          );
+        })}
+      </svg>
+    );
+  }
 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
