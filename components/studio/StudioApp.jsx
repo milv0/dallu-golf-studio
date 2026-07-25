@@ -95,11 +95,16 @@ function StudioWorkspace({ mode }) {
   const scoreRefs = useRef([]);
 
   const isHole = mode === "hole";
-  const format = mode === "reels" ? "reels" : "youtube";
-  const reelsV3 = !isHole && format === "reels" && reelsVer === "v3";
-  const reelsCustom = mode === "reels" && reelsSource === "custom";
-  const isRoundEditor = mode === "round";
-  const usesRoundSource = (mode === "reels" && !reelsCustom) || mode === "hole";
+  const isLegacyReels = mode === "reels";
+  const isScore18 = mode === "score18" || mode === "round";
+  const isScore3 = mode === "score3" || (isLegacyReels && reelsVer === "v3");
+  const isScore9 = mode === "score9" || (isLegacyReels && reelsVer !== "v3");
+  const isReelsSizedScore = isScore9 || isScore3;
+  const format = isReelsSizedScore ? "reels" : "youtube";
+  const reelsV3 = isScore3;
+  const reelsCustom = isReelsSizedScore && reelsSource === "custom";
+  const isRoundEditor = isScore18;
+  const usesRoundSource = (isReelsSizedScore && !reelsCustom) || mode === "hole";
   const holeData = { player: round.player, ...holeCard };
   // 릴스는 9홀(전반/후반)만 — 18홀 전체 없음
   const availableRanges = format === "reels" ? RANGES.filter(([k]) => k !== "all") : RANGES;
@@ -127,12 +132,12 @@ function StudioWorkspace({ mode }) {
   const linkedThreeReady = !reelsV3 || reelsCustom || linkedThreeCount === 3;
   const hasHoleCardData = Boolean(holeCard.hole || holeCard.par || holeCard.distance || holeCard.currentShot || holeCard.club || holeCard.toPar);
   const canExport =
-    !(mode === "reels" && !reelsCustom && !hasRoundScores) &&
+    !(isReelsSizedScore && !reelsCustom && !hasRoundScores) &&
     linkedThreeReady &&
     !(mode === "hole" && !hasRoundData && !hasHoleCardData);
   const exportBlockReason =
-    mode === "reels" && !reelsCustom && !hasRoundScores
-      ? "라운드 탭에서 홀 스코어를 먼저 입력하세요."
+    isReelsSizedScore && !reelsCustom && !hasRoundScores
+      ? "18홀 스코어에서 홀 스코어를 먼저 입력하세요."
       : !linkedThreeReady
       ? "3홀은 정확히 3개 홀을 선택해야 합니다."
       : mode === "hole" && !hasRoundData && !hasHoleCardData
@@ -306,7 +311,7 @@ function StudioWorkspace({ mode }) {
       const a = document.createElement("a");
       a.href = dataUrl;
       const name = ((reelsV3 ? "threehole" : round.player) || "scorecard").replace(/\s+/g, "_");
-      a.download = `${name}_${isHole ? "hole" : reelsV3 ? "reels_3hole" : format + (effRange === "all" ? "" : "_" + effRange)}.png`;
+      a.download = `${name}_${isHole ? "hole" : reelsV3 ? "score_3hole" : isScore9 ? `score_9hole_${effRange}` : "score_18hole"}.png`;
       a.click();
     } catch (e) {
       alert("내보내기 실패: " + e.message);
@@ -352,7 +357,7 @@ function StudioWorkspace({ mode }) {
               </button>
             </div>
           ) : (
-            <a href={`/login?next=${encodeURIComponent(mode === "round" ? "/round" : mode === "reels" ? "/reels" : "/hole")}`}
+            <a href={`/login?next=${encodeURIComponent(isScore18 ? "/score-18" : isScore9 ? "/score-9" : isScore3 ? "/score-3" : "/hole")}`}
               className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
               로그인
             </a>
@@ -377,17 +382,19 @@ function StudioWorkspace({ mode }) {
 
       <nav className="mb-6 flex flex-wrap items-center gap-2">
         {[
-          ["/round", "라운드"],
-          ["/reels", "릴스"],
-          ["/hole", "홀 카드"],
+          ["/score-18", "18홀"],
+          ["/score-9", "9홀"],
+          ["/score-3", "3홀"],
+          ["/hole", "1홀"],
           ["/records", "내 라운딩"],
           ["/admin", "코스 DB"],
           ["/login", currentUser ? "계정" : "로그인"],
         ].map(([href, label]) => (
           <a key={href} href={href}
             className={"rounded-lg border px-3.5 py-2 text-sm font-semibold transition " +
-              ((mode === "round" && href === "/round") ||
-               (mode === "reels" && href === "/reels") ||
+              ((isScore18 && href === "/score-18") ||
+               (isScore9 && href === "/score-9") ||
+               (isScore3 && href === "/score-3") ||
                (mode === "hole" && href === "/hole")
                 ? "border-accent bg-accent text-[#06210f]"
                 : "border-line bg-panel text-txt-soft hover:text-txt")}>
@@ -399,10 +406,10 @@ function StudioWorkspace({ mode }) {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(440px,500px)_1fr]">
         {/* ── 입력 패널 ── */}
         <section className="space-y-6">
-          {mode === "reels" && (
+          {isReelsSizedScore && (
             <div className="rounded-xl border border-line bg-panel p-4">
               <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-                릴스 설정
+                스코어카드 설정
               </div>
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-3">
@@ -417,18 +424,20 @@ function StudioWorkspace({ mode }) {
                     ))}
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="w-16 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">종류</div>
-                  <div className="flex overflow-hidden rounded-lg border border-line">
-                    {[["v1", "9홀"], ["v3", "3홀"]].map(([key, label]) => (
-                      <button key={key} onClick={() => setReelsVer(key)}
-                        className={"px-4 py-1.5 text-sm font-semibold transition " +
-                          (reelsVer === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                        {label}
-                      </button>
-                    ))}
+                {isLegacyReels && (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="w-16 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">종류</div>
+                    <div className="flex overflow-hidden rounded-lg border border-line">
+                      {[["v1", "9홀"], ["v3", "3홀"]].map(([key, label]) => (
+                        <button key={key} onClick={() => setReelsVer(key)}
+                          className={"px-4 py-1.5 text-sm font-semibold transition " +
+                            (reelsVer === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -469,7 +478,7 @@ function StudioWorkspace({ mode }) {
             <RoundSourcePanel
               round={round}
               summary={summary}
-              requiresScores={mode === "reels"}
+              requiresScores={isReelsSizedScore}
               hasRoundData={hasRoundData}
               hasRoundScores={hasRoundScores}
             />
@@ -542,7 +551,7 @@ function StudioWorkspace({ mode }) {
                         기록 저장
                       </button>
                     ) : (
-                      <a href="/login?next=/round"
+                      <a href="/login?next=/score-18"
                         className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] transition hover:bg-accent-2">
                         로그인 후 저장
                       </a>
@@ -729,7 +738,7 @@ function StudioWorkspace({ mode }) {
               <span className="font-mono text-[13px]">투명 PNG · {size.w * exportScale}×{size.h * exportScale}px</span>
             </div>
             <div className="mt-2 text-[13px] leading-relaxed text-txt-faint">
-              화질은 <b className="text-txt-soft">최종 영상 해상도</b>에 맞추세요 — 일반 릴스·1080p 영상은
+              화질은 <b className="text-txt-soft">최종 영상 해상도</b>에 맞추세요 — 1080p 영상은
               <b className="text-txt-soft"> FHD(1x)</b> 면 픽셀 1:1로 선명하고, <b className="text-txt-soft">4K</b>로 편집하면
               <b className="text-txt-soft"> 4K(2x)</b> 이상을 쓰세요. (iPhone 16 등 고해상도 폰도 영상 해상도만 맞으면 안 깨집니다)
             </div>
@@ -749,7 +758,7 @@ function StudioWorkspace({ mode }) {
               <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
                 실제 배치 미리보기
                 <span className="ml-2 normal-case tracking-normal text-txt-faint">
-                  {format === "youtube" ? "유튜브 16:9 화면 기준" : "릴스 9:16 화면 기준"}
+                  {format === "youtube" ? "16:9 영상 기준" : "9:16 영상 기준"}
                 </span>
               </div>
               <PlacementPreview format={format} size={size}>
@@ -914,19 +923,19 @@ function RoundSourcePanel({ round, summary, requiresScores = false, hasRoundData
         <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
           라운드 데이터
         </div>
-        <a href="/round"
+        <a href="/score-18"
           className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-semibold text-txt-soft transition hover:border-accent hover:text-txt">
-          {hasRoundData ? "라운드 수정" : "라운드 입력"}
+          {hasRoundData ? "18홀 수정" : "18홀 입력"}
         </a>
       </div>
 
       {needsInput && (
         <div className="mb-3 rounded-lg border border-[#ffb648]/40 bg-[#ffb648]/10 px-3 py-2 text-sm text-txt-soft">
           <b className="text-[#ffb648]">
-            {!hasRoundData ? "라운드 데이터 없음" : "라운드 스코어 없음"}
+            {!hasRoundData ? "18홀 데이터 없음" : "18홀 스코어 없음"}
           </b>
           <span className="ml-2">
-            {!hasRoundData ? "먼저 라운드 정보를 입력하세요." : "릴스 연동에는 입력된 홀 스코어가 필요합니다."}
+            {!hasRoundData ? "먼저 18홀 스코어를 입력하세요." : "연동에는 입력된 홀 스코어가 필요합니다."}
           </span>
         </div>
       )}

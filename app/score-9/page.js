@@ -1,5 +1,5 @@
 import StudioApp from "../../components/studio/StudioApp";
 
-export default function ReelsPage() {
+export default function Score9Page() {
   return <StudioApp mode="score9" />;
 }

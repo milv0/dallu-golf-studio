@@ -70,7 +70,7 @@ export default function RoundRecords() {
 
   const openRecord = (record) => {
     window.localStorage.setItem("sc-round", JSON.stringify(record.round));
-    window.location.href = "/round";
+    window.location.href = "/score-18";
   };
 
   const removeRecord = (id) => {
@@ -110,18 +110,19 @@ export default function RoundRecords() {
               <button type="button" onClick={logout} className="ml-2 text-txt-faint transition hover:text-txt">로그아웃</button>
             </div>
           ) : null}
-          <a href="/round"
+          <a href="/score-18"
             className="rounded-lg bg-accent px-4 py-2 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2">
-            라운드 입력
+            18홀 입력
           </a>
         </div>
       </div>
 
       <nav className="mb-6 flex flex-wrap items-center gap-2">
         {[
-          ["/round", "라운드"],
-          ["/reels", "릴스"],
-          ["/hole", "홀 카드"],
+          ["/score-18", "18홀"],
+          ["/score-9", "9홀"],
+          ["/score-3", "3홀"],
+          ["/hole", "1홀"],
           ["/records", "내 라운딩"],
           ["/admin", "코스 DB"],
           ["/login", currentUser ? "계정" : "로그인"],
@@ -156,10 +157,10 @@ export default function RoundRecords() {
           {records.length === 0 ? (
         <div className="rounded-xl border border-line bg-panel p-8 text-center">
           <div className="font-head text-2xl font-bold text-txt">저장된 라운딩이 없습니다</div>
-          <p className="mt-2 text-sm text-txt-soft">라운드 탭에서 선수, 코스, 날짜, 스코어를 입력한 뒤 기록으로 저장하세요.</p>
-          <a href="/round"
+          <p className="mt-2 text-sm text-txt-soft">18홀 스코어에서 선수, 코스, 날짜, 스코어를 입력한 뒤 기록으로 저장하세요.</p>
+          <a href="/score-18"
             className="mt-5 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-bold text-[#06210f] transition hover:bg-accent-2">
-            라운드 입력하기
+            18홀 입력하기
           </a>
         </div>
           ) : (

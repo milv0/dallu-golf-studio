@@ -1,22 +1,28 @@
 export default function HomeHub() {
   const items = [
     {
-      href: "/round",
-      title: "라운드 스코어카드",
-      desc: "YouTube 가로 영상용 홀바이홀 스코어카드 제작",
-      meta: "18홀 / 전반 9홀 / 후반 9홀",
+      href: "/score-18",
+      title: "18홀 스코어",
+      desc: "전체 라운드 스코어를 한 장의 가로 오버레이로 제작",
+      meta: "16:9 영상용",
     },
     {
-      href: "/reels",
-      title: "인스타그램 릴스",
-      desc: "릴스 9홀, 3홀 스코어 오버레이 제작",
-      meta: "9:16 영상 오버레이",
+      href: "/score-9",
+      title: "9홀 스코어",
+      desc: "전반 또는 후반 9홀 스코어 오버레이 제작",
+      meta: "9홀 카드",
+    },
+    {
+      href: "/score-3",
+      title: "3홀 스코어",
+      desc: "짧은 플레이 모음용 3홀 스코어 오버레이 제작",
+      meta: "3홀 카드",
     },
     {
       href: "/hole",
-      title: "홀 카드",
+      title: "1홀 오버레이",
       desc: "현재 홀, 거리, 샷, 클럽을 보여주는 라이브 오버레이 제작",
-      meta: "단일 홀 로어서드",
+      meta: "단일 홀",
     },
     {
       href: "/records",
@@ -32,7 +38,7 @@ export default function HomeHub() {
     },
     {
       href: "/admin",
-      title: "코스 DB 관리",
+      title: "코스 DB",
       desc: "골프장 나인, 조합, PAR 데이터를 편집하고 KV에 저장",
       meta: "관리자",
     },
