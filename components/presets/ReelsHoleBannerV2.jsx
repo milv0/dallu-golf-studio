@@ -25,7 +25,8 @@ export default function ReelsHoleBannerV2({ data }) {
   const shots = Number(data.currentShot) || 0;
   const count = Math.min(Math.max(par || 4, shots, 3), 7);
   const dist = String(data.distance || "").trim();
-  const distText = dist ? (/[a-zA-Z]/.test(dist) ? dist.toUpperCase() : `${dist} YARDS`) : "";
+  const unitLabel = data.unit === "yd" ? "YARDS" : "M";
+  const distText = dist ? (/[a-zA-Z]/.test(dist) ? dist.toUpperCase() : `${dist} ${unitLabel}`) : "";
 
   const redW = 210, redH = 150, redX = w - 36 - redW, redY = (barH - redH) / 2;
   const infoW = 690, whiteY = barH + 12, whiteH = 88;

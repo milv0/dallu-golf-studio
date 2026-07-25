@@ -49,7 +49,7 @@ export default function HoleCard({ data }) {
       <text x={segW / 2} y="140" textAnchor="middle" fill="#38e08b" fontFamily={HEAD}
             fontSize="30" fontWeight="700" letterSpacing="1">PAR {data.par || "–"}</text>
       <text x={segW / 2} y="182" textAnchor="middle" fill="#c7d0db" fontFamily={MONO}
-            fontSize="30" fontWeight="700">{data.distance || ""}</text>
+            fontSize="30" fontWeight="700">{data.distance ? (/[a-zA-Z]/.test(String(data.distance)) ? String(data.distance).toUpperCase() : `${data.distance}${data.unit === "yd" ? "y" : "m"}`) : ""}</text>
 
       {/* 선수명 (센터 상단) */}
       <circle cx={segW + 46} cy="76" r="34" fill="none" stroke="#38e08b" strokeWidth="2.5" />

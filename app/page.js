@@ -30,7 +30,7 @@ const QUALITY = [
 ];
 
 const emptyHoleCard = () => ({
-  hole: "", par: "", distance: "", toPar: "", currentShot: "", club: "",
+  hole: "", par: "", distance: "", toPar: "", currentShot: "", club: "", unit: "m",
 });
 
 // 파대비 상대값 파싱: "-1","0","1","+2","E" → 숫자 (유효하지 않으면 null)
@@ -393,7 +393,23 @@ export default function Home() {
               <div className="grid grid-cols-2 gap-3">
                 <Field label="홀 번호" value={holeCard.hole} onChange={(v) => setHC("hole", v)} placeholder="1" />
                 <Field label="PAR" value={holeCard.par} onChange={(v) => setHC("par", v)} placeholder="4" />
-                <Field label="거리" value={holeCard.distance} onChange={(v) => setHC("distance", v)} placeholder="350M" />
+                <div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="font-head text-[11px] uppercase tracking-widest text-txt-faint">거리</span>
+                    <div className="flex overflow-hidden rounded-md border border-line">
+                      {[["m", "M"], ["yd", "YD"]].map(([u, l]) => (
+                        <button key={u} type="button" onClick={() => setHC("unit", u)}
+                          className={"px-2 py-0.5 text-[11px] font-bold transition " +
+                            (holeCard.unit === u ? "bg-accent text-[#06210f]" : "bg-panel-2 text-txt-soft hover:text-txt")}>
+                          {l}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <input value={holeCard.distance} onChange={(e) => setHC("distance", e.target.value)}
+                    placeholder={holeCard.unit === "yd" ? "212" : "195"}
+                    className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
+                </div>
                 <Field label="토탈 (E, -2...)" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="E" />
                 <Field label="현재 샷" value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="4" />
                 <Field label="선택 클럽" value={holeCard.club} onChange={(v) => setHC("club", v)} placeholder="PUTTER" />
@@ -556,7 +572,23 @@ export default function Home() {
 
               {/* 3) 거리 · 토탈 */}
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <Field label="거리" value={holeCard.distance} onChange={(v) => setHC("distance", v)} placeholder="212 / 350M" />
+                <div>
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="font-head text-[11px] uppercase tracking-widest text-txt-faint">거리</span>
+                    <div className="flex overflow-hidden rounded-md border border-line">
+                      {[["m", "M"], ["yd", "YD"]].map(([u, l]) => (
+                        <button key={u} type="button" onClick={() => setHC("unit", u)}
+                          className={"px-2 py-0.5 text-[11px] font-bold transition " +
+                            (holeCard.unit === u ? "bg-accent text-[#06210f]" : "bg-panel-2 text-txt-soft hover:text-txt")}>
+                          {l}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <input value={holeCard.distance} onChange={(e) => setHC("distance", e.target.value)}
+                    placeholder={holeCard.unit === "yd" ? "212" : "195"}
+                    className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
+                </div>
                 <Field label="토탈 (E, -2…)" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="E" />
               </div>
             </div>
