@@ -494,7 +494,10 @@ function PlacementPreview({ format, size, children }) {
   const isYt = format === "youtube";
   // 실제 영상 위에 얹을 때 보통 가장자리 여백을 둠 → 권장 배치 폭(%)
   const overlayPct = isYt ? 82 : 66;
-  const bottomPct = isYt ? 7 : 14;
+  // 유튜브: 좌측 상단 / 릴스: 하단 중앙
+  const pos = isYt
+    ? { left: "3%", top: "5%" }
+    : { left: "50%", bottom: "14%", transform: "translateX(-50%)" };
   return (
     <div className={"mx-auto w-full " + (isYt ? "max-w-[560px]" : "max-w-[300px]")}>
       <div className="relative overflow-hidden rounded-2xl border border-line shadow-xl"
@@ -518,8 +521,7 @@ function PlacementPreview({ format, size, children }) {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-black/40" />
         )}
         {/* 오버레이 (여백 둔 예시 배치) */}
-        <div className="preview-svg absolute left-1/2 -translate-x-1/2"
-             style={{ bottom: bottomPct + "%", width: overlayPct + "%" }}>
+        <div className="preview-svg absolute" style={{ ...pos, width: overlayPct + "%" }}>
           {children}
         </div>
       </div>
