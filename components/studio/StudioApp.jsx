@@ -1234,6 +1234,14 @@ function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreKey }) {
 
   useEffect(() => { setBuf(display); }, [display, mode]);
 
+  const applyRelative = (rel) => {
+    const p = Number(par);
+    if (Number.isNaN(p)) return;
+    const next = Math.max(-3, Math.min(5, rel));
+    setBuf(String(next));
+    setHole(idx, "score", String(p + next));
+  };
+
   const handle = (v) => {
     if (v === "") { setHole(idx, "score", ""); return; }
     if (mode === "relative") {
@@ -1252,13 +1260,24 @@ function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreKey }) {
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (mode === "relative" && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+      e.preventDefault();
+      const current = parseRel(buf);
+      const base = current == null ? 0 : current;
+      applyRelative(base + (e.key === "ArrowLeft" ? -1 : 1));
+      return;
+    }
+    onScoreKey?.(e, idx);
+  };
+
   return (
     <input
       aria-label={`홀 ${idx + 1} 스코어`}
       value={buf}
       inputMode={mode === "relative" ? "numeric" : "numeric"}
       ref={(el) => { if (scoreRefs) scoreRefs.current[idx] = el; }}
-      onKeyDown={(e) => onScoreKey && onScoreKey(e, idx)}
+      onKeyDown={handleKeyDown}
       onChange={(e) => handle(e.target.value)}
       placeholder="–"
       className="w-full bg-transparent py-2.5 text-center font-mono text-lg font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent"
