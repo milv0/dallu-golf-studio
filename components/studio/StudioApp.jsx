@@ -106,9 +106,9 @@ function StudioWorkspace({ mode }) {
   const isRoundEditor = isScore18;
   const usesRoundSource = (isReelsSizedScore && !reelsCustom) || mode === "hole";
   const holeData = { player: round.player, ...holeCard };
-  // 릴스는 9홀(전반/후반)만 — 18홀 전체 없음
-  const availableRanges = format === "reels" ? RANGES.filter(([k]) => k !== "all") : RANGES;
-  const effRange = format === "reels" && holeRange === "all" ? "front" : holeRange;
+  // 18홀은 전체 고정, 9홀만 전반/후반을 선택한다.
+  const availableRanges = RANGES.filter(([k]) => k !== "all");
+  const effRange = isScore18 ? "all" : isReelsSizedScore && holeRange === "all" ? "front" : holeRange;
   const size = isHole ? holeSizeFor(holeData) : reelsV3 ? SIZE_REELS_THREE : FORMATS[format].sizeFor(effRange);
   const previewMaxWidth = Math.min(size.w, PREVIEW_MAX_H * (size.w / size.h)) * (reelsV3 ? 0.72 : 1);
 
@@ -178,14 +178,11 @@ function StudioWorkspace({ mode }) {
       holes: s.holes.map((h, i) => (i === idx ? { ...h, [key]: val } : h)),
     }));
   const setLinkedThreeField = (key, val) => setLinkedThree((s) => ({ ...s, [key]: val }));
-  const toggleLinkedThreeHole = (idx) =>
-    setLinkedThree((s) => {
-      const current = Array.isArray(s.holes) ? s.holes : [];
-      const next = current.includes(idx)
-        ? current.filter((x) => x !== idx)
-        : [...current, idx].slice(-3);
-      return { ...s, holes: next };
-    });
+  const selectLinkedThreeGroup = (startIdx) =>
+    setLinkedThree((s) => ({
+      ...s,
+      holes: [startIdx, startIdx + 1, startIdx + 2],
+    }));
 
   // 하이브리드: 라운드에서 홀 선택 → PAR·누적 to-par·(입력된)스코어 자동 채움
   const loadHoleFromRound = (n) => {
@@ -566,7 +563,7 @@ function StudioWorkspace({ mode }) {
               round={round}
               selected={linkedThree.holes || []}
               showHoleNumbers={linkedThree.showHoleNumbers !== false}
-              onToggle={toggleLinkedThreeHole}
+              onSelect={selectLinkedThreeGroup}
               onShowHoleNumbers={(v) => setLinkedThreeField("showHoleNumbers", v)}
             />
           )}
@@ -668,8 +665,8 @@ function StudioWorkspace({ mode }) {
 
         {/* ── 미리보기 & 내보내기 ── */}
         <section>
-          {/* 홀 범위(라운드 전용) */}
-          {!isHole && !reelsV3 && !reelsCustom && (
+          {/* 9홀 범위 */}
+          {isScore9 && !reelsCustom && (
             <div className="mb-3 flex flex-wrap items-center gap-3">
               <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">범위</div>
               <div className="flex overflow-hidden rounded-lg border border-line">
@@ -1008,9 +1005,14 @@ function ThreeHoleForm({ data, setField, setHole }) {
   );
 }
 
-function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onToggle, onShowHoleNumbers }) {
-  const selectedSet = new Set(selected);
-  const selectedCount = Math.min(selectedSet.size, 3);
+function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onSelect, onShowHoleNumbers }) {
+  const selectedStart = Array.isArray(selected) && selected.length === 3 ? Math.min(...selected) : 0;
+  const groupLabel = (start) => {
+    const a = start + 1;
+    const b = start + 2;
+    const c = start + 3;
+    return c <= 9 ? `${a}${b}${c}` : `${a}-${c}`;
+  };
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -1018,9 +1020,8 @@ function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onToggle, onSh
           <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
             3홀 선택
           </div>
-          <span className={"rounded px-2 py-0.5 font-mono text-[11px] font-bold " +
-            (selectedCount === 3 ? "bg-accent/15 text-accent" : "bg-[#ffb648]/15 text-[#ffb648]")}>
-            {selectedCount}/3
+          <span className="rounded bg-accent/15 px-2 py-0.5 font-mono text-[11px] font-bold text-accent">
+            {groupLabel(selectedStart)}
           </span>
         </div>
         <label className="flex items-center gap-2 text-xs font-semibold text-txt-soft">
@@ -1032,11 +1033,12 @@ function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onToggle, onSh
       </div>
       <div className="grid grid-cols-9 gap-1">
         {round.holes.map((h, i) => {
-          const active = selectedSet.has(i);
+          const start = Math.min(i, Math.max(round.holes.length - 3, 0));
+          const active = Array.isArray(selected) && selected.includes(i);
           const has = h.score !== "" && h.score != null;
           return (
-            <button key={i} type="button" onClick={() => onToggle(i)}
-              title={`${i + 1}번 홀 · Par ${h.par}${has ? ` · ${h.score}타` : ""}`}
+            <button key={i} type="button" onClick={() => onSelect(start)}
+              title={`${start + 1}-${start + 3}번 홀 묶음 선택`}
               className={"rounded-md py-1.5 text-center font-mono text-[13px] font-bold transition " +
                 (active
                   ? "bg-accent text-[#06210f]"
@@ -1049,7 +1051,7 @@ function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onToggle, onSh
         })}
       </div>
       <div className="mt-2 text-[11px] text-txt-faint">
-        3개를 선택해야 다운로드할 수 있습니다. 3개 선택 후 다른 홀을 누르면 가장 오래된 선택이 교체됩니다.
+        시작 홀을 누르면 연속된 3홀이 선택됩니다. 예: 2번 선택 → 234.
       </div>
     </div>
   );
