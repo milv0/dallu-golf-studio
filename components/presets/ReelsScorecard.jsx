@@ -66,7 +66,7 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
     return (
       <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
            xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
-        <rect data-export-bg="true" x="0" y="0" width={w} height={h} rx="24" fill={c.bg} opacity="0.92" />
+        <rect x="0" y="0" width={w} height={h} rx="24" fill={c.bg} opacity="0.92" />
         <rect x="0" y="0" width={w} height="6" rx="3" fill={c.accent} />
         {round.holes.slice(rs.start, rs.end).map((hole, i) => (
           <HoleCell key={i} cx={cxH(i)} rowY={rowY} hole={hole} idx={rs.start + i} c={c} />
@@ -86,7 +86,7 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
          xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
-      <rect data-export-bg="true" x="0" y="0" width={w} height={h} rx="24" fill={c.bg} opacity="0.92" />
+      <rect x="0" y="0" width={w} height={h} rx="24" fill={c.bg} opacity="0.92" />
       <rect x="0" y="0" width={w} height="6" rx="3" fill={c.accent} />
 
       {/* 헤더 */}
