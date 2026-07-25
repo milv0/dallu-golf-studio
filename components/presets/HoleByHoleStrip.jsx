@@ -8,7 +8,7 @@ export function sizeFor() { return SIZE; }   // YouTube는 범위와 무관하�
 
 export default function HoleByHoleStrip({ round, summary, range = "all" }) {
   const { w, h } = SIZE;
-  const LP = 400;              // 좌측 선수 패널 폭
+  const LP = 330;              // 좌측 선수 패널 폭 (컴팩트)
   const labelW = 84;          // 행 라벨(HOLE/PAR/SCORE) 전용 컬럼
   const tableX = LP + labelW;
   const tableW = w - tableX - 24;
@@ -59,32 +59,32 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
 
       {/* ── 좌측 선수 패널 (섹션 구분) ── */}
       {/* 1) 골프장 · 날짜 */}
-      <text x="36" y="52" fill="#38e08b" fontFamily={HEAD} fontSize="22" fontWeight="600"
-            letterSpacing="2.5">
+      <text x="32" y="42" fill="#38e08b" fontFamily={HEAD} fontSize="18" fontWeight="600"
+            letterSpacing="2">
         {(round.course || "").toUpperCase()}{round.date ? `  ·  ${round.date.replaceAll("-", ".")}` : ""}{rangeLabel ? `  ·  ${rangeLabel}` : ""}
       </text>
 
       {/* 2) 선수명 */}
-      <text x="36" y="108" fill="#eef2f6" fontFamily={HEAD} fontSize="50" fontWeight="700"
+      <text x="32" y="88" fill="#eef2f6" fontFamily={HEAD} fontSize="44" fontWeight="700"
             letterSpacing="0.5">
         {(round.player || "PLAYER").toUpperCase()}
       </text>
 
       {/* 구분선 */}
-      <line x1="36" y1="134" x2={LP - 28} y2="134" stroke="#262e3a" strokeWidth="1.5" />
+      <line x1="32" y1="110" x2={LP - 24} y2="110" stroke="#262e3a" strokeWidth="1.5" />
 
       {/* 3) 하단 스탯: TO PAR(좌) · THRU(우) */}
-      <text x="36" y="176" fill="#9aa6b4" fontFamily={HEAD} fontSize="20" letterSpacing="2.5">
+      <text x="32" y="146" fill="#9aa6b4" fontFamily={HEAD} fontSize="18" letterSpacing="2">
         TO PAR
       </text>
-      <text x="36" y="252" fill={toParColor} fontFamily={HEAD} fontSize="74" fontWeight="700">
+      <text x="32" y="212" fill={toParColor} fontFamily={HEAD} fontSize="64" fontWeight="700">
         {toParLabel(rs.thru === 0 ? null : toPar)}
       </text>
 
-      <line x1={LP - 150} y1="152" x2={LP - 150} y2={h - 40} stroke="#262e3a" strokeWidth="1.5" />
-      <text x={LP - 28} y="176" textAnchor="end" fill="#9aa6b4" fontFamily={HEAD} fontSize="20"
-            letterSpacing="2.5">THRU</text>
-      <text x={LP - 28} y="248" textAnchor="end" fill="#eef2f6" fontFamily={HEAD} fontSize="52"
+      <line x1={LP - 112} y1="124" x2={LP - 112} y2={h - 30} stroke="#262e3a" strokeWidth="1.5" />
+      <text x={LP - 24} y="146" textAnchor="end" fill="#9aa6b4" fontFamily={HEAD} fontSize="18"
+            letterSpacing="2">THRU</text>
+      <text x={LP - 24} y="208" textAnchor="end" fill="#eef2f6" fontFamily={HEAD} fontSize="46"
             fontWeight="700">{rs.thru}</text>
 
       {/* ── 홀 테이블 ── */}
