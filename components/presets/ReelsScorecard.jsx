@@ -21,7 +21,7 @@ function HoleCell({ cx, rowY, hole, idx }) {
     <g>
       <text x={cx} y={rowY + 22} textAnchor="middle" fill="#c7d0db"
             fontFamily={HEAD} fontSize="28" fontWeight="600">{idx + 1}</text>
-      <text x={cx} y={rowY + 50} textAnchor="middle" fill="#8b96a5"
+      <text x={cx} y={rowY + 58} textAnchor="middle" fill="#8b96a5"
             fontFamily={MONO} fontSize="26" fontWeight="600">P{hole?.par}</text>
       {has && under && <circle cx={cx} cy={cy} r="30" fill="none" stroke={color} strokeWidth="3.5" />}
       {has && kind === "eagle" && <circle cx={cx} cy={cy} r="37" fill="none" stroke={color} strokeWidth="3" />}
