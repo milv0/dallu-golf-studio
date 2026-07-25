@@ -390,8 +390,29 @@ export default function Home() {
                 <Field label="현재 샷" value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="4" />
                 <Field label="선택 클럽" value={holeCard.club} onChange={(v) => setHC("club", v)} placeholder="PUTTER" />
               </div>
+              {/* 현재 샷 선택 (몇 번째 치는지) */}
+              <div className="mt-3">
+                <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
+                  현재 샷 (몇 번째 치는지)
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {Array.from({ length: Math.min(Math.max((Number(holeCard.par) || 4) + 2, 6), 9) }, (_, i) => i + 1).map((n) => (
+                    <button key={n} type="button" onClick={() => setHC("currentShot", String(n))}
+                      className={"h-9 w-9 rounded-md font-mono text-sm font-bold transition " +
+                        (String(n) === String(holeCard.currentShot)
+                          ? "bg-accent text-[#06210f]"
+                          : "border border-line bg-panel-2 text-txt-soft hover:text-txt")}>
+                      {n}
+                    </button>
+                  ))}
+                  <button type="button" onClick={() => setHC("currentShot", "")}
+                    className="h-9 rounded-md border border-line bg-panel-2 px-3 text-xs font-semibold text-txt-faint hover:text-txt">
+                    없음
+                  </button>
+                </div>
+              </div>
               <p className="mt-2 text-[12px] text-txt-faint">
-                선수명·PAR·토탈은 라운드에서 자동 연동 · 거리/클럽/샷은 직접 입력 · FOR 배너는 자동 계산
+                홀 선택 → PAR·토탈·타수 자동 반영 · 현재 샷 버튼으로 지금 몇 번째 치는지 표시 · 거리/클럽은 직접 입력
               </p>
             </div>
           )}
