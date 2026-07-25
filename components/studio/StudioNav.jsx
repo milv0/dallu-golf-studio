@@ -1,15 +1,15 @@
 "use client";
 
 const OUTPUT_LINKS = [
-  { href: "/score-18", label: "18홀", key: "score18" },
-  { href: "/score-9", label: "9홀", key: "score9" },
-  { href: "/score-3", label: "3홀", key: "score3" },
-  { href: "/hole", label: "1홀", key: "hole" },
+  { href: "/score-18", label: "18홀", id: "score18" },
+  { href: "/score-9", label: "9홀", id: "score9" },
+  { href: "/score-3", label: "3홀", id: "score3" },
+  { href: "/hole", label: "1홀", id: "hole" },
 ];
 
 function NavLink({ href, label, active }) {
   return (
-    <a key={href} href={href}
+    <a href={href}
       className={"rounded-lg border px-3.5 py-2 text-sm font-semibold transition " +
         (active
           ? "border-accent bg-accent text-[#06210f]"
@@ -21,9 +21,9 @@ function NavLink({ href, label, active }) {
 
 export default function StudioNav({ active, currentUser }) {
   const secondaryLinks = [
-    { href: "/records", label: "내 라운딩", key: "records" },
-    { href: "/admin", label: "코스 DB", key: "admin" },
-    { href: "/login", label: currentUser ? "계정" : "로그인", key: "login" },
+    { href: "/records", label: "내 라운딩", id: "records" },
+    { href: "/admin", label: "코스 DB", id: "admin" },
+    { href: "/login", label: currentUser ? "계정" : "로그인", id: "login" },
   ];
 
   return (
@@ -33,12 +33,12 @@ export default function StudioNav({ active, currentUser }) {
           출력 선택
         </span>
         {OUTPUT_LINKS.map((link) => (
-          <NavLink key={link.href} {...link} active={active === link.key} />
+          <NavLink key={link.href} {...link} active={active === link.id} />
         ))}
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {secondaryLinks.map((link) => (
-          <NavLink key={link.href} {...link} active={active === link.key} />
+          <NavLink key={link.href} {...link} active={active === link.id} />
         ))}
       </div>
     </nav>
