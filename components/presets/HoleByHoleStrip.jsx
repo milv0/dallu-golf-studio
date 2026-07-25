@@ -162,7 +162,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
                     fill="none" stroke={color} strokeWidth="3" />
             )}
             <text x={cx} y={yScore + 13} textAnchor="middle"
-                  fill={hasScore ? (kind === "par" ? c.text : color) : c.faint}
+                  fill={hasScore ? c.text : c.faint}
                   fontFamily={MONO} fontSize="46" fontWeight="700">
               {hasScore ? hole.score : "·"}
             </text>

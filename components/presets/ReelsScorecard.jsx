@@ -30,7 +30,7 @@ function HoleCell({ cx, rowY, hole, idx, c }) {
       {has && (kind === "double" || kind === "triple") &&
         <rect x={cx - 37} y={cy - 37} width="74" height="74" rx="5" fill="none" stroke={color} strokeWidth="3" />}
       <text x={cx} y={cy + 16} textAnchor="middle"
-            fill={has ? (kind === "par" ? c.text : color) : c.faint}
+            fill={has ? c.text : c.faint}
             fontFamily={MONO} fontSize="50" fontWeight="700">{has ? hole.score : "·"}</text>
     </g>
   );
