@@ -61,7 +61,10 @@ export default function Home() {
   const scoreRefs = useRef([]);
 
   const isHole = layout === "hole";
-  const size = isHole ? SIZE_HOLE : FORMATS[format].sizeFor(holeRange);
+  // 릴스는 9홀(전반/후반)만 — 18홀 전체 없음
+  const availableRanges = format === "reels" ? RANGES.filter(([k]) => k !== "all") : RANGES;
+  const effRange = format === "reels" && holeRange === "all" ? "front" : holeRange;
+  const size = isHole ? SIZE_HOLE : FORMATS[format].sizeFor(effRange);
 
   useEffect(() => {
     setTheme(localStorage.getItem("sc-theme") || "dark");
@@ -189,7 +192,7 @@ export default function Home() {
       const a = document.createElement("a");
       a.href = dataUrl;
       const name = (round.player || "scorecard").replace(/\s+/g, "_");
-      a.download = `${name}_${isHole ? "hole" : format + (holeRange === "all" ? "" : "_" + holeRange)}.png`;
+      a.download = `${name}_${isHole ? "hole" : format + (effRange === "all" ? "" : "_" + effRange)}.png`;
       a.click();
     } catch (e) {
       alert("내보내기 실패: " + e.message);
@@ -390,7 +393,7 @@ export default function Home() {
               <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">포맷</div>
               <div className="flex overflow-hidden rounded-lg border border-line">
                 {Object.entries(FORMATS).map(([key, f]) => (
-                  <button key={key} onClick={() => setFormat(key)}
+                  <button key={key} onClick={() => { setFormat(key); if (key === "reels" && holeRange === "all") setHoleRange("front"); }}
                     className={"px-4 py-1.5 text-sm font-semibold transition " +
                       (format === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
                     {f.label}<span className="ml-1.5 text-[11px] opacity-70">{f.ratio}</span>
@@ -404,10 +407,10 @@ export default function Home() {
             <div className="mb-3 flex flex-wrap items-center gap-3">
               <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">범위</div>
               <div className="flex overflow-hidden rounded-lg border border-line">
-                {RANGES.map(([key, label]) => (
+                {availableRanges.map(([key, label]) => (
                   <button key={key} onClick={() => setHoleRange(key)}
                     className={"px-4 py-1.5 text-sm font-semibold transition " +
-                      (holeRange === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
+                      (effRange === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
                     {label}
                   </button>
                 ))}
@@ -442,7 +445,7 @@ export default function Home() {
                  style={{ maxWidth: Math.min(size.w, PREVIEW_MAX_H * (size.w / size.h)) }}>
               {isHole
                 ? <HoleCard data={holeData} />
-                : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={holeRange} />; })()}
+                : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={effRange} />; })()}
             </div>
           </div>
 
@@ -474,7 +477,7 @@ export default function Home() {
                 </span>
               </div>
               <PlacementPreview format={format} size={size}>
-                {(() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={holeRange} />; })()}
+                {(() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={effRange} />; })()}
               </PlacementPreview>
               <p className="mt-2 text-[12px] text-txt-faint">
                 실제 영상 위 배치 예시입니다 — 편집 프로그램에서 크기·위치는 자유롭게 조절하세요. (권장: 하단 배치)
