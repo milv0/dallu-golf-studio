@@ -19,6 +19,12 @@ export default function HomeHub() {
       meta: "단일 홀 로어서드",
     },
     {
+      href: "/records",
+      title: "내 라운딩",
+      desc: "저장한 라운딩 기록을 다시 불러와 오버레이로 사용",
+      meta: "개인 기록",
+    },
+    {
       href: "/admin",
       title: "코스 DB 관리",
       desc: "골프장 나인, 조합, PAR 데이터를 편집하고 KV에 저장",

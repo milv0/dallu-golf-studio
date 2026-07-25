@@ -11,6 +11,7 @@ import { coursesFromDb, effectiveDb } from "../../lib/coursesDb";
 import { loadDb, saveDb } from "../../lib/nineStore";
 import { fetchDb } from "../../lib/api";
 import { COURSE_DIRECTORY } from "../../lib/courseDirectory";
+import { saveRoundRecord } from "../../lib/roundHistory";
 import HomeHub from "./HomeHub";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
@@ -87,6 +88,7 @@ function StudioWorkspace({ mode }) {
   const [busy, setBusy] = useState(false);
   const [theme, setTheme] = useState("light");
   const [scoreMode, setScoreMode] = useState("relative"); // 'strokes' | 'relative' (기본: 파대비)
+  const [savedRoundAt, setSavedRoundAt] = useState("");
   const captureRef = useRef(null);
   const scoreRefs = useRef([]);
 
@@ -126,6 +128,7 @@ function StudioWorkspace({ mode }) {
       : mode === "hole" && !hasRoundData && !hasHoleCardData
       ? "현재 홀 정보를 먼저 입력하세요."
       : "";
+  const canSaveRound = isRoundEditor && hasRoundScores;
   const manualNineRound = useMemo(() => ({
     player: "",
     country: "",
@@ -256,6 +259,7 @@ function StudioWorkspace({ mode }) {
   useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-threehole", JSON.stringify(threeHole)); }, [threeHole]);
   useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-manual-nine", JSON.stringify(manualNine)); }, [manualNine]);
   useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-linked-three", JSON.stringify(linkedThree)); }, [linkedThree]);
+  useEffect(() => { if (loadedRef.current) setSavedRoundAt(""); }, [round]);
   const toggleFav = (name) => {
     setFavorites((prev) => {
       const next = prev.includes(name) ? prev.filter((n) => n !== name) : [name, ...prev];
@@ -301,6 +305,12 @@ function StudioWorkspace({ mode }) {
     }
   }
 
+  const handleSaveRoundRecord = () => {
+    if (!canSaveRound) return;
+    const record = saveRoundRecord(round);
+    setSavedRoundAt(record.savedAt);
+  };
+
   const Front = round.holes.slice(0, 9);
   const Back = round.holes.slice(9, 18);
   const holeData = { player: round.player, ...holeCard };
@@ -344,6 +354,7 @@ function StudioWorkspace({ mode }) {
           ["/round", "라운드"],
           ["/reels", "릴스"],
           ["/hole", "홀 카드"],
+          ["/records", "내 라운딩"],
           ["/admin", "코스 DB"],
         ].map(([href, label]) => (
           <a key={href} href={href}
@@ -484,6 +495,21 @@ function StudioWorkspace({ mode }) {
                       <span className="text-txt-faint"> · {summary.thru}홀</span>
                     </span>
                   )}
+                </div>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
+                  <div className="text-[12px] text-txt-faint">
+                    {savedRoundAt ? `내 라운딩에 저장됨 · ${new Date(savedRoundAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}` : "스코어를 입력한 뒤 라운딩 기록으로 저장할 수 있습니다."}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a href="/records"
+                      className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-semibold text-txt-soft transition hover:border-accent hover:text-txt">
+                      내 라운딩
+                    </a>
+                    <button type="button" onClick={handleSaveRoundRecord} disabled={!canSaveRound}
+                      className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] transition hover:bg-accent-2 disabled:opacity-50">
+                      기록 저장
+                    </button>
+                  </div>
                 </div>
               </div>
             </>
