@@ -138,7 +138,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
         const over = kind === "bogey" || kind === "double" || kind === "triple";
         return (
           <g key={idx}>
-            <text x={cx} y={yHole + 6} textAnchor="middle" fill={c.sub}
+            <text x={cx} y={yHole + 6} textAnchor="middle" fill={c.text}
                   fontFamily={HEAD} fontSize="32" fontWeight="600">
               {c.i + 1}
             </text>
