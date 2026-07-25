@@ -3,7 +3,7 @@
 import { classify } from "../../lib/score";
 import { cardColors } from "../../lib/theme";
 
-export const SIZE = { w: 780, h: 340 };
+export const SIZE = { w: 560, h: 292 };
 
 const HEAD = "'Barlow Condensed', 'Pretendard', sans-serif";
 const MONO = "'JetBrains Mono', monospace";
@@ -16,13 +16,17 @@ const RESULT_LABEL = {
 export default function HoleCard({ data, theme = "dark" }) {
   const c = cardColors(theme);
   const { w } = SIZE;
-  const barH = 250;
-  const segW = 150;            // 홀 세그먼트 폭
-  const tpW = 150;             // 토탈(우측) 블록 폭
-  const row2Y = 160;           // 2행 시작
+  const barH = 212;
+  const segW = 112;            // 홀 세그먼트 폭
+  const tpW = 104;             // 토탈(우측) 블록 폭
+  const row2Y = 130;           // 2행 시작
 
   const par = Number(data.par) || null;
   const shots = Number(data.currentShot) || 0;
+  const player = data.player || "PLAYER";
+  const playerSize = player.length > 12 ? 29 : player.length > 9 ? 32 : 36;
+  const club = (data.club || "").toUpperCase();
+  const clubSize = club.length > 12 ? 22 : club.length > 8 ? 25 : 28;
 
   // 이번 샷을 홀아웃하면 나오는 결과 → FOR X
   let banner = "";
@@ -39,64 +43,64 @@ export default function HoleCard({ data, theme = "dark" }) {
     <svg viewBox={`0 0 ${w} ${SIZE.h}`} width={w} height={SIZE.h}
          xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
       {/* 메인 바 */}
-      <rect data-export-bg="true" x="0" y="0" width={w} height={barH} rx="18" fill={c.bg} opacity="0.94" />
+      <rect data-export-bg="true" x="0" y="0" width={w} height={barH} rx="16" fill={c.bg} opacity="0.94" />
       {/* 홀 세그먼트 (더 어둡게) */}
       <path data-export-bg="true" d={`M18,0 H${segW} V${barH} H18 Q0,${barH} 0,${barH - 18} V18 Q0,0 18,0 Z`}
             fill={c.seg} />
-      <line x1={segW} y1="20" x2={segW} y2={barH - 20} stroke={c.line} strokeWidth="2" />
+      <line x1={segW} y1="18" x2={segW} y2={barH - 18} stroke={c.line} strokeWidth="2" />
 
       {/* 홀 번호 · PAR · 거리 */}
-      <text x={segW / 2} y="96" textAnchor="middle" fill={c.text} fontFamily={HEAD}
-            fontSize="84" fontWeight="700">{data.hole || "–"}</text>
-      <text x={segW / 2} y="140" textAnchor="middle" fill={c.accent} fontFamily={HEAD}
-            fontSize="30" fontWeight="700" letterSpacing="1">PAR {data.par || "–"}</text>
-      <text x={segW / 2} y="182" textAnchor="middle" fill={c.sub} fontFamily={MONO}
-            fontSize="30" fontWeight="700">{data.distance ? (/[a-zA-Z]/.test(String(data.distance)) ? String(data.distance).toUpperCase() : `${data.distance}${data.unit === "yd" ? "y" : "m"}`) : ""}</text>
+      <text x={segW / 2} y="80" textAnchor="middle" fill={c.text} fontFamily={HEAD}
+            fontSize="64" fontWeight="700">{data.hole || "–"}</text>
+      <text x={segW / 2} y="116" textAnchor="middle" fill={c.accent} fontFamily={HEAD}
+            fontSize="24" fontWeight="700" letterSpacing="1">PAR {data.par || "–"}</text>
+      <text x={segW / 2} y="154" textAnchor="middle" fill={c.sub} fontFamily={MONO}
+            fontSize="24" fontWeight="700">{data.distance ? (/[a-zA-Z]/.test(String(data.distance)) ? String(data.distance).toUpperCase() : `${data.distance}${data.unit === "yd" ? "y" : "m"}`) : ""}</text>
 
       {/* 선수명 (센터 상단) */}
-      <circle cx={segW + 36} cy="76" r="28" fill="none" stroke={c.accent} strokeWidth="2.5" />
-      <text x={segW + 36} y="87" textAnchor="middle" fill={c.accent} fontFamily={HEAD}
-            fontSize="27" fontWeight="700">dG</text>
-      <text x={segW + 76} y="92" fill={c.text} fontFamily={HEAD} fontSize="48" fontWeight="700"
-            letterSpacing="0.5">{data.player || "PLAYER"}</text>
+      <circle cx={segW + 30} cy="60" r="20" fill="none" stroke={c.accent} strokeWidth="2.1" />
+      <text x={segW + 30} y="68" textAnchor="middle" fill={c.accent} fontFamily={HEAD}
+            fontSize="19" fontWeight="700">dG</text>
+      <text x={segW + 58} y="74" fill={c.text} fontFamily={HEAD} fontSize={playerSize} fontWeight="700"
+            letterSpacing="0.5">{player}</text>
 
       {/* 토탈(to-par) 우측 블록 */}
       <path d={`M${w - tpW},0 H${w - 18} Q${w},0 ${w},18 V${row2Y - 20} Q${w},${row2Y - 2} ${w - 18},${row2Y - 2} H${w - tpW} Z`}
             fill={c.accent} />
-      <text x={w - tpW / 2} y="104" textAnchor="middle" fill={c.ink} fontFamily={HEAD}
-            fontSize="66" fontWeight="700">{data.toPar || "E"}</text>
+      <text x={w - tpW / 2} y="84" textAnchor="middle" fill={c.ink} fontFamily={HEAD}
+            fontSize="52" fontWeight="700">{data.toPar || "E"}</text>
 
       {/* 2행 구분선 */}
-      <line x1={segW + 20} y1={row2Y} x2={w - 24} y2={row2Y} stroke={c.line} strokeWidth="1.5" />
+      <line x1={segW + 18} y1={row2Y} x2={w - 20} y2={row2Y} stroke={c.line} strokeWidth="1.5" />
 
       {/* SHOT */}
-      <text x={segW + 24} y={row2Y + 28} fill={c.accent} fontFamily={HEAD} fontSize="22"
+      <text x={segW + 20} y={row2Y + 26} fill={c.accent} fontFamily={HEAD} fontSize="20"
             fontWeight="700" fontStyle="italic" letterSpacing="1">SHOT</text>
       {shotNums.map((n, i) => {
-        const cx = segW + 36 + i * 34;
+        const cx = segW + 30 + i * 25;
         const last = i === shotNums.length - 1;
         return (
           <g key={n}>
-            {last && <circle cx={cx} cy={row2Y + 58} r="17" fill="none" stroke={c.accent} strokeWidth="2.2" />}
-            <text x={cx} y={row2Y + 67} textAnchor="middle"
+            {last && <circle cx={cx} cy={row2Y + 56} r="13" fill="none" stroke={c.accent} strokeWidth="2" />}
+            <text x={cx} y={row2Y + 64} textAnchor="middle"
                   fill={last ? c.accent : c.faint} fontFamily={MONO}
-                  fontSize="26" fontWeight="700">{n}</text>
+                  fontSize="21" fontWeight="700">{n}</text>
           </g>
         );
       })}
 
       {/* SELECTED CLUB */}
-      <text x={w - 24} y={row2Y + 28} textAnchor="end" fill={c.accent} fontFamily={HEAD}
-            fontSize="22" fontWeight="700" fontStyle="italic" letterSpacing="1">SELECTED CLUB</text>
-      <text x={w - 24} y={row2Y + 68} textAnchor="end" fill={c.text} fontFamily={HEAD}
-            fontSize="36" fontWeight="700">{(data.club || "").toUpperCase()}</text>
+      <text x={w - 18} y={row2Y + 26} textAnchor="end" fill={c.accent} fontFamily={HEAD}
+            fontSize="17" fontWeight="700" fontStyle="italic" letterSpacing="1">SELECTED CLUB</text>
+      <text x={w - 18} y={row2Y + 64} textAnchor="end" fill={c.text} fontFamily={HEAD}
+            fontSize={clubSize} fontWeight="700">{club}</text>
 
       {/* FOR X 배너 */}
       {banner && (
         <g>
-          <rect x="330" y="266" width={w - 330} height="70" rx="12" fill={c.accent} />
-          <text x={(330 + w) / 2} y="314" textAnchor="middle" fill={c.ink} fontFamily={HEAD}
-                fontSize="42" fontWeight="700" letterSpacing="1">{banner}</text>
+          <rect x="224" y="228" width={w - 224} height="58" rx="10" fill={c.accent} />
+          <text x={(224 + w) / 2} y="267" textAnchor="middle" fill={c.ink} fontFamily={HEAD}
+                fontSize="32" fontWeight="700" letterSpacing="1">{banner}</text>
         </g>
       )}
     </svg>
