@@ -20,17 +20,17 @@ function HoleCell({ cx, rowY, hole, idx }) {
   return (
     <g>
       <text x={cx} y={rowY + 22} textAnchor="middle" fill="#c7d0db"
-            fontFamily={HEAD} fontSize="26" fontWeight="600">{idx + 1}</text>
+            fontFamily={HEAD} fontSize="28" fontWeight="600">{idx + 1}</text>
       <text x={cx} y={rowY + 50} textAnchor="middle" fill="#8b96a5"
-            fontFamily={MONO} fontSize="24" fontWeight="600">P{hole?.par}</text>
-      {has && under && <circle cx={cx} cy={cy} r="24" fill="none" stroke={color} strokeWidth="3" />}
-      {has && kind === "eagle" && <circle cx={cx} cy={cy} r="30" fill="none" stroke={color} strokeWidth="2.5" />}
-      {has && over && <rect x={cx - 24} y={cy - 24} width="48" height="48" rx="4" fill="none" stroke={color} strokeWidth="3" />}
+            fontFamily={MONO} fontSize="26" fontWeight="600">P{hole?.par}</text>
+      {has && under && <circle cx={cx} cy={cy} r="30" fill="none" stroke={color} strokeWidth="3.5" />}
+      {has && kind === "eagle" && <circle cx={cx} cy={cy} r="37" fill="none" stroke={color} strokeWidth="3" />}
+      {has && over && <rect x={cx - 30} y={cy - 30} width="60" height="60" rx="5" fill="none" stroke={color} strokeWidth="3.5" />}
       {has && (kind === "double" || kind === "triple") &&
-        <rect x={cx - 30} y={cy - 30} width="60" height="60" rx="4" fill="none" stroke={color} strokeWidth="2.5" />}
-      <text x={cx} y={cy + 12} textAnchor="middle"
+        <rect x={cx - 37} y={cy - 37} width="74" height="74" rx="5" fill="none" stroke={color} strokeWidth="3" />}
+      <text x={cx} y={cy + 16} textAnchor="middle"
             fill={has ? (kind === "par" ? "#eef2f6" : color) : "#38404d"}
-            fontFamily={MONO} fontSize="36" fontWeight="700">{has ? hole.score : "·"}</text>
+            fontFamily={MONO} fontSize="50" fontWeight="700">{has ? hole.score : "·"}</text>
     </g>
   );
 }
@@ -53,7 +53,7 @@ export default function ReelsScorecard({ round, summary, range = "all" }) {
   if (!isAll) {
     const nineScore = range === "front" ? summary.outScore : summary.inScore;
     const hasNine = range === "front" ? summary.hasFront : summary.hasBack;
-    const scoreW = 220, gap = 22;
+    const scoreW = 172, gap = 20;
     const holesW = innerW - scoreW - gap;
     const cw2 = holesW / 9;
     const cxH = (i) => pad + i * cw2 + cw2 / 2;
@@ -70,11 +70,11 @@ export default function ReelsScorecard({ round, summary, range = "all" }) {
         ))}
         {/* 구분선 */}
         <line x1={sx - gap / 2} y1="24" x2={sx - gap / 2} y2={h - 24} stroke="#262e3a" strokeWidth="2" />
-        {/* 우측 최종 스코어: 파대비 크게 · 총타수 작게 */}
-        <text x={scx} y="114" textAnchor="middle" fill={toParColor} fontFamily={HEAD} fontSize="96" fontWeight="700">
+        {/* 우측 최종 스코어: 파대비(작게) · 총타수(더 작게) */}
+        <text x={scx} y="108" textAnchor="middle" fill={toParColor} fontFamily={HEAD} fontSize="72" fontWeight="700">
           {hasNine ? toParLabel(toPar) : "–"}
         </text>
-        <text x={scx} y="160" textAnchor="middle" fill="#9aa6b4" fontFamily={MONO} fontSize="30" fontWeight="600">
+        <text x={scx} y="150" textAnchor="middle" fill="#9aa6b4" fontFamily={MONO} fontSize="26" fontWeight="600">
           {hasNine ? `${nineScore}타` : ""}
         </text>
       </svg>
