@@ -54,13 +54,15 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
   if (!isAll) {
     const nineScore = range === "front" ? summary.outScore : summary.inScore;
     const hasNine = range === "front" ? summary.hasFront : summary.hasBack;
-    const scoreW = 172, gap = 20;
-    const holesW = innerW - scoreW - gap;
+    const scoreW = 116, gap = 18, sidePad = 18;
+    const holesW = w - sidePad * 2 - scoreW - gap;
     const cw2 = holesW / 9;
-    const cxH = (i) => pad + i * cw2 + cw2 / 2;
+    const cxH = (i) => sidePad + i * cw2 + cw2 / 2;
     const rowY = 40;
-    const sx = pad + holesW + gap;      // 우측 스코어 패널 시작 x
+    const sx = sidePad + holesW + gap;  // 우측 스코어 패널 시작 x
     const scx = sx + scoreW / 2;        // 우측 패널 중앙
+    const scoreTop = 48, scoreH = 108;
+    const scoreBottom = scoreTop + scoreH;
     return (
       <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
            xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
@@ -69,13 +71,12 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
         {round.holes.slice(rs.start, rs.end).map((hole, i) => (
           <HoleCell key={i} cx={cxH(i)} rowY={rowY} hole={hole} idx={rs.start + i} c={c} />
         ))}
-        {/* 구분선 */}
-        <line x1={sx - gap / 2} y1="24" x2={sx - gap / 2} y2={h - 24} stroke={c.line} strokeWidth="2" />
-        {/* 우측 최종 스코어: 파대비(작게) · 총타수(더 작게) */}
-        <text x={scx} y="108" textAnchor="middle" fill={toParColor} fontFamily={HEAD} fontSize="72" fontWeight="700">
+        {/* 우측 최종 스코어 패널 */}
+        <line x1={sx - gap / 2} y1={scoreTop} x2={sx - gap / 2} y2={scoreBottom} stroke={c.line} strokeWidth="2" />
+        <text x={scx} y="86" textAnchor="middle" dominantBaseline="middle" fill={toParColor} fontFamily={HEAD} fontSize="72" fontWeight="700">
           {hasNine ? toParLabel(toPar) : "–"}
         </text>
-        <text x={scx} y="150" textAnchor="middle" fill={c.sub} fontFamily={MONO} fontSize="30" fontWeight="600" letterSpacing="0.5">
+        <text x={scx} y="140" textAnchor="middle" dominantBaseline="middle" fill={c.sub} fontFamily={MONO} fontSize="30" fontWeight="600" letterSpacing="0.5">
           {hasNine ? `${nineScore}` : ""}
         </text>
       </svg>

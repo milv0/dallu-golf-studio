@@ -4,21 +4,46 @@
 투명 배경 PNG를 만들어 유튜브·인스타 릴스 영상 위에 얹을 수 있습니다.
 
 ## 주요 기능
-- **3개 레이아웃**: 라운드 스코어카드(YouTube 가로 / Reels 세로) + 홀 카드(현재 홀 라이브 오버레이)
-- **입력**: 홀별 par(왼/가운데/오른쪽 클릭·드래그로 3/4/5) + 스코어(타수/파대비 토글), 선수·골프장·날짜
-- **내 코스 저장/불러오기**: 골프장 이름 기준 par 기억 (localStorage) — 한국 코스 대응
+- **라운드 입력**: 선수·골프장·날짜와 18홀 PAR/스코어를 `/round`에서 관리
+- **릴스 오버레이**: `/reels`에서 라운드 연동 또는 직접 입력으로 9홀/3홀 스코어 오버레이 제작
+- **홀 카드**: `/hole`에서 현재 홀, 거리, 타수, 클럽을 보여주는 라이브 오버레이 제작
+- **코스 DB**: 관리자 화면에서 골프장 나인/조합/PAR 데이터를 편집하고 KV에 저장
 - **투명 PNG 내보내기**: 1x/2x/3x 해상도, 방송 색상 코딩(버디=빨강·이글=골드·보기=파랑)
 - **다크/라이트 테마**, 반응형(PC·모바일)
 
 ## 기술 스택
 - Next.js (App Router) + Tailwind CSS v4
 - 클라이언트 렌더 SVG → `html-to-image`로 투명 PNG 추출
-- 정적 사이트(`output: export`) — 서버리스 불필요
+- 정적 사이트(`output: export`) + Cloudflare Pages Function/KV 코스 DB
+
+## 구조
+- `app/`: 홈, 라운드, 릴스, 홀 카드, 관리자 라우트
+- `components/studio/`: 홈 허브와 작업 화면 UI
+- `components/presets/`: PNG로 내보내는 SVG 오버레이 프리셋
+- `lib/`: 스코어 계산, 코스 DB 변환/검증, API 유틸
+- `functions/api/`: Cloudflare Pages Function
 
 ## 개발
+UI만 빠르게 개발할 때:
 ```bash
 npm install
 npm run dev      # http://localhost:3000
+```
+
+Cloudflare Pages Function(`/api/db`)과 KV까지 함께 확인할 때:
+```bash
+npm run build
+npx wrangler pages dev out --kv COURSE_KV
+```
+
+로컬 Pages Function 저장 테스트에는 `.dev.vars` 파일에 관리자 토큰을 둡니다.
+```bash
+ADMIN_TOKEN=local-admin-token
+```
+
+## 테스트
+```bash
+npm test
 ```
 
 ## 빌드 (정적)
@@ -30,3 +55,8 @@ npm run build    # out/ 에 정적 사이트 생성
 - 빌드 명령: `npm run build`
 - 출력 디렉토리: `out`
 - 프레임워크 프리셋: Next.js (Static HTML Export)
+- KV 바인딩: `COURSE_KV`
+- 관리자 저장용 secret 필수:
+```bash
+npx wrangler pages secret put ADMIN_TOKEN --project-name=dallu-golf-studio
+```

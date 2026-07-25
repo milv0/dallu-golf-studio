@@ -9,6 +9,7 @@ npm-debug.log*
 # Env / secrets
 .env
 .env.local
+.dev.vars
 a.txt
 
 # 개발용 샘플/테스트 이미지 (앱 코드 아님)

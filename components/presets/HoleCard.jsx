@@ -1,5 +1,5 @@
 // 프리셋: 홀 카드 (현재 홀 라이브 오버레이) — 방송 로어서드 스타일, 우리 테마(다크+라임)
-// 표시: 홀번호 · PAR · 거리 / 선수명 / 토탈(to-par) / SHOT(현재 샷 표시) / SELECTED CLUB / FOR X 배너
+// 표시: 홀번호 · PAR · 거리 / 선수명 / 토탈(to-par) / SHOT(현재 타수 표시) / SELECTED CLUB / FOR X 배너
 import { classify } from "../../lib/score";
 import { cardColors } from "../../lib/theme";
 
