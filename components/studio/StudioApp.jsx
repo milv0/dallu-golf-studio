@@ -624,7 +624,7 @@ function StudioWorkspace({ mode }) {
                 </div>
                 <Field label="토탈 (E, -2...)" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="E" />
                 <Field label="현재 타수" value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="4" />
-                <Field label="선택 클럽" value={holeCard.club} onChange={(v) => setHC("club", v)} placeholder="PUTTER" />
+                <ClubField value={holeCard.club} onChange={(v) => setHC("club", v)} />
               </div>
               <label className="mt-3 flex items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm font-semibold text-txt-soft">
                 <input
@@ -1092,6 +1092,53 @@ function ManualNineForm({ data, setHole }) {
         </div>
       </div>
     </div>
+  );
+}
+
+const CLUB_DEFAULTS = ["Driver", "Wood", "Hybrid", "Iron", "Wedge", "Putter"];
+const CLUB_OPTIONS = [
+  "Driver",
+  "3 Wood", "5 Wood", "7 Wood",
+  "2 Hybrid", "3 Hybrid", "4 Hybrid", "5 Hybrid", "6 Hybrid",
+  "3 Iron", "4 Iron", "5 Iron", "6 Iron", "7 Iron", "8 Iron", "9 Iron", "10 Iron",
+  "Pitching Wedge", "Gap Wedge", "Sand Wedge", "Lob Wedge",
+  "Putter",
+];
+
+function clubSuggestions(value) {
+  const q = String(value || "").trim().toLowerCase();
+  if (!q) return CLUB_DEFAULTS;
+  const number = q.match(/\d+/)?.[0];
+  if (number) return [`${number} Wood`, `${number} Hybrid`, `${number} Iron`];
+  const compact = q.replace(/\s+/g, "");
+  return CLUB_OPTIONS.filter((club) => {
+    const s = club.toLowerCase();
+    return s.includes(q) || s.replace(/\s+/g, "").includes(compact);
+  }).slice(0, 6);
+}
+
+function ClubField({ value, onChange }) {
+  const suggestions = clubSuggestions(value);
+  return (
+    <label className="col-span-2 block">
+      <span className="mb-1 block font-head text-[11px] uppercase tracking-widest text-txt-faint">
+        선택 클럽
+      </span>
+      <input value={value} onChange={(e) => onChange(e.target.value)}
+        placeholder="3, Driver, Putter"
+        className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent" />
+      <div className="mt-1.5 flex flex-wrap gap-1.5">
+        {suggestions.map((club) => (
+          <button key={club} type="button" onClick={() => onChange(club)}
+            className={"rounded-md border px-2.5 py-1 text-[11px] font-semibold transition " +
+              (String(value).toLowerCase() === club.toLowerCase()
+                ? "border-accent bg-accent text-[#06210f]"
+                : "border-line bg-panel-2 text-txt-soft hover:border-accent hover:text-txt")}>
+            {club}
+          </button>
+        ))}
+      </div>
+    </label>
   );
 }
 
