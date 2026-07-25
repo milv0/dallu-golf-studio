@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
-import HoleByHoleStrip, { SIZE as SIZE_YT } from "../components/presets/HoleByHoleStrip";
-import ReelsScorecard, { SIZE as SIZE_REELS } from "../components/presets/ReelsScorecard";
+import HoleByHoleStrip, { SIZE as SIZE_YT, sizeFor as ytSizeFor } from "../components/presets/HoleByHoleStrip";
+import ReelsScorecard, { SIZE as SIZE_REELS, sizeFor as reelsSizeFor } from "../components/presets/ReelsScorecard";
 import HoleCard, { SIZE as SIZE_HOLE } from "../components/presets/HoleCard";
 import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../lib/score";
 import { coursesFromDb, effectiveDb } from "../lib/coursesDb";
@@ -15,9 +15,11 @@ import { COURSE_DIRECTORY } from "../lib/courseDirectory";
 const PREVIEW_MAX_H = 340;
 
 const FORMATS = {
-  youtube: { label: "YouTube", ratio: "가로 16:9", Comp: HoleByHoleStrip, size: SIZE_YT },
-  reels: { label: "Instagram Reels", ratio: "세로 9:16", Comp: ReelsScorecard, size: SIZE_REELS },
+  youtube: { label: "YouTube", ratio: "가로 16:9", Comp: HoleByHoleStrip, sizeFor: ytSizeFor },
+  reels: { label: "Instagram Reels", ratio: "세로 9:16", Comp: ReelsScorecard, sizeFor: reelsSizeFor },
 };
+
+const RANGES = [["all", "전체 18홀"], ["front", "전반 OUT 9"], ["back", "후반 IN 9"]];
 
 const emptyHoleCard = () => ({
   hole: "", par: "", distance: "", toPar: "", currentShot: "", club: "",
@@ -43,6 +45,7 @@ export default function Home() {
   const [holeCard, setHoleCard] = useState(emptyHoleCard);
   const [layout, setLayout] = useState("round"); // 'round' | 'hole'
   const [format, setFormat] = useState("youtube");
+  const [holeRange, setHoleRange] = useState("all"); // 'all' | 'front' | 'back'
   const [exportScale, setExportScale] = useState(2);
   const [busy, setBusy] = useState(false);
   const [theme, setTheme] = useState("dark");
@@ -51,7 +54,7 @@ export default function Home() {
   const scoreRefs = useRef([]);
 
   const isHole = layout === "hole";
-  const size = isHole ? SIZE_HOLE : FORMATS[format].size;
+  const size = isHole ? SIZE_HOLE : FORMATS[format].sizeFor(holeRange);
 
   useEffect(() => {
     setTheme(localStorage.getItem("sc-theme") || "dark");
@@ -179,7 +182,7 @@ export default function Home() {
       const a = document.createElement("a");
       a.href = dataUrl;
       const name = (round.player || "scorecard").replace(/\s+/g, "_");
-      a.download = `${name}_${isHole ? "hole" : format}.png`;
+      a.download = `${name}_${isHole ? "hole" : format + (holeRange === "all" ? "" : "_" + holeRange)}.png`;
       a.click();
     } catch (e) {
       alert("내보내기 실패: " + e.message);
@@ -389,6 +392,21 @@ export default function Home() {
               </div>
             </div>
           )}
+          {/* 홀 범위(라운드 전용) */}
+          {!isHole && (
+            <div className="mb-3 flex flex-wrap items-center gap-3">
+              <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">범위</div>
+              <div className="flex overflow-hidden rounded-lg border border-line">
+                {RANGES.map(([key, label]) => (
+                  <button key={key} onClick={() => setHoleRange(key)}
+                    className={"px-4 py-1.5 text-sm font-semibold transition " +
+                      (holeRange === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mb-3 flex items-center justify-between">
             <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
@@ -416,7 +434,7 @@ export default function Home() {
                  style={{ maxWidth: Math.min(size.w, PREVIEW_MAX_H * (size.w / size.h)) }}>
               {isHole
                 ? <HoleCard data={holeData} />
-                : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} />; })()}
+                : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={holeRange} />; })()}
             </div>
           </div>
 

@@ -1,37 +1,44 @@
 // 프리셋 1: 홀바이홀 스코어카드 스트립 (방송 스타일, 투명 배경 SVG)
 // - 언더파 = 원, 오버파 = 사각형 (전통 스코어카드 마킹)
 // - 버디=빨강, 보기 계열=파랑, 이글/알바=골드 (방송 색상 코드)
-import { classify, toParLabel, KIND_COLOR } from "../../lib/score";
+import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
 
 export const SIZE = { w: 1760, h: 300 };
+export function sizeFor() { return SIZE; }   // YouTube는 범위와 무관하게 동일(열 수만 변함)
 
-export default function HoleByHoleStrip({ round, summary }) {
+export default function HoleByHoleStrip({ round, summary, range = "all" }) {
   const { w, h } = SIZE;
   const LP = 400;              // 좌측 선수 패널 폭
   const labelW = 84;          // 행 라벨(HOLE/PAR/SCORE) 전용 컬럼
   const tableX = LP + labelW;
   const tableW = w - tableX - 24;
-  const COLS = 21;             // 9 + OUT + 9 + IN + TOT
-  const cw = tableW / COLS;
   const top = 60;
   const rowH = 68;
   const yHole = top + 24;
   const yPar = yHole + rowH;
   const yScore = yPar + rowH;
 
-  // 컬럼 정의
-  const cols = [];
-  for (let i = 0; i < 9; i++) cols.push({ type: "hole", i });
-  cols.push({ type: "sum", key: "out", label: "OUT" });
-  for (let i = 9; i < 18; i++) cols.push({ type: "hole", i });
-  cols.push({ type: "sum", key: "in", label: "IN" });
-  cols.push({ type: "sum", key: "tot", label: "TOT" });
+  const rs = rangeStats(round.holes, range);
+  const rangeLabel = range === "front" ? "FRONT 9" : range === "back" ? "BACK 9" : "";
 
+  // 컬럼 정의 (범위에 따라)
+  const cols = [];
+  if (range === "all") {
+    for (let i = 0; i < 9; i++) cols.push({ type: "hole", i });
+    cols.push({ type: "sum", key: "out", label: "OUT" });
+    for (let i = 9; i < 18; i++) cols.push({ type: "hole", i });
+    cols.push({ type: "sum", key: "in", label: "IN" });
+    cols.push({ type: "sum", key: "tot", label: "TOT" });
+  } else {
+    for (let i = rs.start; i < rs.end; i++) cols.push({ type: "hole", i });
+    cols.push({ type: "sum", key: range === "front" ? "out" : "in", label: range === "front" ? "OUT" : "IN" });
+  }
+  const cw = tableW / cols.length;
   const colX = (idx) => tableX + idx * cw + cw / 2;
 
-  const toPar = summary.toPar;
+  const toPar = rs.toPar;
   const toParColor =
-    summary.thru === 0 ? "#eef2f6" : toPar < 0 ? "#38e08b" : toPar > 0 ? "#e5484d" : "#eef2f6";
+    rs.thru === 0 ? "#eef2f6" : toPar < 0 ? "#38e08b" : toPar > 0 ? "#e5484d" : "#eef2f6";
 
   const HEAD = "'Barlow Condensed', 'Pretendard', sans-serif";
   const MONO = "'JetBrains Mono', monospace";
@@ -54,7 +61,7 @@ export default function HoleByHoleStrip({ round, summary }) {
       {/* 1) 골프장 · 날짜 */}
       <text x="36" y="52" fill="#38e08b" fontFamily={HEAD} fontSize="22" fontWeight="600"
             letterSpacing="2.5">
-        {(round.course || "").toUpperCase()}{round.date ? `  ·  ${round.date.replaceAll("-", ".")}` : ""}
+        {(round.course || "").toUpperCase()}{round.date ? `  ·  ${round.date.replaceAll("-", ".")}` : ""}{rangeLabel ? `  ·  ${rangeLabel}` : ""}
       </text>
 
       {/* 2) 선수명 */}
@@ -71,14 +78,14 @@ export default function HoleByHoleStrip({ round, summary }) {
         TO PAR
       </text>
       <text x="36" y="252" fill={toParColor} fontFamily={HEAD} fontSize="74" fontWeight="700">
-        {toParLabel(summary.thru === 0 ? null : toPar)}
+        {toParLabel(rs.thru === 0 ? null : toPar)}
       </text>
 
       <line x1={LP - 150} y1="152" x2={LP - 150} y2={h - 40} stroke="#262e3a" strokeWidth="1.5" />
       <text x={LP - 28} y="176" textAnchor="end" fill="#9aa6b4" fontFamily={HEAD} fontSize="20"
             letterSpacing="2.5">THRU</text>
       <text x={LP - 28} y="248" textAnchor="end" fill="#eef2f6" fontFamily={HEAD} fontSize="52"
-            fontWeight="700">{summary.thru}</text>
+            fontWeight="700">{rs.thru}</text>
 
       {/* ── 홀 테이블 ── */}
       {/* 행 라벨 (좌측 작은 태그) */}
