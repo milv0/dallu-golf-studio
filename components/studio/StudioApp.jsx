@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import HoleByHoleStrip, { sizeFor as ytSizeFor } from "../presets/HoleByHoleStrip";
 import ReelsScorecard, { sizeFor as reelsSizeFor } from "../presets/ReelsScorecard";
-import HoleCard, { SIZE as SIZE_HOLE } from "../presets/HoleCard";
+import HoleCard, { sizeFor as holeSizeFor } from "../presets/HoleCard";
 import ReelsThreeHoleCard, { SIZE as SIZE_REELS_THREE } from "../presets/ReelsThreeHoleCard";
 import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../../lib/score";
 import { coursesFromDb, effectiveDb } from "../../lib/coursesDb";
@@ -100,10 +100,11 @@ function StudioWorkspace({ mode }) {
   const reelsCustom = mode === "reels" && reelsSource === "custom";
   const isRoundEditor = mode === "round";
   const usesRoundSource = (mode === "reels" && !reelsCustom) || mode === "hole";
+  const holeData = { player: round.player, ...holeCard };
   // 릴스는 9홀(전반/후반)만 — 18홀 전체 없음
   const availableRanges = format === "reels" ? RANGES.filter(([k]) => k !== "all") : RANGES;
   const effRange = format === "reels" && holeRange === "all" ? "front" : holeRange;
-  const size = isHole ? SIZE_HOLE : reelsV3 ? SIZE_REELS_THREE : FORMATS[format].sizeFor(effRange);
+  const size = isHole ? holeSizeFor(holeData) : reelsV3 ? SIZE_REELS_THREE : FORMATS[format].sizeFor(effRange);
   const previewMaxWidth = Math.min(size.w, PREVIEW_MAX_H * (size.w / size.h)) * (reelsV3 ? 0.72 : 1);
 
   useEffect(() => {
@@ -342,7 +343,6 @@ function StudioWorkspace({ mode }) {
 
   const Front = round.holes.slice(0, 9);
   const Back = round.holes.slice(9, 18);
-  const holeData = { player: round.player, ...holeCard };
 
   return (
     <main className="mx-auto max-w-[1500px] px-6 py-8">

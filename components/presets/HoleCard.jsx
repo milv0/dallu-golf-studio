@@ -5,6 +5,7 @@ import { cardColors } from "../../lib/theme";
 
 export const SIZE = { w: 560, h: 292 };
 
+const BAR_H = 212;
 const HEAD = "'Barlow Condensed', 'Pretendard', sans-serif";
 const MONO = "'JetBrains Mono', monospace";
 
@@ -13,34 +14,40 @@ const RESULT_LABEL = {
   par: "PAR", bogey: "BOGEY", double: "DOUBLE BOGEY", triple: "+",
 };
 
+function bannerFor(data) {
+  const par = Number(data.par) || null;
+  const shots = Number(data.currentShot) || 0;
+  if (data.showResultBanner === false || !par || shots <= 0) return "";
+  const { kind } = classify(par, shots);
+  return RESULT_LABEL[kind] ? `FOR ${RESULT_LABEL[kind]}` : "";
+}
+
+export function sizeFor(data) {
+  return bannerFor(data) ? SIZE : { w: SIZE.w, h: BAR_H };
+}
+
 export default function HoleCard({ data, theme = "dark" }) {
   const c = cardColors(theme);
-  const { w } = SIZE;
-  const barH = 212;
+  const size = sizeFor(data);
+  const { w } = size;
+  const barH = BAR_H;
   const segW = 112;            // 홀 세그먼트 폭
   const tpW = 104;             // 토탈(우측) 블록 폭
   const row2Y = 130;           // 2행 시작
 
-  const par = Number(data.par) || null;
   const shots = Number(data.currentShot) || 0;
   const player = data.player || "PLAYER";
   const playerSize = player.length > 12 ? 32 : player.length > 9 ? 36 : 40;
   const club = (data.club || "").toUpperCase();
   const clubSize = club.length > 12 ? 24 : club.length > 8 ? 28 : 32;
-
-  // 이번 샷을 홀아웃하면 나오는 결과 → FOR X
-  let banner = "";
-  if (data.showResultBanner !== false && par && shots > 0) {
-    const { kind } = classify(par, shots);
-    banner = RESULT_LABEL[kind] ? `FOR ${RESULT_LABEL[kind]}` : "";
-  }
+  const banner = bannerFor(data);
 
   // SHOT 번호 렌더 (1..shots, 마지막 동그라미)
   const shotNums = [];
   for (let i = 1; i <= Math.min(shots || 0, 9); i++) shotNums.push(i);
 
   return (
-    <svg viewBox={`0 0 ${w} ${SIZE.h}`} width={w} height={SIZE.h}
+    <svg viewBox={`0 0 ${w} ${size.h}`} width={w} height={size.h}
          xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
       {/* 메인 바 */}
       <rect x="0" y="0" width={w} height={barH} rx="16" fill={c.bg} opacity="0.94" />
