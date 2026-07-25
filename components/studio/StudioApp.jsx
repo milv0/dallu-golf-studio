@@ -118,6 +118,11 @@ function StudioWorkspace({ mode }) {
   useEffect(() => {
     setCurrentUser(loadCurrentUser());
   }, []);
+  useEffect(() => {
+    if (!isReelsSizedScore || typeof window === "undefined") return;
+    const source = new URLSearchParams(window.location.search).get("source");
+    if (source === "custom" || source === "linked") setReelsSource(source);
+  }, [isReelsSizedScore]);
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
   const logout = () => {
     clearCurrentUser();
@@ -377,27 +382,41 @@ function StudioWorkspace({ mode }) {
         </div>
       </div>
 
-      <nav className="mb-6 flex flex-wrap items-center gap-2">
-        {[
-          ["/score-18", "18홀"],
-          ["/score-9", "9홀"],
-          ["/score-3", "3홀"],
-          ["/hole", "1홀"],
-          ["/records", "내 라운딩"],
-          ["/admin", "코스 DB"],
-          ["/login", currentUser ? "계정" : "로그인"],
-        ].map(([href, label]) => (
-          <a key={href} href={href}
-            className={"rounded-lg border px-3.5 py-2 text-sm font-semibold transition " +
-              ((isScore18 && href === "/score-18") ||
-               (isScore9 && href === "/score-9") ||
-               (isScore3 && href === "/score-3") ||
-               (mode === "hole" && href === "/hole")
-                ? "border-accent bg-accent text-[#06210f]"
-                : "border-line bg-panel text-txt-soft hover:text-txt")}>
-            {label}
-          </a>
-        ))}
+      <nav className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="mr-1 font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint">
+            출력 선택
+          </span>
+          {[
+            ["/score-18", "18홀"],
+            ["/score-9", "9홀"],
+            ["/score-3", "3홀"],
+            ["/hole", "1홀"],
+          ].map(([href, label]) => (
+            <a key={href} href={href}
+              className={"rounded-lg border px-3.5 py-2 text-sm font-semibold transition " +
+                ((isScore18 && href === "/score-18") ||
+                 (isScore9 && href === "/score-9") ||
+                 (isScore3 && href === "/score-3") ||
+                 (mode === "hole" && href === "/hole")
+                  ? "border-accent bg-accent text-[#06210f]"
+                  : "border-line bg-panel text-txt-soft hover:text-txt")}>
+              {label}
+            </a>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {[
+            ["/records", "내 라운딩"],
+            ["/admin", "코스 DB"],
+            ["/login", currentUser ? "계정" : "로그인"],
+          ].map(([href, label]) => (
+            <a key={href} href={href}
+              className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
+              {label}
+            </a>
+          ))}
+        </div>
       </nav>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(440px,500px)_1fr]">
@@ -485,18 +504,31 @@ function StudioWorkspace({ mode }) {
           {isRoundEditor && !isHole && !reelsCustom && (
             <>
               <div className="rounded-xl border border-line bg-panel p-4">
-                <div className="mb-3 flex items-center justify-between gap-2">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
                     스코어 입력
                   </span>
-                  <div className="flex overflow-hidden rounded-lg border border-line">
-                    {[["strokes", "타수"], ["relative", "파대비"]].map(([key, label]) => (
-                      <button key={key} type="button" onClick={() => setScoreMode(key)}
-                        className={"px-3 py-1 text-xs font-semibold transition " +
-                          (scoreMode === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                        {label}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex overflow-hidden rounded-lg border border-line">
+                      {[["strokes", "타수"], ["relative", "파대비"]].map(([key, label]) => (
+                        <button key={key} type="button" onClick={() => setScoreMode(key)}
+                          className={"px-3 py-1 text-xs font-semibold transition " +
+                            (scoreMode === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                    {currentUser ? (
+                      <button type="button" onClick={handleSaveRoundRecord} disabled={!canSaveRound}
+                        className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] transition hover:bg-accent-2 disabled:opacity-50">
+                        기록 저장
                       </button>
-                    ))}
+                    ) : (
+                      <a href="/login?next=/score-18"
+                        className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] transition hover:bg-accent-2">
+                        로그인 후 저장
+                      </a>
+                    )}
                   </div>
                 </div>
                 {scoreMode === "relative" && (
@@ -542,17 +574,6 @@ function StudioWorkspace({ mode }) {
                       className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-semibold text-txt-soft transition hover:border-accent hover:text-txt">
                       내 라운딩
                     </a>
-                    {currentUser ? (
-                      <button type="button" onClick={handleSaveRoundRecord} disabled={!canSaveRound}
-                        className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] transition hover:bg-accent-2 disabled:opacity-50">
-                        기록 저장
-                      </button>
-                    ) : (
-                      <a href="/login?next=/score-18"
-                        className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] transition hover:bg-accent-2">
-                        로그인 후 저장
-                      </a>
-                    )}
                   </div>
                 </div>
               </div>
@@ -681,11 +702,11 @@ function StudioWorkspace({ mode }) {
             </div>
           )}
 
-          <div className="mb-3 flex items-center justify-between">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line bg-panel px-3 py-2">
             <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
               미리보기 <span className="text-txt-faint">(투명 배경)</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
               <div className="flex overflow-hidden rounded-lg border border-line">
                 {[["dark", "다크"], ["light", "라이트"]].map(([key, label]) => (
                   <button key={key} onClick={() => setCardTheme(key)}
@@ -707,7 +728,7 @@ function StudioWorkspace({ mode }) {
               </div>
               <button onClick={handleExport} disabled={busy || !canExport}
                 title={!canExport ? "필수 입력을 먼저 완료하세요" : "PNG 다운로드"}
-                className="rounded-lg bg-accent px-5 py-2 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60">
+                className="rounded-lg bg-accent px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60">
                 {busy ? "생성 중…" : !canExport ? "입력 필요" : "PNG 다운로드"}
               </button>
             </div>
@@ -733,11 +754,6 @@ function StudioWorkspace({ mode }) {
                 {(QUALITY.find((x) => x.scale === exportScale) || {}).label}
               </span>
               <span className="font-mono text-[13px]">투명 PNG · {size.w * exportScale}×{size.h * exportScale}px</span>
-            </div>
-            <div className="mt-2 text-[13px] leading-relaxed text-txt-faint">
-              화질은 <b className="text-txt-soft">최종 영상 해상도</b>에 맞추세요 — 1080p 영상은
-              <b className="text-txt-soft"> FHD(1x)</b> 면 픽셀 1:1로 선명하고, <b className="text-txt-soft">4K</b>로 편집하면
-              <b className="text-txt-soft"> 4K(2x)</b> 이상을 쓰세요. (iPhone 16 등 고해상도 폰도 영상 해상도만 맞으면 안 깨집니다)
             </div>
             <div className="mt-2 text-[12px] text-txt-faint">
               색상: 버디=빨강 / 이글=골드 / 보기=파랑 · 방송 관례 기준
@@ -1127,10 +1143,10 @@ function ClubField({ value, onChange }) {
       <input value={value} onChange={(e) => onChange(e.target.value)}
         placeholder="3, Driver, Putter"
         className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent" />
-      <div className="mt-1.5 flex flex-wrap gap-1.5">
+      <div className="mt-1.5 flex gap-1.5 overflow-x-auto pb-1">
         {suggestions.map((club) => (
           <button key={club} type="button" onClick={() => onChange(club)}
-            className={"rounded-md border px-2.5 py-1 text-[11px] font-semibold transition " +
+            className={"shrink-0 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition " +
               (String(value).toLowerCase() === club.toLowerCase()
                 ? "border-accent bg-accent text-[#06210f]"
                 : "border-line bg-panel-2 text-txt-soft hover:border-accent hover:text-txt")}>

@@ -1,7 +1,8 @@
 export default function HomeHub() {
   const secondary = [
     { href: "/records", title: "내 라운딩", meta: "저장 기록" },
-    { href: "/score-9", title: "직접 만들기", meta: "9홀 / 3홀" },
+    { href: "/score-9?source=custom", title: "9홀 직접", meta: "수동 입력" },
+    { href: "/score-3?source=custom", title: "3홀 직접", meta: "수동 입력" },
     { href: "/admin", title: "코스 DB", meta: "관리자" },
     { href: "/login", title: "로그인", meta: "계정" },
   ];
@@ -30,7 +31,7 @@ export default function HomeHub() {
         </div>
       </a>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {secondary.map((item) => (
           <a key={item.href} href={item.href}
             className="rounded-xl border border-line bg-panel p-4 transition hover:border-accent hover:bg-panel-2">
