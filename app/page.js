@@ -159,11 +159,19 @@ export default function Home() {
       setDbStatus({ state: "offline", count: courses.length, at: new Date() });
     }
   };
+  const loadedRef = useRef(false);
   useEffect(() => {
     loadCourseDb();
     try { setFavorites(JSON.parse(localStorage.getItem("sc-favorites") || "[]")); }
     catch { setFavorites([]); }
+    // 라운드 스코어·홀카드 입력 복원
+    try { const r = JSON.parse(localStorage.getItem("sc-round") || "null"); if (r && Array.isArray(r.holes)) setRound(r); } catch {}
+    try { const hc = JSON.parse(localStorage.getItem("sc-holecard") || "null"); if (hc && typeof hc === "object") setHoleCard(hc); } catch {}
+    loadedRef.current = true;
   }, []);
+  // 입력값 자동 저장 (새로고침해도 유지)
+  useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-round", JSON.stringify(round)); }, [round]);
+  useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-holecard", JSON.stringify(holeCard)); }, [holeCard]);
   const toggleFav = (name) => {
     setFavorites((prev) => {
       const next = prev.includes(name) ? prev.filter((n) => n !== name) : [name, ...prev];
