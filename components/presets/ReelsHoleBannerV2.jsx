@@ -39,7 +39,7 @@ export default function ReelsHoleBannerV2({ data }) {
          xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
       {/* 상단 바 (다크) + 라임 좌측 액센트 */}
       <rect x="0" y="0" width={w} height={barH} rx="16" fill={BG} opacity="0.94" />
-      <rect x="0" y="0" width="6" height={barH} rx="3" fill={ACCENT} />
+      <rect x="0" y="0" width={w} height="6" rx="3" fill={ACCENT} />
 
       {/* 좌측 엠블럼 */}
       <circle cx="100" cy={barH / 2} r="60" fill="none" stroke={ACCENT} strokeWidth="3" />
