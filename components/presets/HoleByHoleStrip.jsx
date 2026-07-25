@@ -4,7 +4,12 @@
 import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
 
 export const SIZE = { w: 1760, h: 300 };
-export function sizeFor() { return SIZE; }   // YouTube는 범위와 무관하게 동일(열 수만 변함)
+// 9홀 카드는 18홀 대비 60% 크기로 출력 (내부 그림은 동일, 출력 치수만 축소)
+export function sizeFor(range = "all") {
+  return range === "all"
+    ? SIZE
+    : { w: Math.round(SIZE.w * 0.6), h: Math.round(SIZE.h * 0.6) };
+}
 
 export default function HoleByHoleStrip({ round, summary, range = "all" }) {
   const { w, h } = SIZE;
