@@ -49,7 +49,7 @@ function HoleCell({ cx, rowY, hole, c, showHoleNumbers }) {
       {has && over && <rect x={cx - 30} y={cy - 30} width="60" height="60" rx="5" fill="none" stroke={color} strokeWidth="3.5" />}
       {has && (kind === "double" || kind === "triple") &&
         <rect x={cx - 37} y={cy - 37} width="74" height="74" rx="5" fill="none" stroke={color} strokeWidth="3" />}
-      <text x={cx} y={cy + 16} textAnchor="middle"
+      <text x={cx} y={cy} textAnchor="middle" dominantBaseline="middle"
             fill={has ? c.text : c.faint}
             fontFamily={MONO} fontSize="50" fontWeight="700">
         {has ? hole.score : "·"}

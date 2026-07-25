@@ -160,7 +160,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
               <rect x={cx - 33} y={yScore - 33} width="66" height="66" rx="5"
                     fill="none" stroke={color} strokeWidth="3" />
             )}
-            <text x={cx} y={yScore + 13} textAnchor="middle"
+            <text x={cx} y={yScore} textAnchor="middle" dominantBaseline="middle"
                   fill={hasScore ? c.text : c.faint}
                   fontFamily={MONO} fontSize="46" fontWeight="700">
               {hasScore ? hole.score : "·"}
