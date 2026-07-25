@@ -141,24 +141,24 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
                   fontFamily={MONO} fontSize="26">
               {hole?.par}
             </text>
-            {/* 마커: 언더=원, 오버=사각형 */}
+            {/* 마커: 언더=원, 오버=사각형 (칸 폭에 맞게) */}
             {hasScore && under && (
-              <circle cx={cx} cy={yScore} r="26" fill="none" stroke={color} strokeWidth="3" />
+              <circle cx={cx} cy={yScore} r="22" fill="none" stroke={color} strokeWidth="3" />
             )}
             {hasScore && kind === "eagle" && (
-              <circle cx={cx} cy={yScore} r="32" fill="none" stroke={color} strokeWidth="2.5" />
+              <circle cx={cx} cy={yScore} r="27" fill="none" stroke={color} strokeWidth="2.5" />
             )}
             {hasScore && over && (
-              <rect x={cx - 26} y={yScore - 26} width="52" height="52" rx="4"
+              <rect x={cx - 22} y={yScore - 22} width="44" height="44" rx="4"
                     fill="none" stroke={color} strokeWidth="3" />
             )}
             {hasScore && (kind === "double" || kind === "triple") && (
-              <rect x={cx - 32} y={yScore - 32} width="64" height="64" rx="4"
+              <rect x={cx - 27} y={yScore - 27} width="54" height="54" rx="4"
                     fill="none" stroke={color} strokeWidth="2.5" />
             )}
-            <text x={cx} y={yScore + 12} textAnchor="middle"
+            <text x={cx} y={yScore + 11} textAnchor="middle"
                   fill={hasScore ? (kind === "par" ? "#eef2f6" : color) : "#38404d"}
-                  fontFamily={MONO} fontSize="42" fontWeight="700">
+                  fontFamily={MONO} fontSize="38" fontWeight="700">
               {hasScore ? hole.score : "·"}
             </text>
           </g>
