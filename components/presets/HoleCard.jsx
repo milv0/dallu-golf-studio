@@ -3,7 +3,7 @@
 import { classify } from "../../lib/score";
 import { cardColors } from "../../lib/theme";
 
-export const SIZE = { w: 920, h: 340 };
+export const SIZE = { w: 780, h: 340 };
 
 const HEAD = "'Barlow Condensed', 'Pretendard', sans-serif";
 const MONO = "'JetBrains Mono', monospace";
@@ -17,8 +17,8 @@ export default function HoleCard({ data, theme = "dark" }) {
   const c = cardColors(theme);
   const { w } = SIZE;
   const barH = 250;
-  const segW = 170;            // 홀 세그먼트 폭
-  const tpW = 170;             // 토탈(우측) 블록 폭
+  const segW = 150;            // 홀 세그먼트 폭
+  const tpW = 150;             // 토탈(우측) 블록 폭
   const row2Y = 168;           // 2행 시작
 
   const par = Number(data.par) || null;
@@ -47,24 +47,24 @@ export default function HoleCard({ data, theme = "dark" }) {
 
       {/* 홀 번호 · PAR · 거리 */}
       <text x={segW / 2} y="96" textAnchor="middle" fill={c.text} fontFamily={HEAD}
-            fontSize="92" fontWeight="700">{data.hole || "–"}</text>
+            fontSize="84" fontWeight="700">{data.hole || "–"}</text>
       <text x={segW / 2} y="140" textAnchor="middle" fill={c.accent} fontFamily={HEAD}
             fontSize="30" fontWeight="700" letterSpacing="1">PAR {data.par || "–"}</text>
       <text x={segW / 2} y="182" textAnchor="middle" fill={c.sub} fontFamily={MONO}
             fontSize="30" fontWeight="700">{data.distance ? (/[a-zA-Z]/.test(String(data.distance)) ? String(data.distance).toUpperCase() : `${data.distance}${data.unit === "yd" ? "y" : "m"}`) : ""}</text>
 
       {/* 선수명 (센터 상단) */}
-      <circle cx={segW + 46} cy="76" r="34" fill="none" stroke={c.accent} strokeWidth="2.5" />
-      <text x={segW + 46} y="88" textAnchor="middle" fill={c.accent} fontFamily={HEAD}
+      <circle cx={segW + 40} cy="76" r="32" fill="none" stroke={c.accent} strokeWidth="2.5" />
+      <text x={segW + 40} y="88" textAnchor="middle" fill={c.accent} fontFamily={HEAD}
             fontSize="30" fontWeight="700">dG</text>
-      <text x={segW + 96} y="94" fill={c.text} fontFamily={HEAD} fontSize="58" fontWeight="700"
+      <text x={segW + 84} y="94" fill={c.text} fontFamily={HEAD} fontSize="52" fontWeight="700"
             letterSpacing="0.5">{data.player || "PLAYER"}</text>
 
       {/* 토탈(to-par) 우측 블록 */}
       <path d={`M${w - tpW},0 H${w - 18} Q${w},0 ${w},18 V${row2Y - 20} Q${w},${row2Y - 2} ${w - 18},${row2Y - 2} H${w - tpW} Z`}
             fill={c.accent} />
       <text x={w - tpW / 2} y="108" textAnchor="middle" fill={c.ink} fontFamily={HEAD}
-            fontSize="76" fontWeight="700">{data.toPar || "E"}</text>
+            fontSize="70" fontWeight="700">{data.toPar || "E"}</text>
 
       {/* 2행 구분선 */}
       <line x1={segW + 20} y1={row2Y} x2={w - 24} y2={row2Y} stroke={c.line} strokeWidth="1.5" />
@@ -73,7 +73,7 @@ export default function HoleCard({ data, theme = "dark" }) {
       <text x={segW + 24} y={row2Y + 30} fill={c.accent} fontFamily={HEAD} fontSize="24"
             fontWeight="700" fontStyle="italic" letterSpacing="1">SHOT</text>
       {shotNums.map((n, i) => {
-        const cx = segW + 40 + i * 44;
+        const cx = segW + 38 + i * 38;
         const last = i === shotNums.length - 1;
         return (
           <g key={n}>
@@ -94,8 +94,8 @@ export default function HoleCard({ data, theme = "dark" }) {
       {/* FOR X 배너 */}
       {banner && (
         <g>
-          <rect x="430" y="266" width={w - 430} height="70" rx="12" fill={c.accent} />
-          <text x={(430 + w) / 2} y="314" textAnchor="middle" fill={c.ink} fontFamily={HEAD}
+          <rect x="330" y="266" width={w - 330} height="70" rx="12" fill={c.accent} />
+          <text x={(330 + w) / 2} y="314" textAnchor="middle" fill={c.ink} fontFamily={HEAD}
                 fontSize="42" fontWeight="700" letterSpacing="1">{banner}</text>
         </g>
       )}
