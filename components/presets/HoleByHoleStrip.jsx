@@ -101,23 +101,23 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
         </text>
       ))}
 
-      {cols.map((c, idx) => {
+      {cols.map((col, idx) => {
         const cx = colX(idx);
-        const isSum = c.type === "sum";
+        const isSum = col.type === "sum";
         if (isSum) {
           const parVal =
-            c.key === "out" ? summary.outPar : c.key === "in" ? summary.inPar : summary.totalPar;
+            col.key === "out" ? summary.outPar : col.key === "in" ? summary.inPar : summary.totalPar;
           const scVal =
-            c.key === "out" ? summary.outScore : c.key === "in" ? summary.inScore : summary.totalScore;
+            col.key === "out" ? summary.outScore : col.key === "in" ? summary.inScore : summary.totalScore;
           const showSum =
-            c.key === "out" ? summary.hasFront : c.key === "in" ? summary.hasBack : summary.thru > 0;
+            col.key === "out" ? summary.hasFront : col.key === "in" ? summary.hasBack : summary.thru > 0;
           return (
             <g key={idx}>
               <rect x={cx - cw / 2 + 3} y={top} width={cw - 6} height={rowH * 3 - 8} rx="8"
                     fill={c.accent} opacity="0.10" />
               <text x={cx} y={yHole + 6} textAnchor="middle" fill={c.accent}
                     fontFamily={HEAD} fontSize="27" fontWeight="700" letterSpacing="1">
-                {c.label}
+                {col.label}
               </text>
               <text x={cx} y={yPar + 6} textAnchor="middle" fill={c.sub}
                     fontFamily={MONO} fontSize="34">
@@ -130,7 +130,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
             </g>
           );
         }
-        const hole = round.holes[c.i];
+        const hole = round.holes[col.i];
         const { kind } = classify(hole?.par, hole?.score);
         const color = KIND_COLOR[kind];
         const hasScore = kind !== "empty";
@@ -140,7 +140,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
           <g key={idx}>
             <text x={cx} y={yHole + 6} textAnchor="middle" fill={c.text}
                   fontFamily={HEAD} fontSize="32" fontWeight="600">
-              {c.i + 1}
+              {col.i + 1}
             </text>
             <text x={cx} y={yPar + 6} textAnchor="middle" fill={c.faint}
                   fontFamily={MONO} fontSize="28">
