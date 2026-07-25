@@ -56,12 +56,12 @@ const emptyLinkedThree = () => ({
   holes: [0, 1, 2],
 });
 
-// 파대비 상대값 파싱: "-1","0","1","+2","E" → 숫자 (유효하지 않으면 null)
+// 파대비 상대값 파싱: "-3".."5" 숫자만 허용 (유효하지 않으면 null)
 function parseRel(v) {
   const s = String(v).trim().toUpperCase();
-  if (s === "E") return 0;
-  if (!/^[+-]?\d+$/.test(s)) return null;
-  return parseInt(s, 10);
+  if (!/^-?\d+$/.test(s)) return null;
+  const n = parseInt(s, 10);
+  return n >= -3 && n <= 5 ? n : null;
 }
 // 절대 스코어 → 파대비 표시 문자열 (음수만 -, 나머지는 그대로: -1 / 0 / 1 / 2)
 function relDisplay(score, par) {
@@ -533,7 +533,7 @@ function StudioWorkspace({ mode }) {
                 </div>
                 {scoreMode === "relative" && (
                   <p className="mb-2 text-[11px] text-txt-faint">
-                    파대비 입력 — 버디 <b className="text-txt-soft">-1</b> · 파 <b className="text-txt-soft">0</b> · 보기 <b className="text-txt-soft">1</b> 또는 <b className="text-txt-soft">+1</b>
+                    파대비 입력 — <b className="text-txt-soft">-3</b>부터 <b className="text-txt-soft">5</b>까지 숫자만 입력
                   </p>
                 )}
                 <HoleGroup label="FRONT 9" holes={Front} offset={0} setHole={setHole}
@@ -1235,17 +1235,19 @@ function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreKey }) {
   useEffect(() => { setBuf(display); }, [display, mode]);
 
   const handle = (v) => {
-    setBuf(v);
     if (v === "") { setHole(idx, "score", ""); return; }
     if (mode === "relative") {
-      if (v === "-" || v === "+") return;            // 입력 도중 대기
+      if (v === "-") { setBuf(v); return; }          // 입력 도중 대기
+      if (!/^-?\d*$/.test(v)) return;
       const rel = parseRel(v);
-      if (rel == null) return;                        // 유효하지 않으면 버퍼만 유지
+      if (rel == null) return;
       const p = Number(par);
       if (Number.isNaN(p)) return;
+      setBuf(v);
       setHole(idx, "score", String(p + rel));
     } else {
       if (!/^\d+$/.test(v)) return;
+      setBuf(v);
       setHole(idx, "score", v);
     }
   };
@@ -1254,7 +1256,7 @@ function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreKey }) {
     <input
       aria-label={`홀 ${idx + 1} 스코어`}
       value={buf}
-      inputMode={mode === "relative" ? "text" : "numeric"}
+      inputMode={mode === "relative" ? "numeric" : "numeric"}
       ref={(el) => { if (scoreRefs) scoreRefs.current[idx] = el; }}
       onKeyDown={(e) => onScoreKey && onScoreKey(e, idx)}
       onChange={(e) => handle(e.target.value)}
