@@ -4,7 +4,7 @@
 import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
 
 // 레이아웃 상수 (모듈 공유) — 칸 폭 고정, 9홀은 세로 동일 & 가로만 짧게
-const H = 258;
+const H = 232;
 const LP = 230;              // 좌측 선수 패널 폭 (더 컴팩트)
 const LABEL_W = 70;          // 행 라벨 컬럼
 const TABLE_X = LP + LABEL_W;
@@ -21,8 +21,8 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
   const labelW = LABEL_W;
   const tableX = TABLE_X;
   const tableW = w - tableX - RM;
-  const top = 42;
-  const rowH = 62;
+  const top = 34;
+  const rowH = 60;
   const yHole = top + 24;
   const yPar = yHole + rowH;
   const yScore = yPar + rowH;
@@ -68,32 +68,32 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
 
       {/* ── 좌측 선수 패널 (섹션 구분) ── */}
       {/* 1) 골프장 · 날짜 */}
-      <text x="28" y="34" fill="#38e08b" fontFamily={HEAD} fontSize="16" fontWeight="600"
+      <text x="28" y="30" fill="#38e08b" fontFamily={HEAD} fontSize="16" fontWeight="600"
             letterSpacing="1.5">
         {(round.course || "").toUpperCase()}{round.date ? `  ·  ${round.date.replaceAll("-", ".")}` : ""}{rangeLabel ? `  ·  ${rangeLabel}` : ""}
       </text>
 
       {/* 2) 선수명 */}
-      <text x="28" y="76" fill="#eef2f6" fontFamily={HEAD} fontSize="38" fontWeight="700"
+      <text x="28" y="70" fill="#eef2f6" fontFamily={HEAD} fontSize="36" fontWeight="700"
             letterSpacing="0.5">
         {(round.player || "PLAYER").toUpperCase()}
       </text>
 
       {/* 구분선 */}
-      <line x1="28" y1="96" x2={LP - 20} y2="96" stroke="#262e3a" strokeWidth="1.5" />
+      <line x1="28" y1="88" x2={LP - 20} y2="88" stroke="#262e3a" strokeWidth="1.5" />
 
       {/* 3) 하단 스탯: TO PAR(좌) · THRU(우) */}
-      <text x="28" y="128" fill="#9aa6b4" fontFamily={HEAD} fontSize="16" letterSpacing="2">
+      <text x="28" y="118" fill="#9aa6b4" fontFamily={HEAD} fontSize="16" letterSpacing="2">
         TO PAR
       </text>
-      <text x="28" y="192" fill={toParColor} fontFamily={HEAD} fontSize="54" fontWeight="700">
+      <text x="28" y="180" fill={toParColor} fontFamily={HEAD} fontSize="52" fontWeight="700">
         {toParLabel(rs.thru === 0 ? null : toPar)}
       </text>
 
-      <line x1={LP - 88} y1="108" x2={LP - 88} y2={h - 22} stroke="#262e3a" strokeWidth="1.5" />
-      <text x={LP - 20} y="128" textAnchor="end" fill="#9aa6b4" fontFamily={HEAD} fontSize="16"
+      <line x1={LP - 88} y1="98" x2={LP - 88} y2={h - 18} stroke="#262e3a" strokeWidth="1.5" />
+      <text x={LP - 20} y="118" textAnchor="end" fill="#9aa6b4" fontFamily={HEAD} fontSize="16"
             letterSpacing="2">THRU</text>
-      <text x={LP - 20} y="188" textAnchor="end" fill="#eef2f6" fontFamily={HEAD} fontSize="38"
+      <text x={LP - 20} y="176" textAnchor="end" fill="#eef2f6" fontFamily={HEAD} fontSize="36"
             fontWeight="700">{rs.thru}</text>
 
       {/* ── 홀 테이블 ── */}
