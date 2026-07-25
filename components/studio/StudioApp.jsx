@@ -291,19 +291,9 @@ function StudioWorkspace({ mode }) {
     if (!captureRef.current) return;
     if (!canExport) return;
     const exportNode = captureRef.current.querySelector("svg") || captureRef.current;
-    const bgNodes = Array.from(exportNode.querySelectorAll("[data-export-bg='true']"));
-    const bgAttrs = bgNodes.map((node) => ({
-      node,
-      fill: node.getAttribute("fill"),
-      opacity: node.getAttribute("opacity"),
-    }));
     setBusy(true);
     try {
       await document.fonts?.ready;
-      bgNodes.forEach((node) => {
-        node.setAttribute("fill", "transparent");
-        node.setAttribute("opacity", "0");
-      });
       const dataUrl = await toPng(exportNode, {
         canvasWidth: size.w * exportScale,
         canvasHeight: size.h * exportScale,
@@ -321,12 +311,6 @@ function StudioWorkspace({ mode }) {
     } catch (e) {
       alert("내보내기 실패: " + e.message);
     } finally {
-      bgAttrs.forEach(({ node, fill, opacity }) => {
-        if (fill == null) node.removeAttribute("fill");
-        else node.setAttribute("fill", fill);
-        if (opacity == null) node.removeAttribute("opacity");
-        else node.setAttribute("opacity", opacity);
-      });
       setBusy(false);
     }
   }
