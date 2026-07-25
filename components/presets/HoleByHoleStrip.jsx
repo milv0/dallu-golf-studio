@@ -82,11 +82,11 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
       {/* 구분선 */}
       <line x1="24" y1="86" x2={LP - 16} y2="86" stroke="#262e3a" strokeWidth="1.5" />
 
-      {/* 3) TO PAR */}
-      <text x="24" y="116" fill="#9aa6b4" fontFamily={HEAD} fontSize="15" letterSpacing="1.5">
+      {/* 3) TO PAR (중앙 정렬) */}
+      <text x={LP / 2} y="116" textAnchor="middle" fill="#9aa6b4" fontFamily={HEAD} fontSize="15" letterSpacing="2">
         TO PAR
       </text>
-      <text x="24" y="182" fill={toParColor} fontFamily={HEAD} fontSize="54" fontWeight="700">
+      <text x={LP / 2} y="182" textAnchor="middle" fill={toParColor} fontFamily={HEAD} fontSize="56" fontWeight="700">
         {toParLabel(rs.thru === 0 ? null : toPar)}
       </text>
 
