@@ -68,13 +68,13 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
 
       {/* ── 좌측 선수 패널 (섹션 구분) ── */}
       {/* 1) 골프장 · 날짜 */}
-      <text x="24" y="30" fill="#38e08b" fontFamily={HEAD} fontSize="14" fontWeight="600"
+      <text x={LP / 2} y="30" textAnchor="middle" fill="#38e08b" fontFamily={HEAD} fontSize="14" fontWeight="600"
             letterSpacing="1">
         {(round.course || "").toUpperCase()}{rangeLabel ? `  ·  ${rangeLabel}` : ""}
       </text>
 
       {/* 2) 선수명 */}
-      <text x="24" y="68" fill="#eef2f6" fontFamily={HEAD} fontSize="32" fontWeight="700"
+      <text x={LP / 2} y="68" textAnchor="middle" fill="#eef2f6" fontFamily={HEAD} fontSize="32" fontWeight="700"
             letterSpacing="0.5">
         {(round.player || "PLAYER").toUpperCase()}
       </text>
