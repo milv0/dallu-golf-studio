@@ -63,7 +63,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
       style={{ display: "block" }}
     >
       {/* 카드 배경 */}
-      <rect x="0" y="0" width={w} height={h} rx="20" fill={c.bg} opacity="0.92" />
+      <rect x="0" y="0" width={w} height={h} fill={c.bg} opacity="0.92" />
       {/* 좌/우 구분선 */}
       <line x1={LP} y1="28" x2={LP} y2={h - 28} stroke={c.line} strokeWidth="2" />
 
