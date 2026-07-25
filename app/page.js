@@ -21,6 +21,13 @@ const FORMATS = {
 
 const RANGES = [["all", "전체 18홀"], ["front", "전반 OUT 9"], ["back", "후반 IN 9"]];
 
+// 내보내기 품질 프리셋 — 최종 영상 해상도에 맞춤
+const QUALITY = [
+  { scale: 1, label: "FHD", desc: "1080p 영상용" },
+  { scale: 2, label: "4K", desc: "2160p 영상용 · iPhone 16" },
+  { scale: 3, label: "MAX", desc: "초고화질" },
+];
+
 const emptyHoleCard = () => ({
   hole: "", par: "", distance: "", toPar: "", currentShot: "", club: "",
 });
@@ -414,11 +421,12 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-3">
               <div className="flex overflow-hidden rounded-lg border border-line">
-                {[1, 2, 3].map((s) => (
-                  <button key={s} onClick={() => setExportScale(s)}
-                    className={"px-3 py-1.5 text-xs font-semibold " +
-                      (exportScale === s ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                    {s}x
+                {QUALITY.map((qz) => (
+                  <button key={qz.scale} onClick={() => setExportScale(qz.scale)}
+                    title={`${qz.desc} · ${size.w * qz.scale}×${size.h * qz.scale}px`}
+                    className={"px-3 py-1.5 text-xs font-bold " +
+                      (exportScale === qz.scale ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
+                    {qz.label}
                   </button>
                 ))}
               </div>
@@ -439,8 +447,19 @@ export default function Home() {
           </div>
 
           <div className="mt-4 rounded-xl border border-line bg-panel p-4 text-sm text-txt-soft">
-            <b className="text-txt">출력</b>: 투명 PNG · {size.w}×{size.h} ×{exportScale} = {size.w * exportScale}×{size.h * exportScale}px
-            <div className="mt-2 text-[13px] text-txt-faint">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <b className="text-txt">출력</b>
+              <span className="rounded bg-panel-2 px-2 py-0.5 font-mono text-[12px] font-bold text-accent">
+                {(QUALITY.find((x) => x.scale === exportScale) || {}).label}
+              </span>
+              <span className="font-mono text-[13px]">투명 PNG · {size.w * exportScale}×{size.h * exportScale}px</span>
+            </div>
+            <div className="mt-2 text-[13px] leading-relaxed text-txt-faint">
+              화질은 <b className="text-txt-soft">최종 영상 해상도</b>에 맞추세요 — 일반 릴스·1080p 영상은
+              <b className="text-txt-soft"> FHD(1x)</b> 면 픽셀 1:1로 선명하고, <b className="text-txt-soft">4K</b>로 편집하면
+              <b className="text-txt-soft"> 4K(2x)</b> 이상을 쓰세요. (iPhone 16 등 고해상도 폰도 영상 해상도만 맞으면 안 깨집니다)
+            </div>
+            <div className="mt-2 text-[12px] text-txt-faint">
               색상: 버디=빨강 / 이글=골드 / 보기=파랑 · 방송 관례 기준
             </div>
           </div>
