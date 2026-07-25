@@ -1,15 +1,10 @@
-// 프리셋: 릴스 v2 — 방송 로어서드 배너 (a.jpeg 레이아웃 + 우리 다크/라임 테마)
+// 프리셋: 릴스 v2 — 방송 로어서드 배너 (a.jpeg 레이아웃 + 카드 테마)
+import { cardColors } from "../../lib/theme";
+
 export const SIZE = { w: 1080, h: 300 };
 
 const HEAD = "'Barlow Condensed', 'Pretendard', sans-serif";
 const MONO = "'JetBrains Mono', monospace";
-const BG = "#0b0e12";        // 다크 바탕 (기존 스코어카드와 동일)
-const PANEL = "#12181f";
-const SEG = "#0a0d11";
-const ACCENT = "#38e08b";    // 라임
-const INK = "#06210f";
-const TEXT = "#eef2f6";
-const SUB = "#9aa6b4";
 
 function ordinal(n) {
   const v = Number(n);
@@ -18,7 +13,9 @@ function ordinal(n) {
   return v + (s[(m - 20) % 10] || s[m] || s[0]);
 }
 
-export default function ReelsHoleBannerV2({ data }) {
+export default function ReelsHoleBannerV2({ data, theme = "dark" }) {
+  const cc = cardColors(theme);
+  const BG = cc.bg, PANEL = cc.panel, SEG = cc.seg, ACCENT = cc.accent, INK = cc.ink, TEXT = cc.text, SUB = cc.sub;
   const { w } = SIZE;
   const barH = 196;
   const par = Number(data.par) || 0;

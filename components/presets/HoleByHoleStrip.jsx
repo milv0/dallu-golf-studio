@@ -2,6 +2,7 @@
 // - 언더파 = 원, 오버파 = 사각형 (전통 스코어카드 마킹)
 // - 버디=빨강, 보기 계열=파랑, 이글/알바=골드 (방송 색상 코드)
 import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
+import { cardColors } from "../../lib/theme";
 
 // 레이아웃 상수 (모듈 공유) — 칸 폭 고정, 9홀은 세로 동일 & 가로만 짧게
 const H = 232;
@@ -16,8 +17,9 @@ export function sizeFor(range = "all") {
 }
 export const SIZE = sizeFor("all");
 
-export default function HoleByHoleStrip({ round, summary, range = "all" }) {
+export default function HoleByHoleStrip({ round, summary, range = "all", theme = "dark" }) {
   const { w, h } = sizeFor(range);
+  const c = cardColors(theme);
   const labelW = LABEL_W;
   const tableX = TABLE_X;
   const tableW = w - tableX - RM;
@@ -47,7 +49,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
 
   const toPar = rs.toPar;
   const toParColor =
-    rs.thru === 0 ? "#eef2f6" : toPar < 0 ? "#38e08b" : toPar > 0 ? "#e5484d" : "#eef2f6";
+    rs.thru === 0 ? c.text : toPar < 0 ? c.accent : toPar > 0 ? "#e5484d" : c.text;
 
   const HEAD = "'Barlow Condensed', 'Pretendard', sans-serif";
   const MONO = "'JetBrains Mono', monospace";
@@ -61,29 +63,29 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
       style={{ display: "block" }}
     >
       {/* 카드 배경 */}
-      <rect x="0" y="0" width={w} height={h} rx="20" fill="#0b0e12" opacity="0.92" />
-      <rect x="0" y="0" width={w} height="6" rx="3" fill="#38e08b" />
+      <rect x="0" y="0" width={w} height={h} rx="20" fill={c.bg} opacity="0.92" />
+      <rect x="0" y="0" width={w} height="6" rx="3" fill={c.accent} />
       {/* 좌/우 구분선 */}
-      <line x1={LP} y1="28" x2={LP} y2={h - 28} stroke="#262e3a" strokeWidth="2" />
+      <line x1={LP} y1="28" x2={LP} y2={h - 28} stroke={c.line} strokeWidth="2" />
 
       {/* ── 좌측 선수 패널 (섹션 구분) ── */}
       {/* 1) 골프장 · 날짜 */}
-      <text x={LP / 2} y="30" textAnchor="middle" fill="#38e08b" fontFamily={HEAD} fontSize="14" fontWeight="600"
+      <text x={LP / 2} y="30" textAnchor="middle" fill={c.accent} fontFamily={HEAD} fontSize="14" fontWeight="600"
             letterSpacing="1">
         {(round.course || "").toUpperCase()}{rangeLabel ? `  ·  ${rangeLabel}` : ""}
       </text>
 
       {/* 2) 선수명 */}
-      <text x={LP / 2} y="68" textAnchor="middle" fill="#eef2f6" fontFamily={HEAD} fontSize="32" fontWeight="700"
+      <text x={LP / 2} y="68" textAnchor="middle" fill={c.text} fontFamily={HEAD} fontSize="32" fontWeight="700"
             letterSpacing="0.5">
         {(round.player || "PLAYER").toUpperCase()}
       </text>
 
       {/* 구분선 */}
-      <line x1="24" y1="86" x2={LP - 16} y2="86" stroke="#262e3a" strokeWidth="1.5" />
+      <line x1="24" y1="86" x2={LP - 16} y2="86" stroke={c.line} strokeWidth="1.5" />
 
       {/* 3) TO PAR (중앙 정렬) */}
-      <text x={LP / 2} y="116" textAnchor="middle" fill="#9aa6b4" fontFamily={HEAD} fontSize="15" letterSpacing="2">
+      <text x={LP / 2} y="116" textAnchor="middle" fill={c.sub} fontFamily={HEAD} fontSize="15" letterSpacing="2">
         TO PAR
       </text>
       <text x={LP / 2} y="182" textAnchor="middle" fill={toParColor} fontFamily={HEAD} fontSize="56" fontWeight="700">
@@ -93,7 +95,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
       {/* ── 홀 테이블 ── */}
       {/* 행 라벨 (좌측 작은 태그) */}
       {[["HOLE", yHole], ["PAR", yPar], ["SCORE", yScore]].map(([lbl, y]) => (
-        <text key={lbl} x={tableX - 16} y={y + 6} textAnchor="end" fill="#5f6b7a"
+        <text key={lbl} x={tableX - 16} y={y + 6} textAnchor="end" fill={c.faint}
               fontFamily={HEAD} fontSize="18" letterSpacing="1">
           {lbl}
         </text>
@@ -112,16 +114,16 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
           return (
             <g key={idx}>
               <rect x={cx - cw / 2 + 3} y={top} width={cw - 6} height={rowH * 3 - 8} rx="8"
-                    fill="#38e08b" opacity="0.10" />
-              <text x={cx} y={yHole + 6} textAnchor="middle" fill="#38e08b"
+                    fill={c.accent} opacity="0.10" />
+              <text x={cx} y={yHole + 6} textAnchor="middle" fill={c.accent}
                     fontFamily={HEAD} fontSize="27" fontWeight="700" letterSpacing="1">
                 {c.label}
               </text>
-              <text x={cx} y={yPar + 6} textAnchor="middle" fill="#9aa6b4"
+              <text x={cx} y={yPar + 6} textAnchor="middle" fill={c.sub}
                     fontFamily={MONO} fontSize="34">
                 {parVal || ""}
               </text>
-              <text x={cx} y={yScore + 12} textAnchor="middle" fill="#eef2f6"
+              <text x={cx} y={yScore + 12} textAnchor="middle" fill={c.text}
                     fontFamily={MONO} fontSize="46" fontWeight="700">
                 {showSum ? scVal : ""}
               </text>
@@ -136,11 +138,11 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
         const over = kind === "bogey" || kind === "double" || kind === "triple";
         return (
           <g key={idx}>
-            <text x={cx} y={yHole + 6} textAnchor="middle" fill="#c7d0db"
+            <text x={cx} y={yHole + 6} textAnchor="middle" fill={c.sub}
                   fontFamily={HEAD} fontSize="32" fontWeight="600">
               {c.i + 1}
             </text>
-            <text x={cx} y={yPar + 6} textAnchor="middle" fill="#5f6b7a"
+            <text x={cx} y={yPar + 6} textAnchor="middle" fill={c.faint}
                   fontFamily={MONO} fontSize="28">
               {hole?.par}
             </text>
@@ -160,7 +162,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all" }) {
                     fill="none" stroke={color} strokeWidth="3" />
             )}
             <text x={cx} y={yScore + 13} textAnchor="middle"
-                  fill={hasScore ? (kind === "par" ? "#eef2f6" : color) : "#38404d"}
+                  fill={hasScore ? (kind === "par" ? c.text : color) : c.faint}
                   fontFamily={MONO} fontSize="46" fontWeight="700">
               {hasScore ? hole.score : "·"}
             </text>

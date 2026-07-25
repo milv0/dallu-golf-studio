@@ -55,6 +55,7 @@ export default function Home() {
   const [format, setFormat] = useState("youtube");
   const [holeRange, setHoleRange] = useState("all"); // 'all' | 'front' | 'back'
   const [reelsVer, setReelsVer] = useState("v1");    // 릴스 레이아웃 v1(스코어카드) | v2(배너)
+  const [cardTheme, setCardTheme] = useState("dark"); // 카드(프리셋) 색 테마
   const [exportScale, setExportScale] = useState(2);
   const [busy, setBusy] = useState(false);
   const [theme, setTheme] = useState("dark");
@@ -496,6 +497,15 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-3">
               <div className="flex overflow-hidden rounded-lg border border-line">
+                {[["dark", "다크"], ["light", "라이트"]].map(([key, label]) => (
+                  <button key={key} onClick={() => setCardTheme(key)}
+                    className={"px-3 py-1.5 text-xs font-bold " +
+                      (cardTheme === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex overflow-hidden rounded-lg border border-line">
                 {QUALITY.map((qz) => (
                   <button key={qz.scale} onClick={() => setExportScale(qz.scale)}
                     title={`${qz.desc} · ${size.w * qz.scale}×${size.h * qz.scale}px`}
@@ -516,10 +526,10 @@ export default function Home() {
             <div ref={captureRef} className="preview-svg mx-auto w-full"
                  style={{ maxWidth: Math.min(size.w, PREVIEW_MAX_H * (size.w / size.h)) }}>
               {isHole
-                ? <HoleCard data={holeData} />
+                ? <HoleCard data={holeData} theme={cardTheme} />
                 : reelsV2
-                ? <ReelsHoleBannerV2 data={holeData} />
-                : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={effRange} />; })()}
+                ? <ReelsHoleBannerV2 data={holeData} theme={cardTheme} />
+                : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={effRange} theme={cardTheme} />; })()}
             </div>
           </div>
 
@@ -623,8 +633,8 @@ export default function Home() {
               </div>
               <PlacementPreview format={format} size={size} reelsV2={reelsV2}>
                 {reelsV2
-                  ? <ReelsHoleBannerV2 data={holeData} />
-                  : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={effRange} />; })()}
+                  ? <ReelsHoleBannerV2 data={holeData} theme={cardTheme} />
+                  : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={effRange} theme={cardTheme} />; })()}
               </PlacementPreview>
               <p className="mt-2 text-[12px] text-txt-faint">
                 실제 영상 위 배치 예시입니다 — 편집 프로그램에서 크기·위치는 자유롭게 조절하세요. (권장: 하단 배치)
