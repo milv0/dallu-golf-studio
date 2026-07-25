@@ -3,7 +3,7 @@
 import { classify } from "../../lib/score";
 import { cardColors } from "../../lib/theme";
 
-export const SIZE = { w: 1120, h: 340 };
+export const SIZE = { w: 920, h: 340 };
 
 const HEAD = "'Barlow Condensed', 'Pretendard', sans-serif";
 const MONO = "'JetBrains Mono', monospace";
@@ -17,8 +17,8 @@ export default function HoleCard({ data, theme = "dark" }) {
   const c = cardColors(theme);
   const { w } = SIZE;
   const barH = 250;
-  const segW = 200;            // 홀 세그먼트 폭
-  const tpW = 190;             // 토탈(우측) 블록 폭
+  const segW = 170;            // 홀 세그먼트 폭
+  const tpW = 170;             // 토탈(우측) 블록 폭
   const row2Y = 168;           // 2행 시작
 
   const par = Number(data.par) || null;
@@ -39,9 +39,9 @@ export default function HoleCard({ data, theme = "dark" }) {
     <svg viewBox={`0 0 ${w} ${SIZE.h}`} width={w} height={SIZE.h}
          xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
       {/* 메인 바 */}
-      <rect x="0" y="0" width={w} height={barH} rx="18" fill={c.bg} opacity="0.94" />
+      <rect data-export-bg="true" x="0" y="0" width={w} height={barH} rx="18" fill={c.bg} opacity="0.94" />
       {/* 홀 세그먼트 (더 어둡게) */}
-      <path d={`M18,0 H${segW} V${barH} H18 Q0,${barH} 0,${barH - 18} V18 Q0,0 18,0 Z`}
+      <path data-export-bg="true" d={`M18,0 H${segW} V${barH} H18 Q0,${barH} 0,${barH - 18} V18 Q0,0 18,0 Z`}
             fill={c.seg} />
       <line x1={segW} y1="20" x2={segW} y2={barH - 20} stroke={c.line} strokeWidth="2" />
 
@@ -57,7 +57,7 @@ export default function HoleCard({ data, theme = "dark" }) {
       <circle cx={segW + 46} cy="76" r="34" fill="none" stroke={c.accent} strokeWidth="2.5" />
       <text x={segW + 46} y="88" textAnchor="middle" fill={c.accent} fontFamily={HEAD}
             fontSize="30" fontWeight="700">dG</text>
-      <text x={segW + 104} y="94" fill={c.text} fontFamily={HEAD} fontSize="58" fontWeight="700"
+      <text x={segW + 96} y="94" fill={c.text} fontFamily={HEAD} fontSize="58" fontWeight="700"
             letterSpacing="0.5">{data.player || "PLAYER"}</text>
 
       {/* 토탈(to-par) 우측 블록 */}

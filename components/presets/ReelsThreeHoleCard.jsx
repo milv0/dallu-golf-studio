@@ -79,7 +79,7 @@ export default function ReelsThreeHoleCard({ data, theme = "light" }) {
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
          xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
-      <rect x="0" y="0" width={w} height={h} rx="24" fill={c.bg} opacity="0.92" />
+      <rect data-export-bg="true" x="0" y="0" width={w} height={h} rx="24" fill={c.bg} opacity="0.92" />
       <rect x="0" y="0" width={w} height="6" rx="3" fill={c.accent} />
       {holes.map((hole, i) => (
         <HoleCell key={i} cx={cx(i)} rowY={rowY} hole={hole} c={c} showHoleNumbers={showHoleNumbers} />
