@@ -3,7 +3,7 @@
 import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
 
 export function sizeFor(range = "all") {
-  return range === "all" ? { w: 1080, h: 660 } : { w: 1080, h: 360 };
+  return range === "all" ? { w: 1080, h: 660 } : { w: 1080, h: 320 };
 }
 export const SIZE = sizeFor("all");
 
@@ -58,7 +58,7 @@ export default function ReelsScorecard({ round, summary, range = "all" }) {
     const holesW = innerW - scoreW - gap;
     const cw2 = holesW / 9;
     const cxH = (i) => pad + i * cw2 + cw2 / 2;
-    const rowY = 112;
+    const rowY = 104;
     const sx = pad + holesW + gap;      // 우측 스코어 패널 시작 x
     const scx = sx + scoreW / 2;        // 우측 패널 중앙
     return (
@@ -66,20 +66,20 @@ export default function ReelsScorecard({ round, summary, range = "all" }) {
            xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
         <rect x="0" y="0" width={w} height={h} rx="24" fill="#0b0e12" opacity="0.92" />
         <rect x="0" y="0" width="6" height={h} rx="3" fill="#38e08b" />
-        <text x={pad} y="56" fill="#38e08b" fontFamily={HEAD} fontSize="30" fontWeight="700" letterSpacing="3">
+        <text x={pad} y="52" fill="#38e08b" fontFamily={HEAD} fontSize="30" fontWeight="700" letterSpacing="3">
           {label}
         </text>
         {round.holes.slice(rs.start, rs.end).map((hole, i) => (
           <HoleCell key={i} cx={cxH(i)} rowY={rowY} hole={hole} idx={rs.start + i} />
         ))}
         {/* 구분선 */}
-        <line x1={sx - gap / 2} y1="78" x2={sx - gap / 2} y2={h - 48} stroke="#262e3a" strokeWidth="2" />
+        <line x1={sx - gap / 2} y1="72" x2={sx - gap / 2} y2={h - 32} stroke="#262e3a" strokeWidth="2" />
         {/* 우측 최종 스코어 */}
-        <text x={scx} y="150" textAnchor="middle" fill="#9aa6b4" fontFamily={HEAD} fontSize="24" letterSpacing="3">SCORE</text>
-        <text x={scx} y="256" textAnchor="middle" fill="#eef2f6" fontFamily={HEAD} fontSize="104" fontWeight="700">
+        <text x={scx} y="140" textAnchor="middle" fill="#9aa6b4" fontFamily={HEAD} fontSize="24" letterSpacing="3">SCORE</text>
+        <text x={scx} y="240" textAnchor="middle" fill="#eef2f6" fontFamily={HEAD} fontSize="104" fontWeight="700">
           {hasNine ? nineScore : "–"}
         </text>
-        <text x={scx} y="308" textAnchor="middle" fill={toParColor} fontFamily={HEAD} fontSize="44" fontWeight="700">
+        <text x={scx} y="292" textAnchor="middle" fill={toParColor} fontFamily={HEAD} fontSize="42" fontWeight="700">
           {hasNine ? toParLabel(toPar) : ""}
         </text>
       </svg>
