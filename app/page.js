@@ -458,7 +458,7 @@ export default function Home() {
                 {(() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={holeRange} />; })()}
               </PlacementPreview>
               <p className="mt-2 text-[12px] text-txt-faint">
-                실제 영상 위에 얹었을 때의 상대 크기·위치 예시입니다. (오버레이 폭 ≈ 화면의 {Math.round(size.w / (format === "youtube" ? 1920 : 1080) * 100)}%)
+                실제 영상 위 배치 예시입니다 — 편집 프로그램에서 크기·위치는 자유롭게 조절하세요. (권장: 하단 배치)
               </p>
             </div>
           )}
@@ -470,12 +470,12 @@ export default function Home() {
 
 // 스코어카드 이미지 업로드 + 미리보기 + 추출
 // par 빠른 지정: 3/4/5 인라인 세그먼트 — 회색 명도로 구분 (초록X)
-// 실제 화면 배치 미리보기: 유튜브(16:9)/릴스(9:16) 목업 위에 오버레이를 실제 상대 크기로 배치
+// 실제 화면 배치 미리보기: 유튜브(16:9)/릴스(9:16) 목업 위에 오버레이를 여백 둔 예시 크기로 배치
 function PlacementPreview({ format, size, children }) {
   const isYt = format === "youtube";
-  const videoW = isYt ? 1920 : 1080;             // 기준 영상 해상도
-  const overlayPct = (size.w / videoW) * 100;    // 화면 대비 오버레이 폭 %
-  const bottomPct = isYt ? 6 : 20;               // 하단에서 띄우는 위치
+  // 실제 영상 위에 얹을 때 보통 가장자리 여백을 둠 → 권장 배치 폭(%)
+  const overlayPct = isYt ? 82 : 66;
+  const bottomPct = isYt ? 7 : 14;
   return (
     <div className={"mx-auto w-full " + (isYt ? "max-w-[560px]" : "max-w-[300px]")}>
       <div className="relative overflow-hidden rounded-2xl border border-line shadow-xl"
@@ -498,7 +498,7 @@ function PlacementPreview({ format, size, children }) {
         {isYt && (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-black/40" />
         )}
-        {/* 오버레이 (실제 상대 크기) */}
+        {/* 오버레이 (여백 둔 예시 배치) */}
         <div className="absolute left-1/2 -translate-x-1/2"
              style={{ bottom: bottomPct + "%", width: overlayPct + "%" }}>
           {children}
