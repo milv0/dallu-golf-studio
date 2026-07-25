@@ -5,6 +5,7 @@ import { toPng } from "html-to-image";
 import HoleByHoleStrip, { SIZE as SIZE_YT, sizeFor as ytSizeFor } from "../components/presets/HoleByHoleStrip";
 import ReelsScorecard, { SIZE as SIZE_REELS, sizeFor as reelsSizeFor } from "../components/presets/ReelsScorecard";
 import HoleCard, { SIZE as SIZE_HOLE } from "../components/presets/HoleCard";
+import ReelsHoleBannerV2, { SIZE as SIZE_REELS_V2 } from "../components/presets/ReelsHoleBannerV2";
 import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../lib/score";
 import { coursesFromDb, effectiveDb } from "../lib/coursesDb";
 import { loadDb, saveDb } from "../lib/nineStore";
@@ -53,6 +54,7 @@ export default function Home() {
   const [layout, setLayout] = useState("round"); // 'round' | 'hole'
   const [format, setFormat] = useState("youtube");
   const [holeRange, setHoleRange] = useState("all"); // 'all' | 'front' | 'back'
+  const [reelsVer, setReelsVer] = useState("v1");    // 릴스 레이아웃 v1(스코어카드) | v2(배너)
   const [exportScale, setExportScale] = useState(2);
   const [busy, setBusy] = useState(false);
   const [theme, setTheme] = useState("dark");
@@ -61,10 +63,12 @@ export default function Home() {
   const scoreRefs = useRef([]);
 
   const isHole = layout === "hole";
+  // 릴스 v2 = 홀 배너(단일 홀 데이터 사용)
+  const reelsV2 = !isHole && format === "reels" && reelsVer === "v2";
   // 릴스는 9홀(전반/후반)만 — 18홀 전체 없음
   const availableRanges = format === "reels" ? RANGES.filter(([k]) => k !== "all") : RANGES;
   const effRange = format === "reels" && holeRange === "all" ? "front" : holeRange;
-  const size = isHole ? SIZE_HOLE : FORMATS[format].sizeFor(effRange);
+  const size = isHole ? SIZE_HOLE : reelsV2 ? SIZE_REELS_V2 : FORMATS[format].sizeFor(effRange);
 
   useEffect(() => {
     setTheme(localStorage.getItem("sc-theme") || "dark");
@@ -192,7 +196,7 @@ export default function Home() {
       const a = document.createElement("a");
       a.href = dataUrl;
       const name = (round.player || "scorecard").replace(/\s+/g, "_");
-      a.download = `${name}_${isHole ? "hole" : format + (effRange === "all" ? "" : "_" + effRange)}.png`;
+      a.download = `${name}_${isHole ? "hole" : reelsV2 ? "reels_v2" : format + (effRange === "all" ? "" : "_" + effRange)}.png`;
       a.click();
     } catch (e) {
       alert("내보내기 실패: " + e.message);
@@ -284,8 +288,8 @@ export default function Home() {
             )}
           </div>
 
-          {/* 라운드 스코어카드: 홀별 입력 */}
-          {!isHole && (
+          {/* 라운드 스코어카드: 홀별 입력 (릴스 v2에서는 숨김) */}
+          {!isHole && !reelsV2 && (
             <>
               <div className="rounded-xl border border-line bg-panel p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
@@ -336,8 +340,8 @@ export default function Home() {
             </>
           )}
 
-          {/* 홀 카드: 현재 홀 정보 */}
-          {isHole && (
+          {/* 홀 카드: 현재 홀 정보 (홀카드 레이아웃 또는 릴스 v2) */}
+          {(isHole || reelsV2) && (
             <div className="rounded-xl border border-line bg-panel p-4">
               <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
                 현재 홀 정보
@@ -402,8 +406,23 @@ export default function Home() {
               </div>
             </div>
           )}
-          {/* 홀 범위(라운드 전용) */}
-          {!isHole && (
+          {/* 릴스 레이아웃 버전 (릴스 전용) */}
+          {!isHole && format === "reels" && (
+            <div className="mb-3 flex flex-wrap items-center gap-3">
+              <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">버전</div>
+              <div className="flex overflow-hidden rounded-lg border border-line">
+                {[["v1", "V1 스코어카드"], ["v2", "V2 홀 배너"]].map(([key, label]) => (
+                  <button key={key} onClick={() => setReelsVer(key)}
+                    className={"px-4 py-1.5 text-sm font-semibold transition " +
+                      (reelsVer === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* 홀 범위(라운드 전용, 릴스 v2 제외) */}
+          {!isHole && !reelsV2 && (
             <div className="mb-3 flex flex-wrap items-center gap-3">
               <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">범위</div>
               <div className="flex overflow-hidden rounded-lg border border-line">
@@ -445,6 +464,8 @@ export default function Home() {
                  style={{ maxWidth: Math.min(size.w, PREVIEW_MAX_H * (size.w / size.h)) }}>
               {isHole
                 ? <HoleCard data={holeData} />
+                : reelsV2
+                ? <ReelsHoleBannerV2 data={holeData} />
                 : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={effRange} />; })()}
             </div>
           </div>
@@ -476,8 +497,10 @@ export default function Home() {
                   {format === "youtube" ? "유튜브 16:9 화면 기준" : "릴스 9:16 화면 기준"}
                 </span>
               </div>
-              <PlacementPreview format={format} size={size}>
-                {(() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={effRange} />; })()}
+              <PlacementPreview format={format} size={size} reelsV2={reelsV2}>
+                {reelsV2
+                  ? <ReelsHoleBannerV2 data={holeData} />
+                  : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={effRange} />; })()}
               </PlacementPreview>
               <p className="mt-2 text-[12px] text-txt-faint">
                 실제 영상 위 배치 예시입니다 — 편집 프로그램에서 크기·위치는 자유롭게 조절하세요. (권장: 하단 배치)
@@ -493,15 +516,14 @@ export default function Home() {
 // 스코어카드 이미지 업로드 + 미리보기 + 추출
 // par 빠른 지정: 3/4/5 인라인 세그먼트 — 회색 명도로 구분 (초록X)
 // 실제 화면 배치 미리보기: 유튜브(16:9)/릴스(9:16) 목업 위에 오버레이를 여백 둔 예시 크기로 배치
-function PlacementPreview({ format, size, children }) {
+function PlacementPreview({ format, size, reelsV2, children }) {
   const isYt = format === "youtube";
-  // 실제 영상 위에 얹을 때 보통 가장자리 여백을 둠 → 권장 배치 폭(%)
   // 유튜브 9홀 카드는 18홀보다 가로가 짧으므로 배치 폭도 비례
-  const overlayPct = isYt ? 82 * (size.w / 1761) : 88;
-  // 둘 다 상단 배치 — 유튜브: 좌측 상단 / 릴스: 상단 중앙
+  const overlayPct = isYt ? 82 * (size.w / 1761) : reelsV2 ? 92 : 88;
+  // 유튜브: 좌측 상단 / 릴스: 상단(인스타 상단 버튼과 안 겹치게 더 아래로)
   const pos = isYt
     ? { left: "3%", top: "5%" }
-    : { left: "50%", top: "6%", transform: "translateX(-50%)" };
+    : { left: "50%", top: "16%", transform: "translateX(-50%)" };
   return (
     <div className={"mx-auto w-full " + (isYt ? "max-w-[560px]" : "max-w-[300px]")}>
       <div className="relative overflow-hidden rounded-2xl border border-line shadow-xl"
