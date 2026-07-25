@@ -401,9 +401,9 @@ function StudioWorkspace({ mode }) {
               </div>
               <div className="space-y-3">
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="w-16 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">방식</div>
+                  <div className="w-16 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">입력</div>
                   <div className="flex overflow-hidden rounded-lg border border-line">
-                    {[["linked", "라운드 연동"], ["custom", "직접 입력"]].map(([key, label]) => (
+                    {[["linked", "저장 라운드"], ["custom", "직접 입력"]].map(([key, label]) => (
                       <button key={key} onClick={() => setReelsSource(key)}
                         className={"px-4 py-1.5 text-sm font-semibold transition " +
                           (reelsSource === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>

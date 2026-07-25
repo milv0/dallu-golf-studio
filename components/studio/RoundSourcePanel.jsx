@@ -53,17 +53,13 @@ export default function RoundSourcePanel({
     <div className="rounded-xl border border-line bg-panel p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-          라운드 연동
+          선택된 라운드
         </div>
         <div className="flex items-center gap-2">
           <button type="button" onClick={open ? () => setOpen(false) : loadRecords}
             className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] transition hover:bg-accent-2">
-            {open ? "닫기" : "내 라운딩 불러오기"}
+            {open ? "닫기" : hasRoundData ? "변경" : "라운드 선택"}
           </button>
-          <a href="/score-18"
-            className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-semibold text-txt-soft transition hover:border-accent hover:text-txt">
-            {hasRoundData ? "18홀 수정" : "18홀 입력"}
-          </a>
         </div>
       </div>
 
@@ -73,7 +69,7 @@ export default function RoundSourcePanel({
             {!hasRoundData ? "18홀 데이터 없음" : "18홀 스코어 없음"}
           </b>
           <span className="ml-2">
-            {!hasRoundData ? "먼저 18홀 스코어를 입력하세요." : "연동에는 입력된 홀 스코어가 필요합니다."}
+            {!hasRoundData ? "저장된 라운드를 선택하거나 18홀 스코어를 입력하세요." : "이 라운드에는 입력된 홀 스코어가 필요합니다."}
           </span>
         </div>
       )}
@@ -97,6 +93,11 @@ export default function RoundSourcePanel({
             {summary.thru > 0 ? `${summary.totalScore} · ${toPar} · ${summary.thru}/18` : "-"}
           </span>
         </div>
+      </div>
+      <div className="mt-3 border-t border-line pt-3 text-right">
+        <a href="/score-18" className="text-xs font-semibold text-txt-faint transition hover:text-accent">
+          18홀 입력/수정
+        </a>
       </div>
 
       {open && (
