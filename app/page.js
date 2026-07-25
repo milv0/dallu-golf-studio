@@ -496,8 +496,8 @@ export default function Home() {
 function PlacementPreview({ format, size, children }) {
   const isYt = format === "youtube";
   // 실제 영상 위에 얹을 때 보통 가장자리 여백을 둠 → 권장 배치 폭(%)
-  // 유튜브 9홀 카드는 18홀(1760) 대비 작으므로 폭도 비례 축소
-  const overlayPct = isYt ? 82 * (size.w / 1760) : 66;
+  // 유튜브 9홀 카드는 18홀보다 가로가 짧으므로 배치 폭도 비례
+  const overlayPct = isYt ? 82 * (size.w / 1761) : 66;
   // 둘 다 상단 배치 — 유튜브: 좌측 상단 / 릴스: 상단 중앙
   const pos = isYt
     ? { left: "3%", top: "5%" }

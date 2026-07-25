@@ -3,20 +3,24 @@
 // - 버디=빨강, 보기 계열=파랑, 이글/알바=골드 (방송 색상 코드)
 import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
 
-export const SIZE = { w: 1760, h: 300 };
-// 9홀 카드는 18홀 대비 60% 크기로 출력 (내부 그림은 동일, 출력 치수만 축소)
+// 레이아웃 상수 (모듈 공유) — 칸 폭 고정, 9홀은 세로 동일 & 가로만 짧게
+const H = 300;
+const LP = 330;              // 좌측 선수 패널 폭
+const LABEL_W = 84;          // 행 라벨 컬럼
+const TABLE_X = LP + LABEL_W;
+const CW = 63;               // 칸 폭 (18홀·9홀 동일)
+const RM = 24;               // 우측 여백
+const colsFor = (range) => (range === "all" ? 21 : 10);   // 21=9+OUT+9+IN+TOT / 10=9+SUM
 export function sizeFor(range = "all") {
-  return range === "all"
-    ? SIZE
-    : { w: Math.round(SIZE.w * 0.6), h: Math.round(SIZE.h * 0.6) };
+  return { w: TABLE_X + colsFor(range) * CW + RM, h: H };
 }
+export const SIZE = sizeFor("all");
 
 export default function HoleByHoleStrip({ round, summary, range = "all" }) {
-  const { w, h } = SIZE;
-  const LP = 330;              // 좌측 선수 패널 폭 (컴팩트)
-  const labelW = 84;          // 행 라벨(HOLE/PAR/SCORE) 전용 컬럼
-  const tableX = LP + labelW;
-  const tableW = w - tableX - 24;
+  const { w, h } = sizeFor(range);
+  const labelW = LABEL_W;
+  const tableX = TABLE_X;
+  const tableW = w - tableX - RM;
   const top = 58;
   const rowH = 66;
   const yHole = top + 24;
