@@ -14,6 +14,7 @@ import { COURSE_DIRECTORY } from "../../lib/courseDirectory";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import { saveRoundRecord } from "../../lib/roundHistory";
 import HomeHub from "./HomeHub";
+import { RelativeScoreInput, ScoreInput, manualScoreClass } from "./ScoreInputs";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
 const PREVIEW_MAX_H = 340;
@@ -55,21 +56,6 @@ const emptyLinkedThree = () => ({
   showHoleNumbers: true,
   holes: [0, 1, 2],
 });
-
-// 파대비 상대값 파싱: "-3".."5" 숫자만 허용 (유효하지 않으면 null)
-function parseRel(v) {
-  const s = String(v).trim().toUpperCase();
-  if (!/^-?\d+$/.test(s)) return null;
-  const n = parseInt(s, 10);
-  return n >= -3 && n <= 5 ? n : null;
-}
-// 절대 스코어 → 파대비 표시 문자열 (음수만 -, 나머지는 그대로: -1 / 0 / 1 / 2)
-function relDisplay(score, par) {
-  if (score === "" || score == null || par === "" || par == null) return "";
-  const n = Number(score) - Number(par);
-  if (Number.isNaN(n)) return "";
-  return String(n);
-}
 
 export default function StudioApp({ mode = "home" } = {}) {
   return mode === "home" ? <HomeHub /> : <StudioWorkspace mode={mode} />;
@@ -980,6 +966,14 @@ function RoundSourcePanel({ round, summary, requiresScores = false, hasRoundData
 }
 
 function ThreeHoleForm({ data, setField, setHole }) {
+  const scoreRefs = useRef([]);
+  const handleScoreKey = (e, idx) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      scoreRefs.current[idx + 1]?.focus();
+    }
+  };
+
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
       <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
@@ -1000,21 +994,35 @@ function ThreeHoleForm({ data, setField, setHole }) {
         {[
           ["hole", "홀", "1"],
           ["par", "PAR", "4"],
-          ["score", "타수", "4"],
+          ["score", "파대비", "0"],
         ].map(([key, label, placeholder]) => (
           <div key={key} className="grid grid-cols-[54px_repeat(3,minmax(0,1fr))] border-b border-line last:border-b-0">
             <div className="flex items-center justify-center bg-panel-2 font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint">
               {label}
             </div>
             {data.holes.map((hole, i) => (
-              <input key={i} value={hole[key] || ""} onChange={(e) => setHole(i, key, e.target.value)}
-                placeholder={placeholder}
-                inputMode={key === "hole" ? "text" : "numeric"}
-                className="border-l border-line bg-transparent px-2 py-2.5 text-center font-mono text-sm font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent" />
+              key === "score" ? (
+                <RelativeScoreInput key={i}
+                  idx={i}
+                  par={hole.par}
+                  score={hole.score}
+                  onScore={(value) => setHole(i, "score", value)}
+                  scoreRefs={scoreRefs}
+                  onScoreKey={handleScoreKey}
+                  ariaLabel={`3홀 직접입력 ${i + 1}번째 홀 파대비`} />
+              ) : (
+                <input key={i} value={hole[key] || ""} onChange={(e) => setHole(i, key, e.target.value)}
+                  placeholder={placeholder}
+                  inputMode={key === "hole" ? "text" : "numeric"}
+                  className="border-l border-line bg-transparent px-2 py-2.5 text-center font-mono text-sm font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent" />
+              )
             ))}
           </div>
         ))}
       </div>
+      <p className="mt-2 text-[11px] text-txt-faint">
+        파 기준 입력: 버디 <b className="text-txt-soft">-1</b> · 파 <b className="text-txt-soft">0</b> · 보기 <b className="text-txt-soft">1</b> · ←/→ 조정
+      </p>
 
       <div className="mt-3">
         <Field label="TO PAR 직접입력" value={data.toPar} onChange={(v) => setField("toPar", v)} placeholder="자동 계산" />
@@ -1076,6 +1084,14 @@ function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onSelect, onSh
 }
 
 function ManualNineForm({ data, setHole }) {
+  const scoreRefs = useRef([]);
+  const handleScoreKey = (e, idx) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      scoreRefs.current[idx + 1]?.focus();
+    }
+  };
+
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
       <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
@@ -1100,15 +1116,24 @@ function ManualNineForm({ data, setHole }) {
               className="border-l border-t border-line bg-transparent px-1 py-2 text-center font-mono text-sm font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10" />
           ))}
           <div className="flex items-center justify-center border-t border-line bg-panel-2 py-2 font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint">
-            타수
+            파대비
           </div>
           {data.holes.map((hole, i) => (
-            <input key={i} value={hole.score || ""} onChange={(e) => setHole(i, "score", e.target.value)}
-              placeholder="-" inputMode="numeric"
-              className="border-l border-t border-line bg-transparent px-1 py-2 text-center font-mono text-sm font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10" />
+            <RelativeScoreInput key={i}
+              idx={i}
+              par={hole.par}
+              score={hole.score}
+              onScore={(value) => setHole(i, "score", value)}
+              scoreRefs={scoreRefs}
+              onScoreKey={handleScoreKey}
+              ariaLabel={`9홀 직접입력 ${i + 1}번째 홀 파대비`}
+              className={`${manualScoreClass} border-t`} />
           ))}
         </div>
       </div>
+      <p className="mt-2 text-[11px] text-txt-faint">
+        파 기준 입력: 버디 <b className="text-txt-soft">-1</b> · 파 <b className="text-txt-soft">0</b> · 보기 <b className="text-txt-soft">1</b> · ←/→ 조정
+      </p>
     </div>
   );
 }
@@ -1226,63 +1251,5 @@ function HoleGroup({ label, holes, offset, setHole, scoreRefs, onScoreKey, score
         </div>
       </div>
     </div>
-  );
-}
-
-// 타수/파대비 겸용 스코어 입력. 내부 저장은 항상 절대 타수.
-function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreKey }) {
-  const display = mode === "relative" ? relDisplay(score, par) : (score ?? "");
-  const [buf, setBuf] = useState(display);
-
-  useEffect(() => { setBuf(display); }, [display, mode]);
-
-  const applyRelative = (rel) => {
-    const p = Number(par);
-    if (Number.isNaN(p)) return;
-    const next = Math.max(-3, Math.min(5, rel));
-    setBuf(String(next));
-    setHole(idx, "score", String(p + next));
-  };
-
-  const handle = (v) => {
-    if (v === "") { setHole(idx, "score", ""); return; }
-    if (mode === "relative") {
-      if (v === "-") { setBuf(v); return; }          // 입력 도중 대기
-      if (!/^-?\d*$/.test(v)) return;
-      const rel = parseRel(v);
-      if (rel == null) return;
-      const p = Number(par);
-      if (Number.isNaN(p)) return;
-      setBuf(v);
-      setHole(idx, "score", String(p + rel));
-    } else {
-      if (!/^\d+$/.test(v)) return;
-      setBuf(v);
-      setHole(idx, "score", v);
-    }
-  };
-
-  const handleKeyDown = (e) => {
-    if (mode === "relative" && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
-      e.preventDefault();
-      const current = parseRel(buf);
-      const base = current == null ? 0 : current;
-      applyRelative(base + (e.key === "ArrowLeft" ? -1 : 1));
-      return;
-    }
-    onScoreKey?.(e, idx);
-  };
-
-  return (
-    <input
-      aria-label={`홀 ${idx + 1} 스코어`}
-      value={buf}
-      inputMode={mode === "relative" ? "numeric" : "numeric"}
-      ref={(el) => { if (scoreRefs) scoreRefs.current[idx] = el; }}
-      onKeyDown={handleKeyDown}
-      onChange={(e) => handle(e.target.value)}
-      placeholder="–"
-      className="w-full bg-transparent py-2.5 text-center font-mono text-lg font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent"
-    />
   );
 }
