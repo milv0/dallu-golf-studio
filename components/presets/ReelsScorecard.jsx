@@ -3,7 +3,7 @@
 import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
 
 export function sizeFor(range = "all") {
-  return range === "all" ? { w: 1080, h: 660 } : { w: 1080, h: 320 };
+  return range === "all" ? { w: 1080, h: 660 } : { w: 1080, h: 200 };
 }
 export const SIZE = sizeFor("all");
 
@@ -16,12 +16,12 @@ function HoleCell({ cx, rowY, hole, idx }) {
   const has = kind !== "empty";
   const under = kind === "birdie" || kind === "eagle" || kind === "albatross";
   const over = kind === "bogey" || kind === "double" || kind === "triple";
-  const cy = rowY + 92;
+  const cy = rowY + 108;
   return (
     <g>
-      <text x={cx} y={rowY + 24} textAnchor="middle" fill="#c7d0db"
+      <text x={cx} y={rowY + 22} textAnchor="middle" fill="#c7d0db"
             fontFamily={HEAD} fontSize="26" fontWeight="600">{idx + 1}</text>
-      <text x={cx} y={rowY + 52} textAnchor="middle" fill="#8b96a5"
+      <text x={cx} y={rowY + 50} textAnchor="middle" fill="#8b96a5"
             fontFamily={MONO} fontSize="24" fontWeight="600">P{hole?.par}</text>
       {has && under && <circle cx={cx} cy={cy} r="24" fill="none" stroke={color} strokeWidth="3" />}
       {has && kind === "eagle" && <circle cx={cx} cy={cy} r="30" fill="none" stroke={color} strokeWidth="2.5" />}
@@ -51,14 +51,13 @@ export default function ReelsScorecard({ round, summary, range = "all" }) {
 
   // 9홀: 홀 스코어 중심 + 우측 최종 스코어
   if (!isAll) {
-    const label = range === "front" ? "HOLES 1–9" : "HOLES 10–18";
     const nineScore = range === "front" ? summary.outScore : summary.inScore;
     const hasNine = range === "front" ? summary.hasFront : summary.hasBack;
     const scoreW = 220, gap = 22;
     const holesW = innerW - scoreW - gap;
     const cw2 = holesW / 9;
     const cxH = (i) => pad + i * cw2 + cw2 / 2;
-    const rowY = 104;
+    const rowY = 40;
     const sx = pad + holesW + gap;      // 우측 스코어 패널 시작 x
     const scx = sx + scoreW / 2;        // 우측 패널 중앙
     return (
@@ -66,21 +65,17 @@ export default function ReelsScorecard({ round, summary, range = "all" }) {
            xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
         <rect x="0" y="0" width={w} height={h} rx="24" fill="#0b0e12" opacity="0.92" />
         <rect x="0" y="0" width="6" height={h} rx="3" fill="#38e08b" />
-        <text x={pad} y="52" fill="#38e08b" fontFamily={HEAD} fontSize="30" fontWeight="700" letterSpacing="3">
-          {label}
-        </text>
         {round.holes.slice(rs.start, rs.end).map((hole, i) => (
           <HoleCell key={i} cx={cxH(i)} rowY={rowY} hole={hole} idx={rs.start + i} />
         ))}
         {/* 구분선 */}
-        <line x1={sx - gap / 2} y1="72" x2={sx - gap / 2} y2={h - 32} stroke="#262e3a" strokeWidth="2" />
-        {/* 우측 최종 스코어 */}
-        <text x={scx} y="140" textAnchor="middle" fill="#9aa6b4" fontFamily={HEAD} fontSize="24" letterSpacing="3">SCORE</text>
-        <text x={scx} y="240" textAnchor="middle" fill="#eef2f6" fontFamily={HEAD} fontSize="104" fontWeight="700">
-          {hasNine ? nineScore : "–"}
+        <line x1={sx - gap / 2} y1="24" x2={sx - gap / 2} y2={h - 24} stroke="#262e3a" strokeWidth="2" />
+        {/* 우측 최종 스코어: 파대비 크게 · 총타수 작게 */}
+        <text x={scx} y="114" textAnchor="middle" fill={toParColor} fontFamily={HEAD} fontSize="96" fontWeight="700">
+          {hasNine ? toParLabel(toPar) : "–"}
         </text>
-        <text x={scx} y="292" textAnchor="middle" fill={toParColor} fontFamily={HEAD} fontSize="42" fontWeight="700">
-          {hasNine ? toParLabel(toPar) : ""}
+        <text x={scx} y="160" textAnchor="middle" fill="#9aa6b4" fontFamily={MONO} fontSize="30" fontWeight="600">
+          {hasNine ? `${nineScore}타` : ""}
         </text>
       </svg>
     );
