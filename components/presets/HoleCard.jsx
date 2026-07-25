@@ -43,9 +43,9 @@ export default function HoleCard({ data, theme = "dark" }) {
     <svg viewBox={`0 0 ${w} ${SIZE.h}`} width={w} height={SIZE.h}
          xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
       {/* 메인 바 */}
-      <rect data-export-bg="true" x="0" y="0" width={w} height={barH} rx="16" fill={c.bg} opacity="0.94" />
+      <rect x="0" y="0" width={w} height={barH} rx="16" fill={c.bg} opacity="0.94" />
       {/* 홀 세그먼트 (더 어둡게) */}
-      <path data-export-bg="true" d={`M18,0 H${segW} V${barH} H18 Q0,${barH} 0,${barH - 18} V18 Q0,0 18,0 Z`}
+      <path d={`M18,0 H${segW} V${barH} H18 Q0,${barH} 0,${barH - 18} V18 Q0,0 18,0 Z`}
             fill={c.seg} />
       <line x1={segW} y1="18" x2={segW} y2={barH - 18} stroke={c.line} strokeWidth="2" />
 
