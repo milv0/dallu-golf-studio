@@ -371,13 +371,13 @@ function StudioWorkspace({ mode }) {
               로그인
             </a>
           )}
-          <button onClick={loadCourseDb} title="코스 DB 새로고침"
+          <button onClick={loadCourseDb} title="코스 목록 새로고침"
             className="flex items-center gap-2 rounded-lg border border-line bg-panel px-3 py-2 text-xs font-semibold transition hover:text-txt">
             <span className={"inline-block h-2 w-2 rounded-full " +
               (dbStatus.state === "online" ? "bg-accent" : dbStatus.state === "offline" ? "bg-[#ffb648]" : "bg-txt-faint animate-pulse")} />
             <span className="text-txt-soft">
-              {dbStatus.state === "online" ? `코스 DB 동기화됨 · ${dbStatus.count}` :
-               dbStatus.state === "offline" ? "오프라인(캐시)" : "동기화 중…"}
+              {dbStatus.state === "online" ? `코스 목록 · ${dbStatus.count}` :
+               dbStatus.state === "offline" ? "코스 목록(캐시)" : "동기화 중…"}
             </span>
             <span className="text-txt-faint">↻</span>
           </button>

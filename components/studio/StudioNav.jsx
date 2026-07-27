@@ -22,8 +22,6 @@ function NavLink({ href, label, active }) {
 export default function StudioNav({ active, currentUser }) {
   const secondaryLinks = [
     { href: "/records", label: "내 라운딩", id: "records" },
-    { href: "/admin", label: "코스 DB", id: "admin" },
-    { href: "/login", label: currentUser ? "계정" : "로그인", id: "login" },
   ];
 
   return (
