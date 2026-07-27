@@ -36,12 +36,12 @@ function HoleCell({ cx, rowY, hole, c, showHoleNumbers }) {
     <g>
       {showHoleNumbers && (
         <text x={cx} y={rowY + 22} textAnchor="middle" fill={c.text}
-              fontFamily={HEAD} fontSize="28" fontWeight="600">
+              fontFamily={HEAD} fontSize="28" fontWeight="600" className="score-meta-lock">
           {hole?.hole || "–"}
         </text>
       )}
       <text x={cx} y={parY} textAnchor="middle" fill={c.faint}
-            fontFamily={MONO} fontSize="26" fontWeight="600">
+            fontFamily={MONO} fontSize="26" fontWeight="600" className="score-meta-lock">
         P{hole?.par || "–"}
       </text>
       {has && under && <circle cx={cx} cy={cy} r="30" fill="none" stroke={color} strokeWidth="3.5" />}

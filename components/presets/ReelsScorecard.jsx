@@ -21,8 +21,8 @@ function HoleCell({ cx, rowY, hole, idx, c }) {
   return (
     <g>
       <text x={cx} y={rowY + 22} textAnchor="middle" fill={c.text}
-            fontFamily={HEAD} fontSize="28" fontWeight="600">{idx + 1}</text>      <text x={cx} y={rowY + 58} textAnchor="middle" fill={c.faint}
-            fontFamily={MONO} fontSize="26" fontWeight="600">P{hole?.par}</text>
+            fontFamily={HEAD} fontSize="28" fontWeight="600" className="score-meta-lock">{idx + 1}</text>      <text x={cx} y={rowY + 58} textAnchor="middle" fill={c.faint}
+            fontFamily={MONO} fontSize="26" fontWeight="600" className="score-meta-lock">P{hole?.par}</text>
       {has && under && <circle cx={cx} cy={cy} r="30" fill="none" stroke={color} strokeWidth="3.5" />}
       {has && kind === "eagle" && <circle cx={cx} cy={cy} r="37" fill="none" stroke={color} strokeWidth="3" />}
       {has && over && <rect x={cx - 30} y={cy - 30} width="60" height="60" rx="5" fill="none" stroke={color} strokeWidth="3.5" />}
@@ -110,12 +110,12 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
       {isAll ? (
         <>
           {/* FRONT 9 */}
-          <text x={pad} y={242} fill={c.faint} fontFamily={HEAD} fontSize="20" letterSpacing="2">HOLES 1–9</text>
+          <text x={pad} y={242} fill={c.faint} fontFamily={HEAD} fontSize="20" letterSpacing="2" className="score-meta-lock">HOLES 1–9</text>
           {round.holes.slice(0, 9).map((hole, i) => (
             <HoleCell key={i} cx={cx(i)} rowY={250} hole={hole} idx={i} c={c} />
           ))}
           {/* BACK 9 */}
-          <text x={pad} y={392} fill={c.faint} fontFamily={HEAD} fontSize="20" letterSpacing="2">HOLES 10–18</text>
+          <text x={pad} y={392} fill={c.faint} fontFamily={HEAD} fontSize="20" letterSpacing="2" className="score-meta-lock">HOLES 10–18</text>
           {round.holes.slice(9, 18).map((hole, i) => (
             <HoleCell key={i + 9} cx={cx(i)} rowY={400} hole={hole} idx={i + 9} c={c} />
           ))}

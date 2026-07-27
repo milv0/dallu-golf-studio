@@ -95,7 +95,8 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
       {/* 행 라벨 (좌측 작은 태그) */}
       {[["HOLE", yHole], ["PAR", yPar], ["SCORE", yScore]].map(([lbl, y]) => (
         <text key={lbl} x={tableX - 16} y={y + 6} textAnchor="end" fill={c.faint}
-              fontFamily={HEAD} fontSize="18" letterSpacing="1">
+              fontFamily={HEAD} fontSize="18" letterSpacing="1"
+              className={lbl === "SCORE" ? undefined : "score-meta-lock"}>
           {lbl}
         </text>
       ))}
@@ -115,11 +116,11 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
               <rect x={cx - cw / 2 + 3} y={top} width={cw - 6} height={rowH * 3 - 8} rx="8"
                     fill={c.accent} opacity="0.10" />
               <text x={cx} y={yHole + 6} textAnchor="middle" fill={c.accent}
-                    fontFamily={HEAD} fontSize="27" fontWeight="700" letterSpacing="1">
+                    fontFamily={HEAD} fontSize="27" fontWeight="700" letterSpacing="1" className="score-meta-lock">
                 {col.label}
               </text>
               <text x={cx} y={yPar + 6} textAnchor="middle" fill={c.sub}
-                    fontFamily={MONO} fontSize="34">
+                    fontFamily={MONO} fontSize="34" className="score-meta-lock">
                 {parVal || ""}
               </text>
               <text x={cx} y={yScore + 12} textAnchor="middle" fill={c.text}
@@ -138,11 +139,11 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
         return (
           <g key={idx}>
             <text x={cx} y={yHole + 6} textAnchor="middle" fill={c.text}
-                  fontFamily={HEAD} fontSize="32" fontWeight="600">
+                  fontFamily={HEAD} fontSize="32" fontWeight="600" className="score-meta-lock">
               {col.i + 1}
             </text>
             <text x={cx} y={yPar + 6} textAnchor="middle" fill={c.faint}
-                  fontFamily={MONO} fontSize="28">
+                  fontFamily={MONO} fontSize="28" className="score-meta-lock">
               {hole?.par}
             </text>
             {/* 마커: 언더=원, 오버=사각형 (칸 폭에 맞게) */}

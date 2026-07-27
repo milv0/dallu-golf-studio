@@ -82,3 +82,11 @@ body {
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--c-line-2); border-radius: 6px; }
+
+/* 홀 번호/PAR 표시값은 일반 드래그 복사를 막는다. */
+.score-meta-lock,
+.score-meta-lock * {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
