@@ -1,4 +1,20 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
+
 export default function HomeHub() {
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    setCurrentUser(loadCurrentUser());
+  }, []);
+
+  const logout = () => {
+    clearCurrentUser();
+    setCurrentUser(null);
+  };
+
   const secondary = [
     { href: "/records", title: "내 라운딩", meta: "저장 기록" },
     { href: "/score-9?source=custom", title: "9홀 직접", meta: "수동 입력" },
@@ -16,10 +32,23 @@ export default function HomeHub() {
             Dallu Golf <span className="text-accent">Studio</span>
           </a>
         </div>
-        <a href="/login"
-          className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
-          로그인
-        </a>
+        {currentUser ? (
+          <div className="flex items-center gap-2">
+            <a href="/records"
+              className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
+              내 라운딩
+            </a>
+            <button type="button" onClick={logout}
+              className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
+              로그아웃
+            </button>
+          </div>
+        ) : (
+          <a href="/login"
+            className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
+            로그인
+          </a>
+        )}
       </div>
 
       <a href="/score-18"

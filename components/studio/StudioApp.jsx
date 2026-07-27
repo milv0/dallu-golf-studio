@@ -20,8 +20,9 @@ import PlacementPreview from "./PlacementPreview";
 import RoundSourcePanel from "./RoundSourcePanel";
 import HoleGroup from "./RoundScoreGrid";
 import { RelativeScoreHint } from "./ScoreInputs";
-import { ClubAutocomplete, ClubField, Field } from "./StudioFields";
+import { ClubAutocomplete, Field } from "./StudioFields";
 import StudioNav from "./StudioNav";
+import HoleCardForm from "./HoleCardForm";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
 const PREVIEW_MAX_H = 340;
@@ -371,16 +372,6 @@ function StudioWorkspace({ mode }) {
               로그인
             </a>
           )}
-          <button onClick={loadCourseDb} title="코스 목록 새로고침"
-            className="flex items-center gap-2 rounded-lg border border-line bg-panel px-3 py-2 text-xs font-semibold transition hover:text-txt">
-            <span className={"inline-block h-2 w-2 rounded-full " +
-              (dbStatus.state === "online" ? "bg-accent" : dbStatus.state === "offline" ? "bg-[#ffb648]" : "bg-txt-faint animate-pulse")} />
-            <span className="text-txt-soft">
-              {dbStatus.state === "online" ? `코스 목록 · ${dbStatus.count}` :
-               dbStatus.state === "offline" ? "코스 목록(캐시)" : "동기화 중…"}
-            </span>
-            <span className="text-txt-faint">↻</span>
-          </button>
           <button onClick={toggleTheme} aria-label="테마 전환"
             className="flex shrink-0 items-center gap-2 rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
             <span className="text-base">{theme === "dark" ? "☀️" : "🌙"}</span>
@@ -459,6 +450,7 @@ function StudioWorkspace({ mode }) {
               {!isHole && (
                 <CoursePresets builtin={builtinCourses} favorites={favorites}
                                selectedClub={round.course}
+                               dbStatus={dbStatus} onRefresh={loadCourseDb}
                                onToggleFav={toggleFav} onLoad={applyPreset} />
               )}
             </div>
@@ -562,99 +554,15 @@ function StudioWorkspace({ mode }) {
             />
           )}
 
-          {/* 홀 카드: 현재 홀 정보 (홀 카드 레이아웃 전용) */}
           {isHole && (
-            <div className="rounded-xl border border-line bg-panel p-4">
-              <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-                현재 홀 정보
-              </div>
-              {/* 라운드에서 홀 불러오기 — 1~18 탭 (하이브리드) */}
-              <div className="mb-3">
-                <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
-                  홀 선택 (PAR·토탈 자동 연동)
-                </span>
-                <div className="grid grid-cols-9 gap-1">
-                  {round.holes.map((h, i) => {
-                    const n = i + 1;
-                    const active = String(n) === String(holeCard.hole);
-                    const has = h.score !== "" && h.score != null;
-                    return (
-                      <button key={i} type="button" onClick={() => loadHoleFromRound(n)}
-                        title={`${n}번 홀 · Par ${h.par}${has ? ` · ${h.score}타` : ""}`}
-                        className={"rounded-md py-1.5 text-center font-mono text-[13px] font-bold transition " +
-                          (active
-                            ? "bg-accent text-[#06210f]"
-                            : has
-                              ? "border border-accent/40 bg-panel-2 text-accent hover:border-accent"
-                              : "border border-line bg-panel-2 text-txt-faint hover:text-txt")}>
-                        {n}
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="mt-1 text-[11px] text-txt-faint">
-                  라임 = 선택된 홀 · 초록 테두리 = 스코어 입력된 홀
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="홀 번호" value={holeCard.hole} onChange={(v) => setHC("hole", v)} placeholder="1" />
-                <Field label="PAR" value={holeCard.par} onChange={(v) => setHC("par", v)} placeholder="4" />
-                <div>
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="font-head text-[11px] uppercase tracking-widest text-txt-faint">거리</span>
-                    <div className="flex overflow-hidden rounded-md border border-line">
-                      {[["m", "M"], ["yd", "YD"]].map(([u, l]) => (
-                        <button key={u} type="button" onClick={() => setHC("unit", u)}
-                          className={"px-2 py-0.5 text-[11px] font-bold transition " +
-                            (holeCard.unit === u ? "bg-accent text-[#06210f]" : "bg-panel-2 text-txt-soft hover:text-txt")}>
-                          {l}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <input value={holeCard.distance} onChange={(e) => setHC("distance", e.target.value)}
-                    placeholder={holeCard.unit === "yd" ? "212" : "195"}
-                    className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
-                </div>
-                <Field label="토탈 (E, -2...)" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="E" />
-                <Field label="현재 타수" value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="4" />
-                <ClubField value={holeCard.club} onChange={(v) => setHC("club", v)} />
-              </div>
-              <label className="mt-3 flex items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm font-semibold text-txt-soft">
-                <input
-                  type="checkbox"
-                  checked={holeCard.showResultBanner !== false}
-                  onChange={(e) => setHC("showResultBanner", e.target.checked)}
-                  className="h-4 w-4 accent-[var(--accent)]"
-                />
-                FOR EAGLE/BIRDIE 배너 표시
-              </label>
-              {/* 현재 타수 선택 */}
-              <div className="mt-3">
-                <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
-                  현재 타수 (지금까지 친 횟수)
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {Array.from({ length: Math.min(Math.max((Number(holeCard.par) || 4) + 2, 6), 9) }, (_, i) => i + 1).map((n) => (
-                    <button key={n} type="button" onClick={() => setHC("currentShot", String(n))}
-                      className={"h-9 w-9 rounded-md font-mono text-sm font-bold transition " +
-                        (String(n) === String(holeCard.currentShot)
-                          ? "bg-accent text-[#06210f]"
-                          : "border border-line bg-panel-2 text-txt-soft hover:text-txt")}>
-                      {n}
-                    </button>
-                  ))}
-                  <button type="button" onClick={() => setHC("currentShot", "")}
-                    className="h-9 rounded-md border border-line bg-panel-2 px-3 text-xs font-semibold text-txt-faint hover:text-txt">
-                    없음
-                  </button>
-                </div>
-              </div>
-              <p className="mt-2 text-[12px] text-txt-faint">
-                홀 선택 → PAR·토탈·타수 자동 반영 · 거리/클럽은 직접 입력
-              </p>
-            </div>
+            <HoleCardForm
+              round={round}
+              holeCard={holeCard}
+              setHC={setHC}
+              loadHoleFromRound={loadHoleFromRound}
+            />
           )}
+
         </section>
 
         {/* ── 미리보기 & 내보내기 ── */}

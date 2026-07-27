@@ -1,6 +1,6 @@
 "use client";
 
-export default function CoursePresets({ builtin = [], favorites = [], selectedClub = "", onToggleFav, onLoad }) {
+export default function CoursePresets({ builtin = [], favorites = [], selectedClub = "", dbStatus, onRefresh, onToggleFav, onLoad }) {
   const clubs = [...new Set(builtin.map((c) => c.club || c.name))];
   const sel = (selectedClub || "").trim();
   const activeClub = clubs.includes(sel) ? sel : "";
@@ -18,7 +18,18 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
 
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
-      <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">코스</div>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">코스</div>
+        {onRefresh && (
+          <button type="button" onClick={onRefresh} title="코스 목록 새로고침"
+            className="flex items-center gap-1.5 rounded-md border border-line bg-panel-2 px-2 py-1 text-[11px] font-semibold text-txt-faint transition hover:text-txt">
+            <span className={"inline-block h-1.5 w-1.5 rounded-full " +
+              (dbStatus?.state === "online" ? "bg-accent" : dbStatus?.state === "offline" ? "bg-[#ffb648]" : "bg-txt-faint animate-pulse")} />
+            {dbStatus?.state === "online" ? dbStatus.count : dbStatus?.state === "offline" ? "캐시" : "동기화"}
+            <span>↻</span>
+          </button>
+        )}
+      </div>
 
       {favCourses.length > 0 && (
         <div className="mb-3">

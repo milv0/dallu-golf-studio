@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { COURSE_DIRECTORY } from "../../lib/courseDirectory";
 import { loadDb, saveDb } from "../../lib/nineStore";
-import { fetchDb, pushDb } from "../../lib/api";
+import { fetchDb, pushDb, verifyAdminToken } from "../../lib/api";
 import { effectiveDb } from "../../lib/coursesDb";
 
 const DEFAULT9 = () => Array(9).fill("4");
@@ -56,6 +56,10 @@ export default function Admin() {
   const [syncing, setSyncing] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [conn, setConn] = useState({ state: "loading", at: null });
+  const [adminReady, setAdminReady] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true);
+  const [authToken, setAuthToken] = useState("");
+  const [authError, setAuthError] = useState("");
 
   const [region, setRegion] = useState("");
   const [q, setQ] = useState("");
@@ -65,6 +69,39 @@ export default function Admin() {
   const [newPars, setNewPars] = useState(DEFAULT9());
   const [cOut, setCOut] = useState("");
   const [cIn, setCIn] = useState("");
+
+  const authenticate = async (token, { silent = false } = {}) => {
+    const nextToken = String(token || "").trim();
+    if (!nextToken) {
+      setAuthChecking(false);
+      if (!silent) setAuthError("관리자 토큰을 입력하세요.");
+      return;
+    }
+    setAuthChecking(true);
+    setAuthError("");
+    try {
+      await verifyAdminToken(nextToken);
+      localStorage.setItem("sc-admin-token", nextToken);
+      sessionStorage.setItem("sc-admin-ok", "1");
+      setAdminReady(true);
+    } catch (e) {
+      sessionStorage.removeItem("sc-admin-ok");
+      setAdminReady(false);
+      if (!silent) setAuthError(e.message || "관리자 인증 실패");
+    } finally {
+      setAuthChecking(false);
+    }
+  };
+
+  useEffect(() => {
+    const stored = localStorage.getItem("sc-admin-token") || "";
+    setAuthToken(stored);
+    if (sessionStorage.getItem("sc-admin-ok") === "1" && stored) {
+      authenticate(stored, { silent: true });
+    } else {
+      setAuthChecking(false);
+    }
+  }, []);
 
   const reload = async () => {
     setConn((c) => ({ ...c, state: "loading" }));
@@ -78,7 +115,7 @@ export default function Admin() {
       setConn({ state: "offline", at: new Date() });
     }
   };
-  useEffect(() => { reload(); }, []);
+  useEffect(() => { if (adminReady) reload(); }, [adminReady]);
   const persist = (next) => { setDb(next); saveDb(next); setDirty(true); };
   const saveAll = async () => {
     setSyncing(true);
@@ -239,6 +276,33 @@ export default function Admin() {
   };
 
   const ghost = "rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-txt-soft transition hover:border-line-2 hover:text-txt";
+
+  if (!adminReady) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-[520px] items-center px-6 py-12">
+        <form onSubmit={(e) => { e.preventDefault(); authenticate(authToken); }}
+          className="w-full rounded-xl border border-line bg-panel p-6">
+          <div className="font-head text-[11px] font-semibold uppercase tracking-[0.3em] text-accent">Admin</div>
+          <h1 className="mt-1 font-head text-2xl font-bold text-txt">관리자 인증</h1>
+          <p className="mt-2 text-sm text-txt-soft">코스 관리 화면은 관리자 토큰 확인 후 표시됩니다.</p>
+          <label className="mt-5 block">
+            <span className="mb-1 block font-head text-[11px] uppercase tracking-widest text-txt-faint">ADMIN TOKEN</span>
+            <input type="password" value={authToken} onChange={(e) => setAuthToken(e.target.value)}
+              autoFocus
+              className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
+          </label>
+          {authError && <div className="mt-2 text-sm font-semibold text-[#ff6b57]">{authError}</div>}
+          <div className="mt-5 flex items-center justify-between gap-3">
+            <Link href="/" className={ghost}>← 메인</Link>
+            <button type="submit" disabled={authChecking}
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-bold text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60">
+              {authChecking ? "확인 중..." : "관리자 화면 열기"}
+            </button>
+          </div>
+        </form>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto max-w-[1200px] px-6 pb-16">
