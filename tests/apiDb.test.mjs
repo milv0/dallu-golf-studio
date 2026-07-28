@@ -23,13 +23,22 @@ function request(body, token = "secret") {
 function kv() {
   return {
     values: new Map(),
+    metadata: new Map(),
     puts: [],
     async get(key) {
       return this.values.get(key) || null;
     },
-    async put(key, value) {
+    async put(key, value, options = {}) {
       this.values.set(key, value);
+      if (options.metadata) this.metadata.set(key, options.metadata);
       this.puts.push({ key, value });
+    },
+    async list({ prefix, limit = 100 }) {
+      const keys = [...this.values.keys()]
+        .filter((key) => key.startsWith(prefix))
+        .slice(0, limit)
+        .map((name) => ({ name, metadata: this.metadata.get(name) || null }));
+      return { keys };
     },
   };
 }
@@ -66,8 +75,12 @@ test("POST writes valid DB payloads to KV", async () => {
     env: { COURSE_KV: store, ADMIN_TOKEN: "secret" },
   });
   assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { ok: true, clubs: 1, backupKey: null });
-  assert.deepEqual(store.puts, [{ key: "db", value: JSON.stringify(validDb) }]);
+  const data = await response.json();
+  assert.equal(data.ok, true);
+  assert.equal(data.clubs, 1);
+  assert.equal(data.backupKey, null);
+  assert.ok(data.meta.revision);
+  assert.deepEqual(store.puts.map((item) => item.key), ["db", "db-meta", data.auditKey]);
 });
 
 test("POST backs up existing DB before overwriting KV", async () => {
@@ -79,9 +92,10 @@ test("POST backs up existing DB before overwriting KV", async () => {
   };
   const store = kv();
   store.values.set("db", JSON.stringify(previousDb));
+  store.values.set("db-meta", JSON.stringify({ revision: "rev-1", updatedAt: "2026-07-28T00:00:00.000Z", clubs: 1 }));
 
   const response = await onRequestPost({
-    request: request(validDb),
+    request: request({ db: validDb, baseRevision: "rev-1" }),
     env: { COURSE_KV: store, ADMIN_TOKEN: "secret" },
   });
   const data = await response.json();
@@ -92,5 +106,49 @@ test("POST backs up existing DB before overwriting KV", async () => {
   assert.match(data.backupKey, /^db-backups\/\d{4}-\d{2}-\d{2}T/);
   assert.equal(store.values.get(data.backupKey), JSON.stringify(previousDb));
   assert.equal(store.values.get("db"), JSON.stringify(validDb));
-  assert.deepEqual(store.puts.map((item) => item.key), [data.backupKey, "db"]);
+  assert.deepEqual(store.puts.map((item) => item.key), [data.backupKey, "db", "db-meta", data.auditKey]);
+  assert.equal(store.metadata.get(data.backupKey).revision, "rev-1");
+});
+
+test("POST rejects stale course DB revisions", async () => {
+  const store = kv();
+  store.values.set("db", JSON.stringify(validDb));
+  store.values.set("db-meta", JSON.stringify({ revision: "latest", updatedAt: "2026-07-28T00:00:00.000Z", clubs: 1 }));
+
+  const response = await onRequestPost({
+    request: request({ db: validDb, baseRevision: "old" }),
+    env: { COURSE_KV: store, ADMIN_TOKEN: "secret" },
+  });
+  const data = await response.json();
+
+  assert.equal(response.status, 409);
+  assert.match(data.error, /새로고침/);
+  assert.equal(data.currentRevision, "latest");
+  assert.equal(store.puts.length, 0);
+});
+
+test("POST restores a DB backup through the protected API", async () => {
+  const previousDb = {
+    "복구CC": {
+      nines: { OLD: [4, 4, 4, 4, 4, 4, 4, 4, 4] },
+      combos: [],
+    },
+  };
+  const store = kv();
+  store.values.set("db", JSON.stringify(validDb));
+  store.values.set("db-meta", JSON.stringify({ revision: "current", updatedAt: "2026-07-28T00:00:00.000Z", clubs: 1 }));
+  store.values.set("db-backups/saved", JSON.stringify(previousDb));
+
+  const response = await onRequestPost({
+    request: request({ action: "restore", backupKey: "db-backups/saved", baseRevision: "current" }),
+    env: { COURSE_KV: store, ADMIN_TOKEN: "secret" },
+  });
+  const data = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(data.ok, true);
+  assert.equal(data.clubs, 1);
+  assert.equal(store.values.get("db"), JSON.stringify(previousDb));
+  assert.match(data.backupKey, /^db-backups\//);
+  assert.equal(store.values.get(data.backupKey), JSON.stringify(validDb));
 });

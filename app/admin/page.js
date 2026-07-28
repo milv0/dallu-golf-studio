@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { COURSE_DIRECTORY } from "../../lib/courseDirectory";
 import { loadDb, saveDb } from "../../lib/nineStore";
-import { fetchDb, pushDb, verifyAdminToken } from "../../lib/api";
+import { fetchDbAdmin, pushDb, restoreDbBackup, verifyAdminToken } from "../../lib/api";
 import { effectiveDb } from "../../lib/coursesDb";
 
 const DEFAULT9 = () => Array(9).fill("4");
@@ -72,6 +72,9 @@ export default function Admin() {
   const [syncing, setSyncing] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [conn, setConn] = useState({ state: "loading", at: null });
+  const [dbMeta, setDbMeta] = useState({ revision: null, updatedAt: null, clubs: 0 });
+  const [dbBackups, setDbBackups] = useState([]);
+  const [dbAudit, setDbAudit] = useState([]);
   const [adminReady, setAdminReady] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
   const [authToken, setAuthToken] = useState("");
@@ -123,12 +126,20 @@ export default function Admin() {
   const reload = async () => {
     setConn((c) => ({ ...c, state: "loading" }));
     try {
-      const remote = await fetchDb();
-      setDb(effectiveDb(remote)); saveDb(remote);
+      const token = localStorage.getItem("sc-admin-token") || "";
+      const remote = await fetchDbAdmin(token);
+      setDb(effectiveDb(remote.db)); saveDb(remote.db);
+      setDbMeta(remote.meta || { revision: null, updatedAt: null, clubs: 0 });
+      setDbBackups(remote.backups || []);
+      setDbAudit(remote.audit || []);
       setDirty(false);
       setConn({ state: "online", at: new Date() });
     } catch {
-      setDb(effectiveDb(loadDb()));
+      const local = effectiveDb(loadDb());
+      setDb(local);
+      setDbMeta({ revision: null, updatedAt: null, clubs: Object.keys(local).length });
+      setDbBackups([]);
+      setDbAudit([]);
       setConn({ state: "offline", at: new Date() });
     }
   };
@@ -139,14 +150,16 @@ export default function Admin() {
     try {
       let token = localStorage.getItem("sc-admin-token") || "";
       let result;
-      try { result = await pushDb(db, token); }
+      try { result = await pushDb(db, token, { baseRevision: dbMeta?.revision ?? null }); }
       catch (e) {
         if (String(e.message).includes("인증")) {
           token = prompt("관리자 토큰(ADMIN_TOKEN)") || "";
           localStorage.setItem("sc-admin-token", token);
-          result = await pushDb(db, token);
+          result = await pushDb(db, token, { baseRevision: dbMeta?.revision ?? null });
         } else throw e;
       }
+      if (result?.meta) setDbMeta(result.meta);
+      await reload();
       setDirty(false);
       setConn({ state: "online", at: new Date() });
       alert(result?.backupKey
@@ -154,6 +167,23 @@ export default function Admin() {
         : "KV에 저장 완료 — 모든 사용자에게 반영됩니다");
     } catch (e) { alert("서버 저장 실패(로컬엔 저장됨): " + e.message); }
     finally { setSyncing(false); }
+  };
+
+  const restoreBackup = async (backupKey) => {
+    if (!backupKey) return;
+    if (dirty && !confirm("현재 미저장 변경이 있습니다. 버리고 백업을 복구할까요?")) return;
+    if (!confirm(`이 백업으로 코스 DB를 복구할까요?\n${backupKey}`)) return;
+    setSyncing(true);
+    try {
+      const token = localStorage.getItem("sc-admin-token") || "";
+      await restoreDbBackup(backupKey, token, { baseRevision: dbMeta?.revision ?? null });
+      await reload();
+      alert("백업 복구 완료");
+    } catch (e) {
+      alert("백업 복구 실패: " + e.message);
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const regions = useMemo(() => [...new Set(COURSE_DIRECTORY.map((c) => c.region))].sort(), []);
@@ -299,6 +329,21 @@ export default function Admin() {
   };
 
   const ghost = "rounded-lg border border-line px-3 py-1.5 text-xs font-semibold text-txt-soft transition hover:border-line-2 hover:text-txt";
+  const formatMetaTime = (value) => {
+    if (!value) return "-";
+    try {
+      return new Date(value).toLocaleString("ko-KR", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return "-";
+    }
+  };
+  const backupLabel = (key) => String(key || "").replace(/^db-backups\//, "").slice(0, 19).replace("T", " ");
+  const auditLabel = (key) => String(key || "").replace(/^db-audit\//, "").slice(0, 19).replace("T", " ");
 
   if (!adminReady) {
     return (
@@ -343,6 +388,9 @@ export default function Admin() {
                 <span className="text-txt-faint">↻</span>
               </button>
               <span>골프장 {clubsWithNines.length} · 나인 {nineCount} · 조합 {comboCount}</span>
+              <span title={dbMeta?.revision || ""}>
+                · rev {dbMeta?.revision ? dbMeta.revision.slice(0, 8) : "-"} · {formatMetaTime(dbMeta?.updatedAt)}
+              </span>
               <span className={dirty ? "text-[#ffb648]" : "text-accent"}>· {syncing ? "저장 중…" : dirty ? "⚠ 미저장" : "동기화됨"}</span>
             </div>
           </div>
@@ -351,6 +399,56 @@ export default function Admin() {
               className={"rounded-lg px-4 py-2 text-sm font-bold transition disabled:opacity-60 " + (dirty ? "bg-accent text-[#06210f] hover:bg-accent-2" : "border border-line text-txt-soft")}>
               {syncing ? "저장 중…" : "KV 저장"}
             </button>
+            <details className="relative">
+              <summary className={ghost + " list-none"}>백업/로그</summary>
+              <div className="absolute right-0 z-50 mt-1 max-h-[70vh] w-[420px] overflow-auto rounded-lg border border-line bg-panel p-3 shadow-lg">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <div className="font-head text-xs font-semibold uppercase tracking-widest text-txt-soft">최근 백업</div>
+                  <button type="button" onClick={reload} className="font-mono text-[11px] text-txt-faint hover:text-txt">새로고침</button>
+                </div>
+                {dbBackups.length === 0 ? (
+                  <p className="rounded-md border border-line bg-panel-2 px-3 py-2 text-[12px] text-txt-faint">아직 백업이 없습니다.</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {dbBackups.slice(0, 8).map((backup) => (
+                      <div key={backup.key} className="flex items-center justify-between gap-2 rounded-md border border-line bg-panel-2 px-2.5 py-2">
+                        <div className="min-w-0">
+                          <div className="truncate font-mono text-[12px] text-txt">{backupLabel(backup.key)}</div>
+                          <div className="font-mono text-[10px] text-txt-faint">
+                            {backup.metadata?.clubs ?? "-"} clubs · rev {backup.metadata?.revision ? String(backup.metadata.revision).slice(0, 8) : "-"}
+                          </div>
+                        </div>
+                        <button type="button" onClick={() => restoreBackup(backup.key)}
+                          className="shrink-0 rounded border border-line px-2 py-1 text-[11px] font-semibold text-txt-soft hover:border-accent hover:text-txt">
+                          복구
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className="mb-2 mt-4 font-head text-xs font-semibold uppercase tracking-widest text-txt-soft">최근 변경 로그</div>
+                {dbAudit.length === 0 ? (
+                  <p className="rounded-md border border-line bg-panel-2 px-3 py-2 text-[12px] text-txt-faint">아직 로그가 없습니다.</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {dbAudit.slice(0, 8).map((entry) => (
+                      <div key={entry.key} className="rounded-md border border-line bg-panel-2 px-2.5 py-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-mono text-[12px] text-txt">{auditLabel(entry.key)}</span>
+                          <span className="rounded bg-panel px-1.5 py-0.5 font-mono text-[10px] uppercase text-accent">
+                            {entry.metadata?.type || "save"}
+                          </span>
+                        </div>
+                        <div className="mt-1 font-mono text-[10px] text-txt-faint">
+                          {entry.metadata?.clubs ?? "-"} clubs · rev {entry.metadata?.revision ? String(entry.metadata.revision).slice(0, 8) : "-"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </details>
             <details className="relative">
               <summary className={ghost + " list-none"}>⋯</summary>
               <div className="absolute right-0 z-50 mt-1 w-40 rounded-lg border border-line bg-panel p-1 shadow-lg">
