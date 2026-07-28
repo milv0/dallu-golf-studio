@@ -11,6 +11,10 @@ function json(obj, status = 200) {
   });
 }
 
+function backupKeyFor(date = new Date()) {
+  return `db-backups/${date.toISOString().replaceAll(":", "-")}`;
+}
+
 export async function onRequestGet({ env }) {
   if (!env.COURSE_KV) return json({ error: "KV(COURSE_KV) 미바인딩" }, 500);
   const raw = await env.COURSE_KV.get("db");
@@ -31,6 +35,12 @@ export async function onRequestPost({ request, env }) {
   if (!validation.ok) {
     return json({ error: "잘못된 DB 형식", details: validation.errors }, 400);
   }
+  const previous = await env.COURSE_KV.get("db");
+  let backupKey = null;
+  if (previous) {
+    backupKey = backupKeyFor();
+    await env.COURSE_KV.put(backupKey, previous);
+  }
   await env.COURSE_KV.put("db", JSON.stringify(body));
-  return json({ ok: true, clubs: Object.keys(body).length });
+  return json({ ok: true, clubs: Object.keys(body).length, backupKey });
 }

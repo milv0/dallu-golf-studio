@@ -22,9 +22,14 @@ function request(body, token = "secret") {
 
 function kv() {
   return {
-    value: null,
+    values: new Map(),
+    puts: [],
+    async get(key) {
+      return this.values.get(key) || null;
+    },
     async put(key, value) {
-      this.value = { key, value };
+      this.values.set(key, value);
+      this.puts.push({ key, value });
     },
   };
 }
@@ -61,6 +66,31 @@ test("POST writes valid DB payloads to KV", async () => {
     env: { COURSE_KV: store, ADMIN_TOKEN: "secret" },
   });
   assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { ok: true, clubs: 1 });
-  assert.deepEqual(store.value, { key: "db", value: JSON.stringify(validDb) });
+  assert.deepEqual(await response.json(), { ok: true, clubs: 1, backupKey: null });
+  assert.deepEqual(store.puts, [{ key: "db", value: JSON.stringify(validDb) }]);
+});
+
+test("POST backs up existing DB before overwriting KV", async () => {
+  const previousDb = {
+    "이전CC": {
+      nines: { OLD: [4, 4, 4, 4, 4, 4, 4, 4, 4] },
+      combos: [],
+    },
+  };
+  const store = kv();
+  store.values.set("db", JSON.stringify(previousDb));
+
+  const response = await onRequestPost({
+    request: request(validDb),
+    env: { COURSE_KV: store, ADMIN_TOKEN: "secret" },
+  });
+  const data = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(data.ok, true);
+  assert.equal(data.clubs, 1);
+  assert.match(data.backupKey, /^db-backups\/\d{4}-\d{2}-\d{2}T/);
+  assert.equal(store.values.get(data.backupKey), JSON.stringify(previousDb));
+  assert.equal(store.values.get("db"), JSON.stringify(validDb));
+  assert.deepEqual(store.puts.map((item) => item.key), [data.backupKey, "db"]);
 });

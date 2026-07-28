@@ -138,17 +138,20 @@ export default function Admin() {
     setSyncing(true);
     try {
       let token = localStorage.getItem("sc-admin-token") || "";
-      try { await pushDb(db, token); }
+      let result;
+      try { result = await pushDb(db, token); }
       catch (e) {
         if (String(e.message).includes("인증")) {
           token = prompt("관리자 토큰(ADMIN_TOKEN)") || "";
           localStorage.setItem("sc-admin-token", token);
-          await pushDb(db, token);
+          result = await pushDb(db, token);
         } else throw e;
       }
       setDirty(false);
       setConn({ state: "online", at: new Date() });
-      alert("KV에 저장 완료 — 모든 사용자에게 반영됩니다");
+      alert(result?.backupKey
+        ? `KV에 저장 완료 — 이전 DB 백업: ${result.backupKey}`
+        : "KV에 저장 완료 — 모든 사용자에게 반영됩니다");
     } catch (e) { alert("서버 저장 실패(로컬엔 저장됨): " + e.message); }
     finally { setSyncing(false); }
   };
