@@ -8,6 +8,11 @@ test-results/
 *.log
 npm-debug.log*
 
+# Local browser bot tests
+/tests/e2e/
+/playwright.config.mjs
+/playwright.visible.config.mjs
+
 # Env / secrets
 .env
 .env.local
