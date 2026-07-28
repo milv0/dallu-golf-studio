@@ -24,6 +24,13 @@ function clubSuggestions(value) {
   }).slice(0, 6);
 }
 
+function normalizeClubValue(value) {
+  const trimmed = String(value || "").trim();
+  if (!/^\d+$/.test(trimmed)) return trimmed;
+  const n = Number(trimmed);
+  return n >= 3 && n <= 10 ? `${n} Iron` : trimmed;
+}
+
 export function Field({ label, value, onChange, onBlur, placeholder, full, type = "text", list }) {
   return (
     <label className={"block " + (full ? "col-span-2" : "")}>
@@ -73,7 +80,16 @@ export function ClubField({ value, onChange }) {
       <span className="mb-1 block font-head text-[11px] uppercase tracking-widest text-txt-faint">
         선택 클럽
       </span>
-      <input value={value} onChange={(e) => onChange(e.target.value)}
+      <input value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={(e) => onChange(normalizeClubValue(e.target.value))}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onChange(normalizeClubValue(e.currentTarget.value));
+            e.currentTarget.blur();
+          }
+        }}
         placeholder="3, Driver, Putter"
         className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent" />
       <div className="mt-1.5 flex gap-1.5 overflow-x-auto pb-1">
