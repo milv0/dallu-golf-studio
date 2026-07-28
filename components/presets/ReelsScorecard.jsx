@@ -94,8 +94,8 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
             letterSpacing="4">
         {[round.date ? round.date.replaceAll("-", ".") : "", rangeLabel].filter(Boolean).join(" · ")}
       </text>
-      <text x={pad} y="150" fill={c.text} fontFamily={HEAD} fontSize={playerSize} fontWeight="700"
-            letterSpacing="1">
+      <text x={pad} y="132" dominantBaseline="middle" fill={c.text} fontFamily={HEAD}
+            fontSize={playerSize} fontWeight="700" letterSpacing="1">
         {playerName}
       </text>
 

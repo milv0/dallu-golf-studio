@@ -69,8 +69,8 @@ export default function HoleCard({ data, theme = "dark" }) {
       <circle cx={segW + 32} cy="61" r="22" fill="none" stroke={c.accent} strokeWidth="2.2" />
       <text x={segW + 32} y="70" textAnchor="middle" fill={c.accent} fontFamily={HEAD}
             fontSize="21" fontWeight="700">dG</text>
-      <text x={segW + 63} y="76" fill={c.text} fontFamily={HEAD} fontSize={playerSize} fontWeight="700"
-            letterSpacing="0.5">{player}</text>
+      <text x={segW + 63} y="61" dominantBaseline="middle" fill={c.text} fontFamily={HEAD}
+            fontSize={playerSize} fontWeight="700" letterSpacing="0.5">{player}</text>
 
       {/* 토탈(to-par) 우측 블록 */}
       <path d={`M${w - tpW},0 H${w - 18} Q${w},0 ${w},18 V${row2Y - 20} Q${w},${row2Y - 2} ${w - 18},${row2Y - 2} H${w - tpW} Z`}

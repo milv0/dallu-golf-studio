@@ -78,8 +78,8 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
       </text>
 
       {/* 2) 선수명 */}
-      <text x={LP / 2} y="68" textAnchor="middle" fill={c.text} fontFamily={HEAD} fontSize={playerSize} fontWeight="700"
-            letterSpacing="0.5">
+      <text x={LP / 2} y="63" textAnchor="middle" dominantBaseline="middle" fill={c.text}
+            fontFamily={HEAD} fontSize={playerSize} fontWeight="700" letterSpacing="0.5">
         {playerName}
       </text>
 
