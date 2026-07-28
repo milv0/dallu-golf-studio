@@ -2,6 +2,7 @@
 // 헤더(선수/대회/to-par) + FRONT 9 / BACK 9 2줄 + 합계 바. 1080 폭 기준.
 import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
 import { cardColors } from "../../lib/theme";
+import { displayPlayerName, fitFontSize } from "./svgText";
 
 export function sizeFor(range = "all") {
   return range === "all" ? { w: 1080, h: 660 } : { w: 1080, h: 200 };
@@ -45,6 +46,8 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
   const isAll = range === "all";
   const rs = rangeStats(round.holes, range);
   const rangeLabel = range === "front" ? "FRONT 9" : range === "back" ? "BACK 9" : "";
+  const playerName = displayPlayerName(round.player);
+  const playerSize = fitFontSize(playerName, { base: 78, min: 42, maxWidth: w - pad * 2 - 210 });
 
   const toPar = rs.toPar;
   const toParColor =
@@ -91,9 +94,9 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
             letterSpacing="4">
         {[round.date ? round.date.replaceAll("-", ".") : "", rangeLabel].filter(Boolean).join(" · ")}
       </text>
-      <text x={pad} y="150" fill={c.text} fontFamily={HEAD} fontSize="78" fontWeight="700"
+      <text x={pad} y="150" fill={c.text} fontFamily={HEAD} fontSize={playerSize} fontWeight="700"
             letterSpacing="1">
-        {(round.player || "PLAYER").toUpperCase()}
+        {playerName}
       </text>
 
       <text x={w - pad} y="66" textAnchor="end" fill={c.sub} fontFamily={HEAD}

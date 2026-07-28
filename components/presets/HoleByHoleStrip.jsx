@@ -3,6 +3,7 @@
 // - 버디=빨강, 보기 계열=파랑, 이글/알바=골드 (방송 색상 코드)
 import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
 import { cardColors } from "../../lib/theme";
+import { displayPlayerName, fitFontSize } from "./svgText";
 
 // 레이아웃 상수 (모듈 공유) — 칸 폭 고정, 9홀은 세로 동일 & 가로만 짧게
 const H = 232;
@@ -31,6 +32,8 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
 
   const rs = rangeStats(round.holes, range);
   const rangeLabel = range === "front" ? "FRONT 9" : range === "back" ? "BACK 9" : "";
+  const playerName = displayPlayerName(round.player);
+  const playerSize = fitFontSize(playerName, { base: 32, min: 18, maxWidth: LP - 28 });
 
   // 컬럼 정의 (범위에 따라)
   const cols = [];
@@ -75,9 +78,9 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
       </text>
 
       {/* 2) 선수명 */}
-      <text x={LP / 2} y="68" textAnchor="middle" fill={c.text} fontFamily={HEAD} fontSize="32" fontWeight="700"
+      <text x={LP / 2} y="68" textAnchor="middle" fill={c.text} fontFamily={HEAD} fontSize={playerSize} fontWeight="700"
             letterSpacing="0.5">
-        {(round.player || "PLAYER").toUpperCase()}
+        {playerName}
       </text>
 
       {/* 구분선 */}

@@ -2,6 +2,7 @@
 // 표시: 홀번호 · PAR · 거리 / 선수명 / 토탈(to-par) / SHOT(현재 타수 표시) / SELECTED CLUB / FOR X 배너
 import { classify } from "../../lib/score";
 import { cardColors } from "../../lib/theme";
+import { displayPlayerName, fitFontSize } from "./svgText";
 
 export const SIZE = { w: 560, h: 292 };
 
@@ -36,8 +37,8 @@ export default function HoleCard({ data, theme = "dark" }) {
   const row2Y = 130;           // 2행 시작
 
   const shots = Number(data.currentShot) || 0;
-  const player = data.player || "PLAYER";
-  const playerSize = player.length > 12 ? 32 : player.length > 9 ? 36 : 40;
+  const player = displayPlayerName(data.player);
+  const playerSize = fitFontSize(player, { base: 40, min: 24, maxWidth: w - tpW - segW - 96 });
   const club = (data.club || "").toUpperCase();
   const clubSize = club.length > 12 ? 24 : club.length > 8 ? 28 : 32;
   const banner = bannerFor(data);
