@@ -12,10 +12,12 @@ const sum = (a) => a.reduce((s, x) => s + (Number(x) || 0), 0);
 
 // 나인 한 행 (모듈 최상위 정의 — Admin 내부에 두면 리렌더마다 remount되어 입력 포커스가 풀림)
 const PAR_COLOR = { 3: "text-[#7fd1ff]", 4: "text-txt", 5: "text-[#ffd27f]" };
-function NineRow({ n, pars, onName, onPar, onDel, isNew }) {
+function NineRow({ n, pars, onName, onPar, onDel, isNew, isEditing, onEdit, onDone }) {
   const total = sum(pars);
   const bad = total !== 36;
+  const canEdit = isNew || isEditing;
   const setByPos = (e, i) => {
+    if (!canEdit) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const rx = (e.clientX - rect.left) / rect.width;
     onPar(i, rx < 0.38 ? "3" : rx > 0.62 ? "5" : "4");
@@ -25,16 +27,23 @@ function NineRow({ n, pars, onName, onPar, onDel, isNew }) {
       {isNew ? (
         <input value={n} onChange={(e) => onName(e.target.value)} placeholder="새 코스명"
           className="w-28 shrink-0 rounded border border-dashed border-line-2 bg-panel-2 px-2 py-1.5 text-sm text-txt outline-none focus:border-accent" />
-      ) : (
+      ) : isEditing ? (
         <input key={n} defaultValue={n} onBlur={(e) => onName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
           className="w-28 shrink-0 rounded border border-transparent bg-transparent px-2 py-1.5 text-sm font-semibold text-txt outline-none hover:border-line focus:border-accent focus:bg-panel-2" />
+      ) : (
+        <div className="w-28 shrink-0 truncate rounded border border-transparent px-2 py-1.5 text-sm font-semibold text-txt">
+          {n}
+        </div>
       )}
       <div className="grid flex-1 grid-cols-9 gap-1">
         {pars.map((p, i) => (
           <button key={i} type="button" onClick={(e) => setByPos(e, i)}
-            title="왼쪽=3 · 가운데=4 · 오른쪽=5"
-            className={"select-none rounded bg-panel py-1.5 text-center font-mono text-sm font-bold outline-none transition hover:ring-2 hover:ring-accent focus:ring-2 focus:ring-accent " + (PAR_COLOR[Number(p)] || "text-txt")}>
+            disabled={!canEdit}
+            title={canEdit ? "왼쪽=3 · 가운데=4 · 오른쪽=5" : "Edit을 누르면 수정할 수 있습니다"}
+            className={"select-none rounded bg-panel py-1.5 text-center font-mono text-sm font-bold outline-none transition " +
+              (canEdit ? "hover:ring-2 hover:ring-accent focus:ring-2 focus:ring-accent " : "cursor-default opacity-75 ") +
+              (PAR_COLOR[Number(p)] || "text-txt")}>
             {p || "–"}
           </button>
         ))}
@@ -43,9 +52,16 @@ function NineRow({ n, pars, onName, onPar, onDel, isNew }) {
         {total}{bad ? "⚠" : ""}
       </span>
       {isNew ? (
-        <button onClick={onDel} className="shrink-0 rounded-md bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] hover:bg-accent-2">추가</button>
+        <button onClick={onDel} className="w-24 shrink-0 rounded-md bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] hover:bg-accent-2">추가</button>
       ) : (
-        <button onClick={onDel} className="shrink-0 rounded-md border border-line px-2 py-1.5 text-[11px] font-semibold text-txt-soft hover:border-[#ff6b57] hover:text-[#ff6b57]">삭제</button>
+        <div className="flex w-24 shrink-0 items-center justify-end gap-1">
+          <button onClick={isEditing ? onDone : onEdit}
+            className={"rounded-md px-2 py-1.5 text-[11px] font-semibold transition " +
+              (isEditing ? "bg-accent text-[#06210f] hover:bg-accent-2" : "border border-line text-txt-soft hover:border-accent hover:text-txt")}>
+            {isEditing ? "완료" : "Edit"}
+          </button>
+          <button onClick={onDel} className="rounded-md border border-line px-2 py-1.5 text-[11px] font-semibold text-txt-soft hover:border-[#ff6b57] hover:text-[#ff6b57]">삭제</button>
+        </div>
       )}
     </div>
   );
@@ -69,6 +85,7 @@ export default function Admin() {
   const [newPars, setNewPars] = useState(DEFAULT9());
   const [cOut, setCOut] = useState("");
   const [cIn, setCIn] = useState("");
+  const [editingNine, setEditingNine] = useState("");
 
   const authenticate = async (token, { silent = false } = {}) => {
     const nextToken = String(token || "").trim();
@@ -184,6 +201,7 @@ export default function Admin() {
   }, [db, q]);
 
   const selClub = club.trim();
+  useEffect(() => { setEditingNine(""); }, [selClub]);
   const cur = db[selClub] || { nines: {}, combos: [] };
   const nines = Object.entries(cur.nines || {}).map(([nine, pars]) => ({ nine, pars }));
   const combos = cur.combos || [];
@@ -203,12 +221,13 @@ export default function Admin() {
   };
   const renameNine = (orig, next) => {
     const nn = (next || "").trim();
-    if (!nn || nn === orig) return;
-    if (cur.nines[nn]) { alert("이미 같은 이름의 코스가 있습니다"); return; }
+    if (!nn || nn === orig) return orig;
+    if (cur.nines[nn]) { alert("이미 같은 이름의 코스가 있습니다"); return orig; }
     const nx = {};
     for (const k of Object.keys(cur.nines)) nx[k === orig ? nn : k] = cur.nines[k];
     const nc = combos.map((x) => ({ out: x.out === orig ? nn : x.out, in: x.in === orig ? nn : x.in }));
     writeClub(nx, nc);
+    return nn;
   };
   const deleteNine = (nn) => {
     if (!confirm(`'${nn}' 코스를 삭제할까요?`)) return;
@@ -217,6 +236,7 @@ export default function Admin() {
     const next = { ...db };
     if (Object.keys(nx).length === 0 && nc.length === 0) delete next[selClub];
     else next[selClub] = { ...(db[selClub] || {}), nines: nx, combos: nc };
+    if (editingNine === nn) setEditingNine("");
     persist(next);
   };
   const addNine = () => {
@@ -431,7 +451,7 @@ export default function Admin() {
                       </span>
                     )}
                   </span>
-                  <span className="font-mono text-[11px] text-txt-faint">이름 클릭 수정 · PAR 칸 클릭: 왼쪽3·중간4·오른쪽5</span>
+                  <span className="font-mono text-[11px] text-txt-faint">기존 코스는 Edit 후 수정 · PAR 칸 클릭: 왼쪽3·중간4·오른쪽5</span>
                 </div>
                 {nineMismatch && (
                   <div className="border-b border-line bg-[#ffb648]/10 px-4 py-2 text-[12px] text-[#ffb648]">
@@ -446,12 +466,20 @@ export default function Admin() {
                     {Array.from({ length: 9 }, (_, i) => <span key={i}>{i + 1}</span>)}
                   </div>
                   <span className="w-12 shrink-0 text-center font-mono text-[10px]">합</span>
-                  <span className="w-12 shrink-0" />
+                  <span className="w-24 shrink-0" />
                 </div>
                 {nines.length === 0 && <p className="px-4 py-3 font-mono text-[12px] text-txt-faint">아직 코스가 없습니다. 아래에서 추가하세요.</p>}
                 {nines.map((n) => (
                   <NineRow key={n.nine} n={n.nine} pars={n.pars.map(String)}
-                    onName={(v) => renameNine(n.nine, v)} onPar={(i, v) => updatePar(n.nine, i, v)} onDel={() => deleteNine(n.nine)} />
+                    isEditing={editingNine === n.nine}
+                    onEdit={() => setEditingNine(n.nine)}
+                    onDone={() => setEditingNine("")}
+                    onName={(v) => {
+                      const nextName = renameNine(n.nine, v);
+                      if (nextName) setEditingNine(nextName);
+                    }}
+                    onPar={(i, v) => updatePar(n.nine, i, v)}
+                    onDel={() => deleteNine(n.nine)} />
                 ))}
                 {/* 추가 행 */}
                 <div className="border-t-2 border-dashed border-line-2 bg-panel-2/40">
