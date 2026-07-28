@@ -3,12 +3,11 @@
 import { classify } from "../../lib/score";
 import { cardColors } from "../../lib/theme";
 import { displayPlayerName, fitFontSize } from "./svgText";
+import { HEAD, MONO } from "./scorecardPrimitives";
 
 export const SIZE = { w: 560, h: 292 };
 
 const BAR_H = 212;
-const HEAD = "'Barlow Condensed', 'Pretendard', sans-serif";
-const MONO = "'JetBrains Mono', monospace";
 
 const RESULT_LABEL = {
   albatross: "ALBATROSS", eagle: "EAGLE", birdie: "BIRDIE",

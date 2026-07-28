@@ -1,9 +1,10 @@
 // 프리셋 1: 홀바이홀 스코어카드 스트립 (방송 스타일, 투명 배경 SVG)
 // - 언더파 = 원, 오버파 = 사각형 (전통 스코어카드 마킹)
 // - 버디=빨강, 보기 계열=파랑, 이글/알바=골드 (방송 색상 코드)
-import { classify, toParLabel, KIND_COLOR, rangeStats } from "../../lib/score";
+import { classify, toParLabel, rangeStats } from "../../lib/score";
 import { cardColors } from "../../lib/theme";
 import { displayPlayerName, fitFontSize } from "./svgText";
+import { HEAD, MONO, ResultMarker, ScoreNumber } from "./scorecardPrimitives";
 
 // 레이아웃 상수 (모듈 공유) — 칸 폭 고정, 9홀은 세로 동일 & 가로만 짧게
 const H = 232;
@@ -55,8 +56,6 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
   const toParColor =
     rs.thru === 0 ? c.text : toPar < 0 ? c.accent : toPar > 0 ? "#e5484d" : c.text;
 
-  const HEAD = "'Barlow Condensed', 'Pretendard', sans-serif";
-  const MONO = "'JetBrains Mono', monospace";
 
   return (
     <svg
@@ -127,19 +126,14 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
                     fontFamily={MONO} fontSize="34" className="score-meta-lock">
                 {parVal || ""}
               </text>
-              <text x={cx} y={yScore} textAnchor="middle" dominantBaseline="central" dy="0.04em" fill={c.text}
-                    fontFamily={MONO} fontSize="46" fontWeight="700">
-                {showSum ? scVal : ""}
-              </text>
+              <ScoreNumber x={cx} y={yScore} value={scVal} hasValue={showSum} empty=""
+                fill={c.text} emptyFill={c.text} fontSize="46" />
             </g>
           );
         }
         const hole = round.holes[col.i];
         const { kind } = classify(hole?.par, hole?.score);
-        const color = KIND_COLOR[kind];
         const hasScore = kind !== "empty";
-        const under = kind === "birdie" || kind === "eagle" || kind === "albatross";
-        const over = kind === "bogey" || kind === "double" || kind === "triple";
         return (
           <g key={idx}>
             <text x={cx} y={yHole + 6} textAnchor="middle" fill={c.text}
@@ -150,26 +144,9 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
                   fontFamily={MONO} fontSize="28" className="score-meta-lock">
               {hole?.par}
             </text>
-            {/* 마커: 언더=원, 오버=사각형 (칸 폭에 맞게) */}
-            {hasScore && under && (
-              <circle cx={cx} cy={yScore} r="27" fill="none" stroke={color} strokeWidth="3.5" />
-            )}
-            {hasScore && kind === "eagle" && (
-              <circle cx={cx} cy={yScore} r="33" fill="none" stroke={color} strokeWidth="3" />
-            )}
-            {hasScore && over && (
-              <rect x={cx - 27} y={yScore - 27} width="54" height="54" rx="5"
-                    fill="none" stroke={color} strokeWidth="3.5" />
-            )}
-            {hasScore && (kind === "double" || kind === "triple") && (
-              <rect x={cx - 33} y={yScore - 33} width="66" height="66" rx="5"
-                    fill="none" stroke={color} strokeWidth="3" />
-            )}
-            <text x={cx} y={yScore} textAnchor="middle" dominantBaseline="central" dy="0.04em"
-                  fill={hasScore ? c.text : c.faint}
-                  fontFamily={MONO} fontSize="46" fontWeight="700">
-              {hasScore ? hole.score : "·"}
-            </text>
+            <ResultMarker kind={kind} cx={cx} cy={yScore} size={27} />
+            <ScoreNumber x={cx} y={yScore} value={hole.score} hasValue={hasScore} empty="·"
+              fill={c.text} emptyFill={c.faint} fontSize="46" />
           </g>
         );
       })}
