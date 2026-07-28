@@ -127,7 +127,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
                     fontFamily={MONO} fontSize="34" className="score-meta-lock">
                 {parVal || ""}
               </text>
-              <text x={cx} y={yScore + 12} textAnchor="middle" fill={c.text}
+              <text x={cx} y={yScore} textAnchor="middle" dominantBaseline="central" dy="0.04em" fill={c.text}
                     fontFamily={MONO} fontSize="46" fontWeight="700">
                 {showSum ? scVal : ""}
               </text>
