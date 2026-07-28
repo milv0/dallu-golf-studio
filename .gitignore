@@ -3,6 +3,8 @@ node_modules/
 .next/
 out/
 dist/
+playwright-report/
+test-results/
 *.log
 npm-debug.log*
 
