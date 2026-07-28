@@ -13,7 +13,9 @@ function totalToPar(holes) {
   for (const h of holes) {
     const par = Number(h.par);
     const score = Number(h.score);
-    if (!Number.isNaN(par) && !Number.isNaN(score)) {
+    const hasPar = h?.par != null && h.par !== "" && !Number.isNaN(par);
+    const hasScore = h?.score != null && h.score !== "" && !Number.isNaN(score);
+    if (hasPar && hasScore) {
       played++;
       diff += score - par;
     }

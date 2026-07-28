@@ -34,6 +34,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
   const rangeLabel = range === "front" ? "FRONT 9" : range === "back" ? "BACK 9" : "";
   const playerName = displayPlayerName(round.player);
   const playerSize = fitFontSize(playerName, { base: 32, min: 18, maxWidth: LP - 28 });
+  const playerY = rangeLabel ? 63 : 50;
 
   // 컬럼 정의 (범위에 따라)
   const cols = [];
@@ -78,7 +79,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
       </text>
 
       {/* 2) 선수명 */}
-      <text x={LP / 2} y="63" textAnchor="middle" dominantBaseline="middle" fill={c.text}
+      <text x={LP / 2} y={playerY} textAnchor="middle" dominantBaseline="middle" fill={c.text}
             fontFamily={HEAD} fontSize={playerSize} fontWeight="700" letterSpacing="0.5">
         {playerName}
       </text>
