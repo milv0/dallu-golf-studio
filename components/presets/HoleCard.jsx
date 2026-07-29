@@ -25,8 +25,10 @@ function bannerFor(data) {
   } else if (par === 4) {
     if (diff === -1) return "FOR BIRDIE";
   } else if (par === 3) {
-    if (diff <= -1) return "FOR BIRDIE";
+    if (diff === -1) return "FOR BIRDIE";
   }
+  if (diff === 1) return "FOR BOGEY";
+  if (diff === 2) return "FOR DOUBLE BOGEY";
   return "";
 }
 
