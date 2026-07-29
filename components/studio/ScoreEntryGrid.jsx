@@ -23,7 +23,7 @@ function ParInput({ idx, value, setHole }) {
       inputMode="numeric"
       maxLength={1}
       onChange={(e) => handleChange(e.target.value)}
-      className="score-meta-lock w-full bg-transparent py-1.5 text-center font-mono text-[12px] font-semibold text-txt-soft outline-none focus:bg-accent/10 focus:text-txt focus:ring-1 focus:ring-inset focus:ring-accent md:py-1"
+      className="score-meta-lock w-full bg-transparent py-0.5 text-center font-mono text-[12px] font-semibold text-txt-soft outline-none focus:bg-accent/10 focus:text-txt focus:ring-1 focus:ring-inset focus:ring-accent"
     />
   );
 }
@@ -69,7 +69,7 @@ export default function ScoreEntryGrid({
               <HoleNumberInput idx={idx} value={h.hole} setHole={setHole} placeholder={String(idx + 1)} />
             </div>
           ) : (
-            <div key={"n" + i} {...metaLockProps} className="score-meta-lock flex items-center justify-center border-l border-line bg-panel py-1.5 font-mono text-[11px] font-semibold text-txt-soft first:border-l-0 md:py-1">
+            <div key={"n" + i} {...metaLockProps} className="score-meta-lock flex items-center justify-center border-l border-line bg-panel py-0.5 font-mono text-[10px] font-semibold text-txt-soft first:border-l-0">
               {h.hole || idx + 1}
             </div>
           );

@@ -27,8 +27,8 @@ import { DEFAULT_CUSTOM_PLAYER, emptyHoleCard, emptyLinkedThree, emptyManualNine
 import { STUDIO_STORAGE_KEYS, writeJsonStorage } from "../../lib/studioStorage";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
-const PREVIEW_MAX_H = 380;
-const PREVIEW_MOBILE_MAX_H = 460;
+const PREVIEW_MAX_H = 440;
+const PREVIEW_MOBILE_MAX_H = 560;
 const COURSE_DB_ENABLED = false;
 const FORMATS = {
   youtube: { Comp: HoleByHoleStrip, sizeFor: ytSizeFor },
