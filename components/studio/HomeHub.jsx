@@ -19,6 +19,7 @@ export default function HomeHub() {
     { href: "/score-18", title: "18홀", meta: "수동 입력" },
     { href: "/score-9?source=custom", title: "9홀", meta: "수동 입력" },
     { href: "/score-3?source=custom", title: "3홀", meta: "수동 입력" },
+    { href: "/hole", title: "1홀", meta: "수동 입력" },
   ];
 
   return (
@@ -96,7 +97,7 @@ function FeatureNotice() {
 
 function CardGrid({ cards, desktop = false }) {
   return (
-    <div className={desktop ? "grid gap-3 md:grid-cols-3" : "grid gap-3"}>
+    <div className={desktop ? "grid gap-3 md:grid-cols-4" : "grid gap-3"}>
       {cards.map((item) => (
         <a key={item.href} href={item.href}
           className="rounded-xl border border-line bg-panel p-5 transition hover:border-accent hover:bg-panel-2 active:border-accent active:bg-panel-2">
