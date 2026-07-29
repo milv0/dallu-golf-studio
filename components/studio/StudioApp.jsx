@@ -695,25 +695,25 @@ function StudioWorkspace({ mode }) {
               </div>
             )}
           </div>
+        </section>
 
-          {/* 실제 화면 배치 미리보기 */}
-          <div className="mt-6 hidden md:block">
-            <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-              실제 배치 미리보기
-              <span className="ml-2 normal-case tracking-normal text-txt-faint">
-                {format === "youtube" ? "16:9 영상 기준" : "9:16 영상 기준"}
-              </span>
-            </div>
-            <PlacementPreview format={format} size={size} isHole={isHole}>
-              {isHole
-                ? <HoleCard data={holeData} theme={cardTheme} />
-                : reelsV3
-                ? <ReelsThreeHoleCard data={reelsCustom ? threeHole : linkedThreeData} theme={cardTheme} />
-                : reelsCustom
-                ? <ReelsScorecard round={manualNineRound} summary={manualNineSummary} range="front" theme={cardTheme} />
-                : (() => { const C = FORMATS[format].Comp; return <C round={scoreRound} summary={activeSummary} range={effRange} theme={cardTheme} />; })()}
-            </PlacementPreview>
+        {/* 실제 화면 배치 미리보기: 데스크탑 전용, 전체 작업 화면 최하단 */}
+        <section className="order-3 hidden md:block">
+          <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
+            실제 배치 미리보기
+            <span className="ml-2 normal-case tracking-normal text-txt-faint">
+              {format === "youtube" ? "16:9 영상 기준" : "9:16 영상 기준"}
+            </span>
           </div>
+          <PlacementPreview format={format} size={size} isHole={isHole}>
+            {isHole
+              ? <HoleCard data={holeData} theme={cardTheme} />
+              : reelsV3
+              ? <ReelsThreeHoleCard data={reelsCustom ? threeHole : linkedThreeData} theme={cardTheme} />
+              : reelsCustom
+              ? <ReelsScorecard round={manualNineRound} summary={manualNineSummary} range="front" theme={cardTheme} />
+              : (() => { const C = FORMATS[format].Comp; return <C round={scoreRound} summary={activeSummary} range={effRange} theme={cardTheme} />; })()}
+          </PlacementPreview>
         </section>
       </div>
     </StudioShell>
