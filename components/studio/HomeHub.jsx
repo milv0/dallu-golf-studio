@@ -19,8 +19,8 @@ export default function HomeHub() {
   };
 
   const cards = [
-    { href: "/rounds", title: "정보 입력", meta: "라운드 기반" },
-    { href: "/custom", title: "풀 커스텀", meta: "수동 입력" },
+    { href: "/rounds", title: "내 라운드 기록", meta: "라운드 기반" },
+    { href: "/custom", title: "직접 만들기", meta: "수동 입력" },
   ];
 
   return (

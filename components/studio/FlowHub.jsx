@@ -6,9 +6,9 @@ import { MobileTabBar } from "./StudioNav";
 
 const FLOW_CONFIG = {
   custom: {
-    eyebrow: "Full Custom",
-    title: "풀 커스텀",
-    notice: "라운드 저장과 분리된 커스텀 작업입니다. 18홀, 9홀, 3홀, 1홀은 같은 커스텀 정보를 공유합니다.",
+    eyebrow: "Direct Builder",
+    title: "직접 만들기",
+    notice: "라운드 저장과 분리된 직접 입력 작업입니다. 18홀, 9홀, 3홀, 1홀은 같은 커스텀 정보를 공유합니다.",
     source: "custom",
     cards: [
       { href: "/score-18?source=custom", title: "18홀", meta: "커스텀" },
@@ -19,7 +19,7 @@ const FLOW_CONFIG = {
   },
   round: {
     eyebrow: "Round Source",
-    title: "정보 입력",
+    title: "내 라운드 기록",
     notice: "18홀 라운드 정보를 기준으로 18홀, 9홀, 3홀, 1홀 출력물을 연동합니다.",
     source: "round",
     cards: [
