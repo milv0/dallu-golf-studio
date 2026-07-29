@@ -1,6 +1,5 @@
 // 프리셋: 홀 카드 (현재 홀 라이브 오버레이) — 방송 로어서드 스타일, 우리 테마(다크+라임)
 // 표시: 홀번호 · PAR · 거리 / 선수명 / 토탈(to-par) / SHOT(현재 타수 표시) / SELECTED CLUB / FOR X 배너
-import { classify } from "../../lib/score";
 import { cardColors } from "../../lib/theme";
 import { displayPlayerName, fitFontSize } from "./svgText";
 import { HEAD, MONO } from "./scorecardPrimitives";
@@ -18,8 +17,18 @@ function bannerFor(data) {
   const par = Number(data.par) || null;
   const shots = Number(data.currentShot) || 0;
   if (data.showResultBanner === false || !par || shots <= 0) return "";
-  const { kind } = classify(par, shots);
-  return RESULT_LABEL[kind] ? `FOR ${RESULT_LABEL[kind]}` : "";
+  // "다음 타에 넣으면" 기준: shots + 1 이 최종 스코어
+  const nextScore = shots + 1;
+  const diff = nextScore - par;
+  if (par === 5) {
+    if (diff <= -2) return "FOR EAGLE";
+    if (diff === -1) return "FOR BIRDIE";
+  } else if (par === 4) {
+    if (diff <= -1) return "FOR BIRDIE";
+  } else if (par === 3) {
+    if (diff <= -1) return "FOR BIRDIE";
+  }
+  return "";
 }
 
 export function sizeFor(data) {
