@@ -8,7 +8,7 @@ const FLOW_CONFIG = {
   custom: {
     eyebrow: "Direct Builder",
     title: "직접 만들기",
-    notice: "라운드 저장과 분리된 직접 입력 작업입니다. 18홀, 9홀, 3홀, 1홀은 같은 커스텀 정보를 공유합니다.",
+    notice: "라운드 저장과 분리된 직접 입력 작업입니다. 18홀, 9홀, 3홀, 1홀은 각각 개별 입력으로 동작합니다.",
     source: "custom",
   },
   round: {

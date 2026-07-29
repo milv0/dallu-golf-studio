@@ -25,7 +25,6 @@ import PanelHeader, { ResetButton } from "./PanelHeader";
 const PREVIEW_MAX_H = 380;
 const PREVIEW_MOBILE_MAX_H = 460;
 const COURSE_DB_ENABLED = false;
-const REELS_SOURCE_SWITCH_ENABLED = false;
 const DEFAULT_CUSTOM_PLAYER = "PLAYER";
 
 const FORMATS = {
@@ -101,6 +100,15 @@ function CustomPlayerControl({ value, onChange }) {
   );
 }
 
+function initialSourceMode(mode) {
+  if (typeof window !== "undefined") {
+    const source = new URLSearchParams(window.location.search).get("source");
+    if (source === "linked") return "round";
+    if (source === "custom") return "custom";
+  }
+  return mode === "round" ? "round" : "custom";
+}
+
 export default function StudioApp({ mode = "home" } = {}) {
   return mode === "home" ? <HomeHub /> : <StudioWorkspace mode={mode} />;
 }
@@ -114,9 +122,7 @@ function StudioWorkspace({ mode }) {
   const [manualNine, setManualNine] = useState(emptyManualNine);
   const [linkedThree, setLinkedThree] = useState(emptyLinkedThree);
   const [holeRange, setHoleRange] = useState("all"); // 'all' | 'front' | 'back'
-  const [reelsVer, setReelsVer] = useState("v1");    // 릴스 레이아웃 v1(9홀) | v3(3홀)
-  const [reelsSource, setReelsSource] = useState(() => (mode === "score9" || mode === "score3" ? "custom" : "linked")); // 'linked' | 'custom'
-  const [sourceMode, setSourceMode] = useState(() => (mode === "round" ? "round" : "custom")); // 'round' | 'custom'
+  const [sourceMode, setSourceMode] = useState(() => initialSourceMode(mode)); // 'round' | 'custom'
   const [cardTheme, setCardTheme] = useState("light"); // 카드(프리셋) 색 테마
   const [exportScale, setExportScale] = useState(2);
   const [busy, setBusy] = useState(false);
@@ -127,15 +133,14 @@ function StudioWorkspace({ mode }) {
   const scoreRefs = useRef([]);
 
   const isHole = mode === "hole";
-  const isLegacyReels = mode === "reels";
   const isScore18 = mode === "score18" || mode === "round";
-  const isScore3 = mode === "score3" || (isLegacyReels && reelsVer === "v3");
-  const isScore9 = mode === "score9" || (isLegacyReels && reelsVer !== "v3");
+  const isScore3 = mode === "score3";
+  const isScore9 = mode === "score9";
   const isReelsSizedScore = isScore9 || isScore3;
   const isFullCustom = sourceMode === "custom";
   const format = isReelsSizedScore ? "reels" : "youtube";
   const reelsV3 = isScore3;
-  const reelsCustom = isReelsSizedScore && isFullCustom && reelsSource === "custom";
+  const reelsCustom = isReelsSizedScore && isFullCustom;
   const isRoundEditor = isScore18;
   const usesRoundSource = !isFullCustom && ((isReelsSizedScore && !reelsCustom) || mode === "hole");
   const customDisplayRound = useMemo(() => ({
@@ -181,11 +186,6 @@ function StudioWorkspace({ mode }) {
   useEffect(() => {
     setCurrentUser(loadCurrentUser());
   }, []);
-  useEffect(() => {
-    if (!isReelsSizedScore || typeof window === "undefined") return;
-    const source = new URLSearchParams(window.location.search).get("source");
-    if (source === "custom" || source === "linked") setReelsSource(source);
-  }, [isReelsSizedScore]);
   useEffect(() => {
     if (typeof window === "undefined") return;
     const source = new URLSearchParams(window.location.search).get("source");
@@ -328,13 +328,11 @@ function StudioWorkspace({ mode }) {
     if (!confirmReset("9홀 스코어카드를 초기화할까요?")) return;
     const next = emptyManualNine();
     setManualNine(next);
-    if (typeof window !== "undefined") window.localStorage.setItem("sc-manual-nine", JSON.stringify(next));
   };
   const resetThreeHole = () => {
     if (!confirmReset("3홀 스코어카드를 초기화할까요?")) return;
     const next = emptyThreeHoleCard();
     setThreeHole(next);
-    if (typeof window !== "undefined") window.localStorage.setItem("sc-threehole", JSON.stringify(next));
   };
   const resetHoleCard = () => {
     if (!confirmReset("1홀 정보를 초기화할까요?")) return;
@@ -380,7 +378,6 @@ function StudioWorkspace({ mode }) {
     // 라운드 스코어·홀카드 입력 복원
     try { const r = JSON.parse(localStorage.getItem("sc-round") || "null"); if (r && Array.isArray(r.holes)) setRound(r); } catch {}
     try { const hc = JSON.parse(localStorage.getItem("sc-holecard") || "null"); if (hc && typeof hc === "object") setHoleCard(hc); } catch {}
-    let loadedCustom = false;
     try {
       const cs = JSON.parse(localStorage.getItem("sc-custom-session") || "null");
       if (cs && typeof cs === "object") {
@@ -390,20 +387,11 @@ function StudioWorkspace({ mode }) {
         if (cs.holeCard && typeof cs.holeCard === "object") setCustomHoleCard(cs.holeCard);
         if (cs.threeHole && Array.isArray(cs.threeHole.holes) && cs.threeHole.holes.length === 3) setThreeHole(cs.threeHole);
         if (cs.manualNine && Array.isArray(cs.manualNine.holes) && cs.manualNine.holes.length === 9) setManualNine(cs.manualNine);
-        loadedCustom = true;
       }
     } catch {}
     try {
-      const th = JSON.parse(localStorage.getItem("sc-threehole") || "null");
-      if (!loadedCustom && th && Array.isArray(th.holes) && th.holes.length === 3) setThreeHole({ ...th, showHoleNumbers: false });
-    } catch {}
-    try {
-      const mn = JSON.parse(localStorage.getItem("sc-manual-nine") || "null");
-      if (!loadedCustom && mn && Array.isArray(mn.holes) && mn.holes.length === 9) setManualNine(mn);
-    } catch {}
-    try {
-      const hc = JSON.parse(localStorage.getItem("sc-holecard") || "null");
-      if (!loadedCustom && hc && typeof hc === "object") setCustomHoleCard(hc);
+      localStorage.removeItem("sc-threehole");
+      localStorage.removeItem("sc-manual-nine");
     } catch {}
     try {
       const lt = JSON.parse(localStorage.getItem("sc-linked-three") || "null");
@@ -414,8 +402,6 @@ function StudioWorkspace({ mode }) {
   // 입력값 자동 저장 (새로고침해도 유지)
   useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-round", JSON.stringify(round)); }, [round]);
   useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-holecard", JSON.stringify(holeCard)); }, [holeCard]);
-  useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-threehole", JSON.stringify(threeHole)); }, [threeHole]);
-  useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-manual-nine", JSON.stringify(manualNine)); }, [manualNine]);
   useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-linked-three", JSON.stringify(linkedThree)); }, [linkedThree]);
   useEffect(() => {
     if (!loadedRef.current) return;
@@ -495,50 +481,6 @@ function StudioWorkspace({ mode }) {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(440px,500px)_1fr] lg:gap-8">
         {/* ── 입력 패널 ── */}
         <section className="order-2 flex flex-col gap-5 lg:order-none lg:gap-6">
-          {isReelsSizedScore && (REELS_SOURCE_SWITCH_ENABLED || isLegacyReels) && (
-            <div className="order-[30] rounded-xl border border-line bg-panel p-4 lg:order-none">
-              <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-                스코어카드 설정
-              </div>
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="w-16 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">입력</div>
-                  <div className="flex overflow-hidden rounded-lg border border-line">
-                    {[["linked", "18홀 연동"], ["custom", "직접 입력"]].map(([key, label]) => (
-                      <button key={key} disabled={!REELS_SOURCE_SWITCH_ENABLED}
-                        onClick={() => REELS_SOURCE_SWITCH_ENABLED && setReelsSource(key)}
-                        className={"px-4 py-1.5 text-sm font-semibold transition " +
-                          (!REELS_SOURCE_SWITCH_ENABLED
-                            ? reelsSource === key
-                              ? "cursor-not-allowed bg-panel-2 text-txt-soft"
-                              : "cursor-not-allowed bg-panel text-txt-faint opacity-60"
-                            : reelsSource === key
-                            ? "bg-accent text-[#06210f]"
-                            : "bg-panel text-txt-soft hover:text-txt")}>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                  <span className="text-[11px] font-semibold text-txt-faint">전환 준비 중</span>
-                </div>
-                {isLegacyReels && (
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="w-16 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">종류</div>
-                    <div className="flex overflow-hidden rounded-lg border border-line">
-                      {[["v1", "9홀"], ["v3", "3홀"]].map(([key, label]) => (
-                        <button key={key} onClick={() => setReelsVer(key)}
-                          className={"px-4 py-1.5 text-sm font-semibold transition " +
-                            (reelsVer === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           {/* 기본 정보 + 코스 (좌우 배치) */}
           {reelsCustom ? (
             <div className="order-[10] lg:order-none">

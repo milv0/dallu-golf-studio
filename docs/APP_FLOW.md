@@ -26,6 +26,8 @@
    └─ /hole?source=custom
 ```
 
+`/score-9`, `/score-3`, `/hole`처럼 `source` query 없이 직접 진입하면 `직접 만들기` 흐름으로 처리한다. `내 라운드 기록` 흐름은 반드시 `/rounds` 탭 또는 `source=linked` 링크를 통해 진입한다.
+
 ## 홈
 
 - `HomeHub`가 홈 화면을 렌더링한다.
@@ -139,6 +141,8 @@
 | `sc-linked-three` | 라운드 기록 트리의 3홀 선택 |
 | `sc-custom-session` | 직접 만들기 전체 입력 묶음 |
 | `sc-favorites` | 코스 즐겨찾기 |
+
+직접 만들기 데이터는 `sc-custom-session` 하나로만 저장한다. 이전에 쓰던 개별 custom 키는 더 이상 사용하지 않는다.
 
 ### Cloudflare
 
