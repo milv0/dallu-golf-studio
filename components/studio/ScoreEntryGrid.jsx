@@ -52,6 +52,7 @@ export default function ScoreEntryGrid({
   showSum = true,
   showHoleNumbers = true,
   editableHoleNumbers = false,
+  parLocked = false,
 }) {
   const visibleHoles = holes || [];
   const parSum = visibleHoles.reduce((a, h) => a + (Number(h.par) || 0), 0);
@@ -84,7 +85,13 @@ export default function ScoreEntryGrid({
           const idx = offset + i;
           return (
             <div key={"p" + i} className={(showHoleNumbers ? "border-t " : "") + "border-l border-line bg-panel-2 first:border-l-0"}>
-              <ParInput idx={idx} value={h.par} setHole={setHole} />
+              {parLocked ? (
+                <div className="score-meta-lock flex items-center justify-center py-0.5 font-mono text-[12px] font-semibold text-txt-soft">
+                  {h.par || "–"}
+                </div>
+              ) : (
+                <ParInput idx={idx} value={h.par} setHole={setHole} />
+              )}
             </div>
           );
         })}

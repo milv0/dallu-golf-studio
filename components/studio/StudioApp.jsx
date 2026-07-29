@@ -130,6 +130,7 @@ function StudioWorkspace({ mode }) {
   const [exportScale, setExportScale] = useState(2);
   const [theme, setTheme] = useState("light");
   const [scoreMode, setScoreMode] = useState("strokes"); // 'strokes' | 'relative' (기본: 타수)
+  const [parLocked, setParLocked] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [toast, setToast] = useState("");
   const [confirmRequest, setConfirmRequest] = useState(null);
@@ -418,6 +419,7 @@ function StudioWorkspace({ mode }) {
       course: c.club || c.name || r.course,
       holes: r.holes.map((h, i) => ({ ...h, par: String(pars[i] ?? h.par) })),
     }));
+    setParLocked(true);
   };
 
   const { builtinCourses, favorites, dbStatus, loadCourseDb, toggleFav } = useStudioPersistence({
@@ -541,6 +543,12 @@ function StudioWorkspace({ mode }) {
                       onChange={(v) => setCustomMeta("player", v)}
                     />
                   )}
+                  {!isFullCustom && parLocked && (
+                    <button type="button" onClick={() => setParLocked(false)}
+                      className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-soft transition hover:border-accent hover:text-txt">
+                      PAR 수정
+                    </button>
+                  )}
                   <ScoreModeToggle value={scoreMode} onChange={setScoreMode} />
                   <ResetButton onClick={resetScoreRound} />
                 </PanelHeader>
@@ -548,9 +556,9 @@ function StudioWorkspace({ mode }) {
                   <RelativeScoreHint />
                 )}
                 <HoleGroup label="FRONT 9" holes={Front} offset={0} setHole={setScoreHole}
-                           scoreRefs={scoreRefs} onScoreKey={handleScoreKey} scoreMode={scoreMode} />
+                           scoreRefs={scoreRefs} onScoreKey={handleScoreKey} scoreMode={scoreMode} parLocked={!isFullCustom && parLocked} />
                 <HoleGroup label="BACK 9" holes={Back} offset={9} setHole={setScoreHole}
-                           scoreRefs={scoreRefs} onScoreKey={handleScoreKey} scoreMode={scoreMode} />
+                           scoreRefs={scoreRefs} onScoreKey={handleScoreKey} scoreMode={scoreMode} parLocked={!isFullCustom && parLocked} />
                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line pt-2 text-[11px] text-txt-soft">
                   <span>
                     PAR{" "}

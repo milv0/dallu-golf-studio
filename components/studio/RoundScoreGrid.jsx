@@ -2,7 +2,7 @@
 
 import ScoreEntryGrid from "./ScoreEntryGrid";
 
-export default function HoleGroup({ holes, offset, setHole, scoreRefs, onScoreKey, scoreMode }) {
+export default function HoleGroup({ holes, offset, setHole, scoreRefs, onScoreKey, scoreMode, parLocked }) {
   return (
     <ScoreEntryGrid
       holes={holes}
@@ -11,6 +11,7 @@ export default function HoleGroup({ holes, offset, setHole, scoreRefs, onScoreKe
       scoreRefs={scoreRefs}
       onScoreKey={onScoreKey}
       scoreMode={scoreMode}
+      parLocked={parLocked}
       showSum
     />
   );
