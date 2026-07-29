@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import { defaultFlowHref, storedFlowHref } from "./StudioNav";
+import { clearStudioWorkStorage } from "../../lib/studioStorage";
+import { ConfirmDialog, Toast } from "./Feedback";
 
 export default function HomeHub() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -10,6 +12,8 @@ export default function HomeHub() {
     round: defaultFlowHref("round"),
     custom: defaultFlowHref("custom"),
   });
+  const [toast, setToast] = useState("");
+  const [confirmRequest, setConfirmRequest] = useState(null);
 
   useEffect(() => {
     setCurrentUser(loadCurrentUser());
@@ -25,6 +29,19 @@ export default function HomeHub() {
   };
   const refreshPage = () => {
     if (typeof window !== "undefined") window.location.reload();
+  };
+  const clearSavedInputs = () => {
+    setConfirmRequest({
+      message: "이 기기에 저장된 스코어 입력값을 모두 삭제할까요?",
+      onConfirm: () => {
+        clearStudioWorkStorage();
+        setFlowHrefs({
+          round: defaultFlowHref("round"),
+          custom: defaultFlowHref("custom"),
+        });
+        setToast("저장된 입력값을 삭제했습니다.");
+      },
+    });
   };
 
   const cards = [
@@ -59,6 +76,27 @@ export default function HomeHub() {
 
       <FeatureNotice />
       <CardGrid cards={cards} />
+      <div className="mt-4 rounded-xl border border-line bg-panel px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="text-sm font-semibold text-txt-soft">
+            이 기기에 남은 입력값을 지우고 새로 시작할 수 있습니다.
+          </div>
+          <button type="button" onClick={clearSavedInputs}
+            className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-soft transition active:scale-[0.98] active:border-[#ff6b57] active:text-[#ff6b57]">
+            저장 입력 삭제
+          </button>
+        </div>
+      </div>
+      <Toast message={toast} onClose={() => setToast("")} />
+      <ConfirmDialog
+        request={confirmRequest}
+        onCancel={() => setConfirmRequest(null)}
+        onConfirm={() => {
+          const action = confirmRequest?.onConfirm;
+          setConfirmRequest(null);
+          action?.();
+        }}
+      />
     </main>
   );
 }

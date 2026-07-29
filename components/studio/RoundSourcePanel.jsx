@@ -18,11 +18,8 @@ export default function RoundSourcePanel({
         <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
           선택된 라운드
         </div>
-        <div className="flex items-center gap-2">
-          <button type="button" disabled
-            className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-faint opacity-70">
-            저장 라운드 준비 중
-          </button>
+        <div className="text-xs font-semibold text-txt-faint">
+          18홀 입력값 연동
         </div>
       </div>
 

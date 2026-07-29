@@ -1,8 +1,10 @@
 "use client";
 
+import { STUDIO_STORAGE_KEYS } from "../../lib/studioStorage";
+
 export const LAST_ROUTE_KEY = {
-  custom: "sc-last-custom-route",
-  round: "sc-last-round-route",
+  custom: STUDIO_STORAGE_KEYS.lastCustomRoute,
+  round: STUDIO_STORAGE_KEYS.lastRoundRoute,
 };
 
 export const CUSTOM_LINKS = [

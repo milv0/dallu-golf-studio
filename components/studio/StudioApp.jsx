@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { toPng } from "html-to-image";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import HoleByHoleStrip, { sizeFor as ytSizeFor } from "../presets/HoleByHoleStrip";
 import ReelsScorecard, { sizeFor as reelsSizeFor } from "../presets/ReelsScorecard";
 import HoleCard, { sizeFor as holeSizeFor } from "../presets/HoleCard";
@@ -21,6 +20,9 @@ import { LAST_ROUTE_KEY, linksFor } from "./StudioNav";
 import StudioShell from "./StudioShell";
 import HoleCardForm from "./HoleCardForm";
 import PanelHeader, { ResetButton } from "./PanelHeader";
+import { ConfirmDialog, Toast } from "./Feedback";
+import { createPngDataUrl, dataUrlToFile, downloadDataUrl, exportFileName } from "../../lib/exportImage";
+import { readJsonStorage, STUDIO_STORAGE_KEYS, writeJsonStorage } from "../../lib/studioStorage";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
 const PREVIEW_MAX_H = 380;
@@ -40,19 +42,6 @@ const QUALITY = [
   { scale: 2, label: "4K", desc: "2160p 영상용 · iPhone 16" },
   { scale: 3, label: "MAX", desc: "초고화질" },
 ];
-
-function exportFileName({ isHole, isScore3, isScore9 }) {
-  if (isHole) return "Hole1.png";
-  if (isScore3) return "Hole3.png";
-  if (isScore9) return "Hole9.png";
-  return "Hole18.png";
-}
-
-async function dataUrlToFile(dataUrl, fileName) {
-  const res = await fetch(dataUrl);
-  const blob = await res.blob();
-  return new File([blob], fileName, { type: "image/png" });
-}
 
 const emptyHoleCard = () => ({
   player: "", hole: "", par: "", distance: "", toPar: "", currentShot: "", club: "", unit: "m", showResultBanner: true,
@@ -142,6 +131,8 @@ function StudioWorkspace({ mode }) {
   const [theme, setTheme] = useState("light");
   const [scoreMode, setScoreMode] = useState("strokes"); // 'strokes' | 'relative' (기본: 타수)
   const [currentUser, setCurrentUser] = useState(null);
+  const [toast, setToast] = useState("");
+  const [confirmRequest, setConfirmRequest] = useState(null);
   const captureRef = useRef(null);
   const scoreRefs = useRef([]);
 
@@ -227,6 +218,20 @@ function StudioWorkspace({ mode }) {
     clearCurrentUser();
     setCurrentUser(null);
   };
+  const showToast = useCallback((message) => {
+    setToast(message);
+  }, []);
+  const requestConfirm = useCallback((message, onConfirm) => {
+    setConfirmRequest({ message, onConfirm });
+  }, []);
+  const closeConfirm = useCallback(() => {
+    setConfirmRequest(null);
+  }, []);
+  const runConfirm = useCallback(() => {
+    const action = confirmRequest?.onConfirm;
+    setConfirmRequest(null);
+    action?.();
+  }, [confirmRequest]);
 
   const summary = useMemo(() => summarize(round.holes), [round]);
   const customSummary = useMemo(() => summarize(customRound.holes), [customRound]);
@@ -325,43 +330,48 @@ function StudioWorkspace({ mode }) {
       ...r,
       holes: r.holes.map((h, idx) => (idx === i ? { ...h, [key]: val } : h)),
     }));
-  const confirmReset = (message) => typeof window === "undefined" || window.confirm(message);
   const resetRound = () => {
-    if (!confirmReset("18홀 스코어카드를 초기화할까요?")) return;
-    const next = emptyRound();
-    setRound(next);
-    setHoleRange("all");
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("sc-round", JSON.stringify(next));
-    }
+    requestConfirm("18홀 스코어카드를 초기화할까요?", () => {
+      const next = emptyRound();
+      setRound(next);
+      setHoleRange("all");
+      writeJsonStorage(STUDIO_STORAGE_KEYS.round, next);
+      showToast("18홀 스코어카드를 초기화했습니다.");
+    });
   };
   const resetCustomRound = () => {
-    if (!confirmReset("커스텀 18홀 스코어카드를 초기화할까요?")) return;
-    const next = emptyRound();
-    setCustomRound((prev) => ({
-      ...next,
-      player: prev.player,
-      country: "",
-      course: "",
-      date: "",
-    }));
-    setHoleRange("all");
+    requestConfirm("커스텀 18홀 스코어카드를 초기화할까요?", () => {
+      const next = emptyRound();
+      setCustomRound((prev) => ({
+        ...next,
+        player: prev.player,
+        country: "",
+        course: "",
+        date: "",
+      }));
+      setHoleRange("all");
+      showToast("커스텀 18홀을 초기화했습니다.");
+    });
   };
   const resetManualNine = () => {
-    if (!confirmReset("9홀 스코어카드를 초기화할까요?")) return;
-    const next = emptyManualNine();
-    setManualNine(next);
+    requestConfirm("9홀 스코어카드를 초기화할까요?", () => {
+      setManualNine(emptyManualNine());
+      showToast("9홀 스코어카드를 초기화했습니다.");
+    });
   };
   const resetThreeHole = () => {
-    if (!confirmReset("3홀 스코어카드를 초기화할까요?")) return;
-    const next = emptyThreeHoleCard();
-    setThreeHole(next);
+    requestConfirm("3홀 스코어카드를 초기화할까요?", () => {
+      setThreeHole(emptyThreeHoleCard());
+      showToast("3홀 스코어카드를 초기화했습니다.");
+    });
   };
   const resetHoleCard = () => {
-    if (!confirmReset("1홀 정보를 초기화할까요?")) return;
-    const next = emptyHoleCard();
-    setHoleCard(next);
-    if (typeof window !== "undefined") window.localStorage.setItem("sc-holecard", JSON.stringify(next));
+    requestConfirm("1홀 정보를 초기화할까요?", () => {
+      const next = emptyHoleCard();
+      setHoleCard(next);
+      writeJsonStorage(STUDIO_STORAGE_KEYS.holeCard, next);
+      showToast("1홀 정보를 초기화했습니다.");
+    });
   };
 
   const handleScoreKey = (e, idx) => {
@@ -396,49 +406,47 @@ function StudioWorkspace({ mode }) {
   const loadedRef = useRef(false);
   useEffect(() => {
     loadCourseDb();
-    try { setFavorites(JSON.parse(localStorage.getItem("sc-favorites") || "[]")); }
-    catch { setFavorites([]); }
+    const savedFavorites = readJsonStorage(STUDIO_STORAGE_KEYS.favorites, []);
+    setFavorites(Array.isArray(savedFavorites) ? savedFavorites : []);
     // 라운드 스코어·홀카드 입력 복원
-    try { const r = JSON.parse(localStorage.getItem("sc-round") || "null"); if (r && Array.isArray(r.holes)) setRound(r); } catch {}
-    try { const hc = JSON.parse(localStorage.getItem("sc-holecard") || "null"); if (hc && typeof hc === "object") setHoleCard(hc); } catch {}
-    try {
-      const cs = JSON.parse(localStorage.getItem("sc-custom-session") || "null");
-      if (cs && typeof cs === "object") {
-        if (cs.round && Array.isArray(cs.round.holes)) {
-          setCustomRound({ ...cs.round, country: "", course: "", date: "" });
-        }
-        if (cs.holeCard && typeof cs.holeCard === "object") setCustomHoleCard(cs.holeCard);
-        if (cs.threeHole && Array.isArray(cs.threeHole.holes) && cs.threeHole.holes.length === 3) setThreeHole(cs.threeHole);
-        if (cs.manualNine && Array.isArray(cs.manualNine.holes) && cs.manualNine.holes.length === 9) setManualNine(cs.manualNine);
+    const savedRound = readJsonStorage(STUDIO_STORAGE_KEYS.round);
+    if (savedRound && Array.isArray(savedRound.holes)) setRound(savedRound);
+    const savedHoleCard = readJsonStorage(STUDIO_STORAGE_KEYS.holeCard);
+    if (savedHoleCard && typeof savedHoleCard === "object") setHoleCard(savedHoleCard);
+    const customSession = readJsonStorage(STUDIO_STORAGE_KEYS.customSession);
+    if (customSession && typeof customSession === "object") {
+      if (customSession.round && Array.isArray(customSession.round.holes)) {
+        setCustomRound({ ...customSession.round, country: "", course: "", date: "" });
       }
-    } catch {}
-    try {
-      localStorage.removeItem("sc-threehole");
-      localStorage.removeItem("sc-manual-nine");
-    } catch {}
-    try {
-      const lt = JSON.parse(localStorage.getItem("sc-linked-three") || "null");
-      if (lt && Array.isArray(lt.holes)) setLinkedThree({ ...lt, showHoleNumbers: false });
-    } catch {}
+      if (customSession.holeCard && typeof customSession.holeCard === "object") setCustomHoleCard(customSession.holeCard);
+      if (customSession.threeHole && Array.isArray(customSession.threeHole.holes) && customSession.threeHole.holes.length === 3) setThreeHole(customSession.threeHole);
+      if (customSession.manualNine && Array.isArray(customSession.manualNine.holes) && customSession.manualNine.holes.length === 9) setManualNine(customSession.manualNine);
+    }
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(STUDIO_STORAGE_KEYS.legacyThreeHole);
+      window.localStorage.removeItem(STUDIO_STORAGE_KEYS.legacyManualNine);
+    }
+    const savedLinkedThree = readJsonStorage(STUDIO_STORAGE_KEYS.linkedThree);
+    if (savedLinkedThree && Array.isArray(savedLinkedThree.holes)) setLinkedThree({ ...savedLinkedThree, showHoleNumbers: false });
     loadedRef.current = true;
   }, []);
   // 입력값 자동 저장 (새로고침해도 유지)
-  useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-round", JSON.stringify(round)); }, [round]);
-  useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-holecard", JSON.stringify(holeCard)); }, [holeCard]);
-  useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-linked-three", JSON.stringify(linkedThree)); }, [linkedThree]);
+  useEffect(() => { if (loadedRef.current) writeJsonStorage(STUDIO_STORAGE_KEYS.round, round); }, [round]);
+  useEffect(() => { if (loadedRef.current) writeJsonStorage(STUDIO_STORAGE_KEYS.holeCard, holeCard); }, [holeCard]);
+  useEffect(() => { if (loadedRef.current) writeJsonStorage(STUDIO_STORAGE_KEYS.linkedThree, linkedThree); }, [linkedThree]);
   useEffect(() => {
     if (!loadedRef.current) return;
-    localStorage.setItem("sc-custom-session", JSON.stringify({
+    writeJsonStorage(STUDIO_STORAGE_KEYS.customSession, {
       round: customRound,
       manualNine,
       threeHole,
       holeCard: customHoleCard,
-    }));
+    });
   }, [customRound, customHoleCard, manualNine, threeHole]);
   const toggleFav = (name) => {
     setFavorites((prev) => {
       const next = prev.includes(name) ? prev.filter((n) => n !== name) : [name, ...prev];
-      localStorage.setItem("sc-favorites", JSON.stringify(next));
+      writeJsonStorage(STUDIO_STORAGE_KEYS.favorites, next);
       return next;
     });
   };
@@ -456,36 +464,22 @@ function StudioWorkspace({ mode }) {
     if (!captureRef.current) return;
     if (!canExport) return;
     const exportNode = captureRef.current.querySelector("svg") || captureRef.current;
-    await document.fonts?.ready;
-    const dataUrl = await toPng(exportNode, {
-      canvasWidth: size.w * exportScale,
-      canvasHeight: size.h * exportScale,
-      width: size.w,
-      height: size.h,
-      backgroundColor: "rgba(0,0,0,0)",
-      cacheBust: true,
-      style: { background: "transparent", maxWidth: "none", width: `${size.w}px`, height: `${size.h}px` },
-    });
     return {
-      dataUrl,
+      dataUrl: await createPngDataUrl({ node: exportNode, size, scale: exportScale }),
       fileName: exportFileName({ isHole, isScore3, isScore9 }),
     };
-  }
-
-  function downloadDataUrl(dataUrl, fileName) {
-    const a = document.createElement("a");
-    a.href = dataUrl;
-    a.download = fileName;
-    a.click();
   }
 
   async function handleExport() {
     setBusy(true);
     try {
       const image = await createExportImage();
-      if (image) downloadDataUrl(image.dataUrl, image.fileName);
+      if (image) {
+        downloadDataUrl(image.dataUrl, image.fileName);
+        showToast("PNG 다운로드를 시작했습니다.");
+      }
     } catch (e) {
-      alert("내보내기 실패: " + e.message);
+      showToast("내보내기 실패: " + e.message);
     } finally {
       setBusy(false);
     }
@@ -502,11 +496,11 @@ function StudioWorkspace({ mode }) {
         await navigator.share(sharePayload);
       } else {
         downloadDataUrl(image.dataUrl, image.fileName);
-        alert("이 브라우저는 이미지 공유 저장을 지원하지 않아 PNG 다운로드로 처리했습니다.");
+        showToast("공유 저장을 지원하지 않아 PNG 다운로드로 처리했습니다.");
       }
     } catch (e) {
       if (e?.name !== "AbortError") {
-        alert("공유 실패: " + e.message);
+        showToast("공유 실패: " + e.message);
       }
     } finally {
       setBusy(false);
@@ -579,12 +573,6 @@ function StudioWorkspace({ mode }) {
                     />
                   )}
                   <ScoreModeToggle value={scoreMode} onChange={setScoreMode} />
-                  {!isFullCustom && (
-                    <button type="button" disabled
-                      className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-faint opacity-70">
-                      기록 저장 준비 중
-                    </button>
-                  )}
                   <ResetButton onClick={resetScoreRound} />
                 </PanelHeader>
                 {scoreMode === "relative" && (
@@ -615,19 +603,6 @@ function StudioWorkspace({ mode }) {
                     </span>
                   )}
                 </div>
-                {!isFullCustom && (
-                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-2">
-                    <div className="text-[11px] text-txt-faint">
-                      라운딩 기록 저장은 준비 중입니다.
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button type="button" disabled
-                        className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-2.5 py-1 text-[11px] font-semibold text-txt-faint opacity-70">
-                        내 라운딩 준비 중
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -660,8 +635,10 @@ function StudioWorkspace({ mode }) {
                 loadHoleFromRound={isFullCustom ? loadCustomHoleStandalone : loadHoleFromRound}
                 linked={!isFullCustom}
                 onReset={isFullCustom ? () => {
-                  if (!confirmReset("커스텀 1홀 정보를 초기화할까요?")) return;
-                  setCustomHoleCard(emptyHoleCard());
+                  requestConfirm("커스텀 1홀 정보를 초기화할까요?", () => {
+                    setCustomHoleCard(emptyHoleCard());
+                    showToast("커스텀 1홀 정보를 초기화했습니다.");
+                  });
                 } : resetHoleCard}
               />
             </div>
@@ -714,12 +691,12 @@ function StudioWorkspace({ mode }) {
                 </div>
                 <button onClick={handleShareExport} disabled={busy || !canExport}
                   title={!canExport ? "필수 입력을 먼저 완료하세요" : "iPhone에서는 공유 시트에서 이미지 저장을 선택하세요"}
-                  className="rounded-lg border border-line bg-panel-2 px-2.5 py-1 font-head text-xs font-bold uppercase tracking-wide text-txt-soft transition hover:border-accent hover:text-txt disabled:opacity-60 md:px-4 md:py-1.5 md:text-sm">
-                  공유
+                  className="rounded-lg bg-accent px-3 py-1 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:border md:border-line md:bg-panel-2 md:px-4 md:py-1.5 md:text-sm md:text-txt-soft md:hover:border-accent md:hover:bg-panel-2 md:hover:text-txt">
+                  {busy ? "생성 중…" : !canExport ? "입력 필요" : "공유"}
                 </button>
                 <button onClick={handleExport} disabled={busy || !canExport}
                   title={!canExport ? "필수 입력을 먼저 완료하세요" : "PNG 다운로드"}
-                  className="rounded-lg bg-accent px-2.5 py-1 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:px-4 md:py-1.5 md:text-sm">
+                  className="rounded-lg border border-line bg-panel-2 px-2.5 py-1 font-head text-xs font-bold uppercase tracking-wide text-txt-soft transition hover:border-accent hover:text-txt disabled:opacity-60 md:border-0 md:bg-accent md:px-4 md:py-1.5 md:text-sm md:text-[#06210f] md:hover:bg-accent-2">
                   {busy ? "생성 중…" : !canExport ? "입력 필요" : "PNG 다운로드"}
                 </button>
               </div>
@@ -773,6 +750,8 @@ function StudioWorkspace({ mode }) {
           </PlacementPreview>
         </section>
       </div>
+      <Toast message={toast} onClose={() => setToast("")} />
+      <ConfirmDialog request={confirmRequest} onCancel={closeConfirm} onConfirm={runConfirm} />
     </StudioShell>
   );
 }
