@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { Moon, Sun, ClipboardList, Pencil } from "lucide-react";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import { defaultFlowHref, storedFlowHref } from "./StudioNav";
@@ -92,7 +93,7 @@ export default function HomeHub() {
               );
             }
             return (
-              <a key={item.href} href={item.href}
+              <Link key={item.href} href={item.href}
                 className={`group relative overflow-hidden rounded-2xl border border-line bg-panel p-6 transition hover:border-accent/60 hover:shadow-[0_0_30px_-8px_rgba(56,224,139,0.15)] active:scale-[0.98] md:p-8 ${item.accent}`}>
                 <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-accent/5 transition group-hover:bg-accent/10" />
                 <Icon size={28} strokeWidth={1.8} className="mb-4 text-accent" />
@@ -108,7 +109,7 @@ export default function HomeHub() {
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </div>
-              </a>
+              </Link>
             );
           })}
         </div>

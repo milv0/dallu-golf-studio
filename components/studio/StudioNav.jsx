@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Moon, Sun } from "lucide-react";
 import { STUDIO_STORAGE_KEYS } from "../../lib/studioStorage";
 
@@ -51,13 +52,13 @@ export function getActiveLabel(active) {
 
 function NavLink({ href, label, active }) {
   return (
-    <a href={href}
+    <Link href={href}
       className={"rounded-lg border px-3.5 py-2 text-sm font-semibold transition " +
         (active
           ? "border-accent bg-accent text-[#06210f]"
           : "border-line bg-panel text-txt-soft hover:text-txt")}>
       {label}
-    </a>
+    </Link>
   );
 }
 
@@ -123,23 +124,23 @@ export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLog
     <header className="sticky top-0 z-40 border-b border-line bg-bg/95 px-4 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] backdrop-blur">
       <div className="mx-auto max-w-[520px] md:max-w-[980px]">
         <div className="flex items-center justify-between gap-3">
-          <a href="/" className="flex items-center gap-2 transition active:opacity-80">
+          <Link href="/" className="flex items-center gap-2 transition active:opacity-80">
             <span className="font-head text-[13px] font-bold uppercase tracking-[0.15em] text-accent">
               Dallu Golf
             </span>
-          </a>
+          </Link>
           <TopActions currentUser={currentUser} onLogout={onLogout} theme={theme} onToggleTheme={onToggleTheme} />
         </div>
         <nav className="mt-2 flex gap-1.5">
           {links.map((link) => (
-            <a key={link.href} href={link.href}
+            <Link key={link.href} href={link.href}
               aria-current={active === link.id ? "page" : undefined}
               className={"flex-1 rounded-lg py-1.5 text-center font-head leading-none transition " +
                 (active === link.id
                   ? "bg-accent text-[#06210f] text-[15px] font-bold"
                   : "text-txt-soft text-[13px] font-semibold hover:bg-panel-2 hover:text-txt active:bg-panel-2")}>
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
       </div>
