@@ -71,7 +71,9 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
               if (n >= 1 && n <= 18) setHC("hole", v);
             }} placeholder="1" inputMode="numeric" />
           )}
-          <CoreInput label="P" value={holeCard.par} onChange={(v) => setHC("par", v)} placeholder="4" inputMode="numeric" />
+          <CoreInput label="P" value={holeCard.par} onChange={(v) => {
+            if (v === "" || /^[3456]$/.test(v)) setHC("par", v);
+          }} placeholder="4" inputMode="numeric" />
           <CoreInput label="타" value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="4" inputMode="numeric" />
           <CoreInput label="±" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="E" />
         </div>

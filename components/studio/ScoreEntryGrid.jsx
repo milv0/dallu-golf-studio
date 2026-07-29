@@ -11,7 +11,7 @@ const metaLockProps = {
 
 function ParInput({ idx, value, setHole }) {
   const handleChange = (next) => {
-    if (next === "" || /^[345]$/.test(next)) setHole(idx, "par", next);
+    if (next === "" || /^[3456]$/.test(next)) setHole(idx, "par", next);
   };
 
   return (
