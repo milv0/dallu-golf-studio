@@ -82,7 +82,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           현재 타수 (지금까지 친 횟수)
         </span>
         <div className="flex flex-wrap gap-1.5">
-          {Array.from({ length: Math.min(Math.max((Number(holeCard.par) || 4) + 2, 6), 9) }, (_, i) => i + 1).map((n) => (
+          {Array.from({ length: (Number(holeCard.par) || 4) * 2 }, (_, i) => i + 1).map((n) => (
             <button key={n} type="button" onClick={() => setHC("currentShot", String(n))}
               className={"h-9 w-9 rounded-md font-mono text-sm font-bold transition " +
                 (String(n) === String(holeCard.currentShot)
