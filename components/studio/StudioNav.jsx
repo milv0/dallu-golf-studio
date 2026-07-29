@@ -78,7 +78,7 @@ export function MobileAppBar({ active, onBack }) {
         </MobileIconButton>
         <div className="min-w-0 px-3 text-center">
           <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
-            Dallu Golf
+            @Dallu Golf
           </div>
           <div className="truncate font-head text-[24px] font-bold uppercase leading-none text-txt">
             {getActiveLabel(active)}

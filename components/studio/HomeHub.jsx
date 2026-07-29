@@ -61,7 +61,7 @@ export default function HomeHub() {
         <div className="mb-6 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
-              Dallu Golf
+              @Dallu Golf
             </div>
             <h1 className="truncate font-head text-[34px] font-bold uppercase leading-none text-txt">
               Studio
