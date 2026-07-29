@@ -1,5 +1,6 @@
 "use client";
 
+import { Moon, Sun } from "lucide-react";
 import { STUDIO_STORAGE_KEYS } from "../../lib/studioStorage";
 
 export const LAST_ROUTE_KEY = {
@@ -86,11 +87,11 @@ function DisabledNavItem({ label }) {
 }
 
 function ThemeButton({ theme, onToggleTheme }) {
+  const nextThemeLabel = theme === "dark" ? "라이트 테마로 전환" : "다크 테마로 전환";
   return (
-    <button type="button" onClick={onToggleTheme}
-      className="rounded-full border border-line bg-panel px-2.5 py-1.5 text-xs font-bold text-txt-soft transition active:border-accent active:text-txt sm:px-3"
-      title="라이트/다크 테마 전환">
-      {theme === "dark" ? "라이트" : "다크"}
+    <button type="button" onClick={onToggleTheme} aria-label={nextThemeLabel} title={nextThemeLabel}
+      className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-panel text-txt-soft transition active:border-accent active:text-txt">
+      {theme === "dark" ? <Sun aria-hidden="true" size={18} strokeWidth={2.2} /> : <Moon aria-hidden="true" size={18} strokeWidth={2.2} />}
     </button>
   );
 }
