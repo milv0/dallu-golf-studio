@@ -62,6 +62,26 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
         </div>
       </div>
 
+      <div className="mt-3">
+        <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
+          현재 타수 (지금까지 친 횟수)
+        </span>
+        <div className="flex flex-wrap gap-1.5">
+          {Array.from({ length: Math.min(Math.max((Number(holeCard.par) || 4) + 2, 6), 9) }, (_, i) => i + 1).map((n) => (
+            <button key={n} type="button" onClick={() => setHC("currentShot", String(n))}
+              className={"h-9 w-9 rounded-md font-mono text-sm font-bold transition " +
+                (String(n) === String(holeCard.currentShot)
+                  ? "bg-accent text-[#06210f]"
+                  : "border border-line bg-panel-2 text-txt-soft hover:text-txt")}>
+              {n}
+            </button>
+          ))}
+          <button type="button" onClick={() => setHC("currentShot", "")}
+            className="h-9 rounded-md border border-line bg-panel-2 px-3 text-xs font-semibold text-txt-faint hover:text-txt">
+            없음
+          </button>
+        </div>
+      </div>
       <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
           <div className="mb-1 flex items-center justify-between">
@@ -91,26 +111,6 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
         />
         FOR EAGLE/BIRDIE 배너 표시
       </label>
-      <div className="mt-3">
-        <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
-          현재 타수 (지금까지 친 횟수)
-        </span>
-        <div className="flex flex-wrap gap-1.5">
-          {Array.from({ length: Math.min(Math.max((Number(holeCard.par) || 4) + 2, 6), 9) }, (_, i) => i + 1).map((n) => (
-            <button key={n} type="button" onClick={() => setHC("currentShot", String(n))}
-              className={"h-9 w-9 rounded-md font-mono text-sm font-bold transition " +
-                (String(n) === String(holeCard.currentShot)
-                  ? "bg-accent text-[#06210f]"
-                  : "border border-line bg-panel-2 text-txt-soft hover:text-txt")}>
-              {n}
-            </button>
-          ))}
-          <button type="button" onClick={() => setHC("currentShot", "")}
-            className="h-9 rounded-md border border-line bg-panel-2 px-3 text-xs font-semibold text-txt-faint hover:text-txt">
-            없음
-          </button>
-        </div>
-      </div>
       {linked && (
         <p className="mt-2 text-[12px] text-txt-faint">
           홀 선택 → PAR·토탈·타수 자동 반영 · 거리/클럽은 직접 입력
