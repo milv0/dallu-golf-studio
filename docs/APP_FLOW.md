@@ -14,12 +14,12 @@
 
 ```text
 /
-├─ /rounds
+├─ /rounds (redirect-only)
 │  ├─ /round
 │  ├─ /score-9?source=linked
 │  ├─ /score-3?source=linked
 │  └─ /hole?source=linked
-└─ /custom
+└─ /custom (redirect-only)
    ├─ /score-18?source=custom
    ├─ /score-9?source=custom
    ├─ /score-3?source=custom
@@ -34,8 +34,10 @@
 - 홈에는 큰 흐름 2개만 둔다.
 - `내 라운드 기록`: 라운드 입력 기반 연동 작업.
 - `직접 만들기`: 라운드 저장과 분리된 수동 제작 작업.
+- 홈 카드는 `/rounds`, `/custom` 중간 화면을 거치지 않고 마지막 작업 탭으로 바로 이동한다.
 - `/custom`은 마지막 직접 만들기 탭으로 바로 이동한다. 마지막 기록이 없으면 `/score-18?source=custom`으로 이동한다.
 - `/rounds`는 마지막 내 라운드 기록 탭으로 바로 이동한다. 마지막 기록이 없으면 `/round`로 이동한다.
+- `/custom`, `/rounds`는 직접 주소로 들어온 경우를 위한 리다이렉트 전용 경로이며 화면을 렌더링하지 않는다.
 - 로그인, 코스 DB, 내 라운드 저장은 준비 중 안내만 보여준다.
 
 ## 내 라운드 기록 트리
@@ -129,7 +131,7 @@
 - `StudioApp`: 전체 상태, source 분기, 미리보기, PNG 저장.
 - `StudioShell`: 공통 레이아웃.
 - `StudioNav`: 18/9/3/1 상단 탭.
-- `FlowHub`: `/rounds`, `/custom` 흐름 진입 화면.
+- `FlowHub`: `/rounds`, `/custom` 리다이렉트 전용 진입 경로.
 - `ScoreEntryGrid`: 18/9/3 공통 스코어 입력 표.
 - `ScoreInputs`: 타수/파대비 입력 로직, 포커스 시 전체 선택.
 - `ManualScoreForms`: 9홀/3홀 직접 입력 폼.

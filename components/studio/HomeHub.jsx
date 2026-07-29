@@ -2,12 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
+import { defaultFlowHref, storedFlowHref } from "./StudioNav";
 
 export default function HomeHub() {
   const [currentUser, setCurrentUser] = useState(null);
+  const [flowHrefs, setFlowHrefs] = useState({
+    round: defaultFlowHref("round"),
+    custom: defaultFlowHref("custom"),
+  });
 
   useEffect(() => {
     setCurrentUser(loadCurrentUser());
+    setFlowHrefs({
+      round: storedFlowHref("round"),
+      custom: storedFlowHref("custom"),
+    });
   }, []);
 
   const logout = () => {
@@ -19,8 +28,8 @@ export default function HomeHub() {
   };
 
   const cards = [
-    { href: "/rounds", title: "내 라운드 기록", meta: "라운드 기반" },
-    { href: "/custom", title: "직접 만들기", meta: "수동 입력" },
+    { href: flowHrefs.round, title: "내 라운드 기록", meta: "라운드 기반" },
+    { href: flowHrefs.custom, title: "직접 만들기", meta: "수동 입력" },
   ];
 
   return (

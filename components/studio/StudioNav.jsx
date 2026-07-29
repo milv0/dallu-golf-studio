@@ -1,5 +1,10 @@
 "use client";
 
+export const LAST_ROUTE_KEY = {
+  custom: "sc-last-custom-route",
+  round: "sc-last-round-route",
+};
+
 export const CUSTOM_LINKS = [
   { href: "/score-18?source=custom", label: "18홀", id: "score18" },
   { href: "/score-9?source=custom", label: "9홀", id: "score9" },
@@ -16,6 +21,24 @@ export const ROUND_LINKS = [
 
 export function linksFor(sourceMode = "custom") {
   return sourceMode === "round" ? ROUND_LINKS : CUSTOM_LINKS;
+}
+
+export function defaultFlowHref(sourceMode = "custom") {
+  return linksFor(sourceMode)[0]?.href || "/";
+}
+
+export function storedFlowHref(sourceMode = "custom") {
+  const links = linksFor(sourceMode);
+  const fallback = links[0]?.href || "/";
+  if (typeof window === "undefined") return fallback;
+
+  try {
+    const storageKey = LAST_ROUTE_KEY[sourceMode];
+    const savedHref = storageKey ? window.localStorage.getItem(storageKey) : "";
+    return links.some((link) => link.href === savedHref) ? savedHref : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 export function getActiveLabel(active) {

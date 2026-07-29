@@ -17,7 +17,7 @@ import RoundSourcePanel from "./RoundSourcePanel";
 import HoleGroup from "./RoundScoreGrid";
 import { RelativeScoreHint, ScoreModeToggle } from "./ScoreInputs";
 import { ClubAutocomplete, Field } from "./StudioFields";
-import { linksFor } from "./StudioNav";
+import { LAST_ROUTE_KEY, linksFor } from "./StudioNav";
 import StudioShell from "./StudioShell";
 import HoleCardForm from "./HoleCardForm";
 import PanelHeader, { ResetButton } from "./PanelHeader";
@@ -27,11 +27,6 @@ const PREVIEW_MAX_H = 380;
 const PREVIEW_MOBILE_MAX_H = 460;
 const COURSE_DB_ENABLED = false;
 const DEFAULT_CUSTOM_PLAYER = "PLAYER";
-const LAST_ROUTE_KEY = {
-  custom: "sc-last-custom-route",
-  round: "sc-last-round-route",
-};
-
 const FORMATS = {
   youtube: { Comp: HoleByHoleStrip, sizeFor: ytSizeFor },
   reels: { Comp: ReelsScorecard, sizeFor: reelsSizeFor },

@@ -1,84 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
-import { linksFor, MobileTabBar } from "./StudioNav";
+import { useEffect } from "react";
+import { storedFlowHref } from "./StudioNav";
 
-const LAST_ROUTE_KEY = {
-  custom: "sc-last-custom-route",
-  round: "sc-last-round-route",
-};
-
-const FLOW_CONFIG = {
-  custom: {
-    eyebrow: "Direct Builder",
-    title: "직접 만들기",
-    notice: "라운드 저장과 분리된 직접 입력 작업입니다. 18홀, 9홀, 3홀, 1홀은 각각 개별 입력으로 동작합니다.",
-    source: "custom",
-  },
-  round: {
-    eyebrow: "Round Source",
-    title: "내 라운드 기록",
-    notice: "18홀 라운드 정보를 기준으로 18홀, 9홀, 3홀, 1홀 출력물을 연동합니다.",
-    source: "round",
-  },
+const FLOW_SOURCE = {
+  custom: "custom",
+  round: "round",
 };
 
 export default function FlowHub({ flow = "custom" }) {
-  const config = FLOW_CONFIG[flow] || FLOW_CONFIG.custom;
-  const [currentUser, setCurrentUser] = useState(null);
+  const sourceMode = FLOW_SOURCE[flow] || "custom";
 
-  useEffect(() => {
-    setCurrentUser(loadCurrentUser());
-  }, []);
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const links = linksFor(config.source);
-    const defaultHref = links[0]?.href || "/";
-    const storageKey = LAST_ROUTE_KEY[config.source];
-    const savedHref = storageKey ? window.localStorage.getItem(storageKey) : "";
-    const targetHref = links.some((link) => link.href === savedHref) ? savedHref : defaultHref;
-    window.location.replace(targetHref);
-  }, [config.source]);
+    window.location.replace(storedFlowHref(sourceMode));
+  }, [sourceMode]);
 
-  const logout = () => {
-    clearCurrentUser();
-    setCurrentUser(null);
-  };
-
-  return (
-    <main className="mobile-home-main mx-auto max-w-[520px] px-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:max-w-[980px] md:px-6">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <a href="/" className="min-w-0 text-left transition active:scale-[0.98] active:opacity-80">
-          <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
-            @Dallu_Golf
-          </div>
-          <h1 className="truncate font-head text-[34px] font-bold uppercase leading-none text-txt md:text-[44px]">
-            {config.title}
-          </h1>
-        </a>
-        {currentUser ? (
-          <button type="button" onClick={logout}
-            className="shrink-0 rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-soft active:border-accent active:text-txt">
-            로그아웃
-          </button>
-        ) : (
-          <button type="button" disabled
-            className="shrink-0 cursor-not-allowed rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-faint opacity-70">
-            로그인 준비 중
-          </button>
-        )}
-      </div>
-      <MobileTabBar sourceMode={config.source} />
-      <FlowNotice text={config.notice} />
-    </main>
-  );
-}
-
-function FlowNotice({ text }) {
-  return (
-    <div className="mb-4 rounded-xl border border-line bg-panel px-4 py-3 text-sm font-semibold leading-relaxed text-txt-soft">
-      {text}
-    </div>
-  );
+  return null;
 }
