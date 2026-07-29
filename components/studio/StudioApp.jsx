@@ -93,7 +93,7 @@ function BasicInfoPanel({ title = "기본 정보", data, setMeta, clubNameList }
 
 function CustomPlayerControl({ value, onChange }) {
   return (
-    <label className="flex min-w-[160px] items-center gap-2 rounded-lg border border-line bg-panel-2 px-2 py-1">
+    <label className="flex w-[128px] shrink-0 items-center gap-2 rounded-lg border border-line bg-panel-2 px-2 py-1">
       <span className="font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">
         이름
       </span>
@@ -539,10 +539,12 @@ function StudioWorkspace({ mode }) {
                     />
                   )}
                   <ScoreModeToggle value={scoreMode} onChange={setScoreMode} />
-                  <button type="button" disabled
-                    className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-faint opacity-70">
-                    기록 저장 준비 중
-                  </button>
+                  {!isFullCustom && (
+                    <button type="button" disabled
+                      className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-faint opacity-70">
+                      기록 저장 준비 중
+                    </button>
+                  )}
                   <ResetButton onClick={resetScoreRound} />
                 </PanelHeader>
                 {scoreMode === "relative" && (
