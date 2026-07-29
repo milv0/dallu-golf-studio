@@ -20,7 +20,7 @@ function bannerFor(data) {
   // currentShot = 지금 치려는 타수. 이 샷이 들어가면 shots가 최종 스코어.
   const diff = shots - par;
   if (par >= 5) {
-    if (diff <= -2) return "FOR EAGLE";
+    if (diff === -2) return "FOR EAGLE";
     if (diff === -1) return "FOR BIRDIE";
   } else if (par === 4) {
     if (diff === -1) return "FOR BIRDIE";
