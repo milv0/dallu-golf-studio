@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { onRequestPost } from "../functions/api/db.js";
+import { onRequest as onMiddlewareRequest } from "../functions/_middleware.js";
 
 const validDb = {
   "테스트CC": {
@@ -12,10 +13,10 @@ const validDb = {
   },
 };
 
-function request(body, token = "secret") {
+function request(body, token = "secret", headers = {}) {
   return new Request("https://example.com/api/db", {
     method: "POST",
-    headers: { "content-type": "application/json", "x-admin-token": token },
+    headers: { "content-type": "application/json", "x-admin-token": token, ...headers },
     body: JSON.stringify(body),
   });
 }
@@ -55,6 +56,35 @@ test("POST rejects invalid admin tokens", async () => {
     env: { COURSE_KV: kv(), ADMIN_TOKEN: "secret" },
   });
   assert.equal(response.status, 401);
+});
+
+test("POST rejects admin writes from non-allowlisted IPs", async () => {
+  const response = await onRequestPost({
+    request: request(validDb, "secret", { "cf-connecting-ip": "198.51.100.10" }),
+    env: { COURSE_KV: kv(), ADMIN_TOKEN: "secret", ADMIN_ALLOWED_IPS: "203.0.113.7" },
+  });
+  const data = await response.json();
+  assert.equal(response.status, 403);
+  assert.match(data.error, /IP/);
+});
+
+test("POST allows admin writes from allowlisted IPs", async () => {
+  const response = await onRequestPost({
+    request: request(validDb, "secret", { "cf-connecting-ip": "203.0.113.7" }),
+    env: { COURSE_KV: kv(), ADMIN_TOKEN: "secret", ADMIN_ALLOWED_IPS: "203.0.113.7" },
+  });
+  assert.equal(response.status, 200);
+});
+
+test("middleware blocks static admin page outside IP allowlist", async () => {
+  const response = await onMiddlewareRequest({
+    request: new Request("https://example.com/admin", {
+      headers: { "cf-connecting-ip": "198.51.100.10" },
+    }),
+    env: { ADMIN_ALLOWED_IPS: "203.0.113.7" },
+    next: async () => new Response("ok"),
+  });
+  assert.equal(response.status, 403);
 });
 
 test("POST rejects invalid course DB payloads", async () => {

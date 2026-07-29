@@ -1,3 +1,5 @@
+import { assertAdminAccess } from "../../_shared/adminAccess.js";
+
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), {
     status,
@@ -6,8 +8,7 @@ function json(obj, status = 200) {
 }
 
 export async function onRequestPost({ request, env }) {
-  if (!env.ADMIN_TOKEN) return json({ error: "ADMIN_TOKEN 미설정" }, 500);
-  const token = request.headers.get("x-admin-token") || "";
-  if (token !== env.ADMIN_TOKEN) return json({ error: "관리자 인증 실패" }, 401);
+  const authError = assertAdminAccess(request, env);
+  if (authError) return authError;
   return json({ ok: true });
 }

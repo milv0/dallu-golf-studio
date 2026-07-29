@@ -101,11 +101,13 @@ export default function Admin() {
     setAuthError("");
     try {
       await verifyAdminToken(nextToken);
-      localStorage.setItem("sc-admin-token", nextToken);
+      localStorage.removeItem("sc-admin-token");
+      sessionStorage.setItem("sc-admin-token", nextToken);
       sessionStorage.setItem("sc-admin-ok", "1");
       setAdminReady(true);
     } catch (e) {
       sessionStorage.removeItem("sc-admin-ok");
+      sessionStorage.removeItem("sc-admin-token");
       setAdminReady(false);
       if (!silent) setAuthError(e.message || "관리자 인증 실패");
     } finally {
@@ -114,7 +116,8 @@ export default function Admin() {
   };
 
   useEffect(() => {
-    const stored = localStorage.getItem("sc-admin-token") || "";
+    localStorage.removeItem("sc-admin-token");
+    const stored = sessionStorage.getItem("sc-admin-token") || "";
     setAuthToken(stored);
     if (sessionStorage.getItem("sc-admin-ok") === "1" && stored) {
       authenticate(stored, { silent: true });
@@ -126,7 +129,7 @@ export default function Admin() {
   const reload = async () => {
     setConn((c) => ({ ...c, state: "loading" }));
     try {
-      const token = localStorage.getItem("sc-admin-token") || "";
+      const token = sessionStorage.getItem("sc-admin-token") || "";
       const remote = await fetchDbAdmin(token);
       setDb(effectiveDb(remote.db)); saveDb(remote.db);
       setDbMeta(remote.meta || { revision: null, updatedAt: null, clubs: 0 });
@@ -148,13 +151,13 @@ export default function Admin() {
   const saveAll = async () => {
     setSyncing(true);
     try {
-      let token = localStorage.getItem("sc-admin-token") || "";
+      let token = sessionStorage.getItem("sc-admin-token") || "";
       let result;
       try { result = await pushDb(db, token, { baseRevision: dbMeta?.revision ?? null }); }
       catch (e) {
         if (String(e.message).includes("인증")) {
           token = prompt("관리자 토큰(ADMIN_TOKEN)") || "";
-          localStorage.setItem("sc-admin-token", token);
+          sessionStorage.setItem("sc-admin-token", token);
           result = await pushDb(db, token, { baseRevision: dbMeta?.revision ?? null });
         } else throw e;
       }
@@ -175,7 +178,7 @@ export default function Admin() {
     if (!confirm(`이 백업으로 코스 DB를 복구할까요?\n${backupKey}`)) return;
     setSyncing(true);
     try {
-      const token = localStorage.getItem("sc-admin-token") || "";
+      const token = sessionStorage.getItem("sc-admin-token") || "";
       await restoreDbBackup(backupKey, token, { baseRevision: dbMeta?.revision ?? null });
       await reload();
       alert("백업 복구 완료");

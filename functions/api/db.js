@@ -3,6 +3,7 @@
 // db = { "골프장": { nines: { "코스명": [9] }, combos: [{out,in}] } }
 // KV 바인딩: COURSE_KV / 쓰기보호: env.ADMIN_TOKEN + x-admin-token 헤더
 import { validateCourseDb } from "../../lib/courseDbValidation.js";
+import { assertAdminAccess } from "../_shared/adminAccess.js";
 
 const DB_KEY = "db";
 const META_KEY = "db-meta";
@@ -45,14 +46,6 @@ function newRevision(date = new Date()) {
 
 async function readMeta(env) {
   return parseJson(await env.COURSE_KV.get(META_KEY), { revision: null, updatedAt: null, clubs: 0 });
-}
-
-function assertAdmin(request, env) {
-  if (!env.ADMIN_TOKEN) return json({ error: "ADMIN_TOKEN 미설정 — 저장 차단" }, 500);
-  if (request.headers.get("x-admin-token") !== env.ADMIN_TOKEN) {
-    return json({ error: "인증 실패(x-admin-token)" }, 401);
-  }
-  return null;
 }
 
 async function listKv(env, prefix, limit = 50) {
@@ -189,7 +182,7 @@ export async function onRequestGet({ request, env }) {
   const db = parseJson(raw, {});
   if (url.searchParams.get("admin") !== "1") return json(db);
 
-  const authError = assertAdmin(request, env);
+  const authError = assertAdminAccess(request, env);
   if (authError) return authError;
   const meta = await readMeta(env);
   const backups = await listKv(env, BACKUP_PREFIX, 50);
@@ -199,7 +192,7 @@ export async function onRequestGet({ request, env }) {
 
 export async function onRequestPost({ request, env }) {
   if (!env.COURSE_KV) return json({ error: "KV(COURSE_KV) 미바인딩" }, 500);
-  const authError = assertAdmin(request, env);
+  const authError = assertAdminAccess(request, env);
   if (authError) return authError;
   let body;
   try { body = await request.json(); } catch { return json({ error: "JSON 파싱 실패" }, 400); }
