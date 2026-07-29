@@ -94,7 +94,7 @@ export function MobileAppBar({ active, onBack }) {
 
 export function MobileTabBar({ active }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-bg/95 px-3 pb-[calc(env(safe-area-inset-bottom)+0.55rem)] pt-2 backdrop-blur md:hidden">
+    <nav className="mobile-tab-bar md:hidden">
       <div className="mx-auto flex max-w-[520px] gap-2 rounded-2xl border border-line bg-panel p-1.5 shadow-lg">
         {OUTPUT_LINKS.map((link) => (
           <MobileTabLink key={link.href} href={link.href} label={link.label} active={active === link.id} />

@@ -98,4 +98,26 @@ body {
   textarea {
     font-size: 16px !important;
   }
+
+  .mobile-home-main {
+    min-height: 100dvh;
+    padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+  }
+
+  .mobile-shell-main {
+    padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+  }
+
+  .mobile-tab-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    border-top: 1px solid var(--c-line);
+    background: var(--c-bg);
+    padding: 0.5rem 0.75rem calc(0.6rem + env(safe-area-inset-bottom));
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+  }
 }

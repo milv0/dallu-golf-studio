@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
+import { MobileTabBar } from "./StudioNav";
 
 export default function HomeHub() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -57,7 +58,7 @@ export default function HomeHub() {
         <CardGrid cards={cards} desktop />
       </main>
 
-      <main className="mx-auto min-h-dvh max-w-[520px] px-4 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-[calc(env(safe-area-inset-top)+1rem)] md:hidden">
+      <main className="mobile-home-main mx-auto max-w-[520px] px-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:hidden">
         <div className="mb-6 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
@@ -83,6 +84,7 @@ export default function HomeHub() {
         <FeatureNotice />
         <CardGrid cards={cards} />
       </main>
+      <MobileTabBar />
     </>
   );
 }

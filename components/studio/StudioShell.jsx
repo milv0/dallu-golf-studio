@@ -63,7 +63,7 @@ export default function StudioShell({ active, currentUser, onLogout, theme, onTo
   return (
     <>
       <MobileAppBar active={active} onBack={goBack} />
-      <main className="mx-auto max-w-[1500px] px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-4 md:px-6 md:py-8">
+      <main className="mobile-shell-main mx-auto max-w-[1500px] px-4 pt-4 md:px-6 md:py-8">
         <div className="hidden md:block">
           <DesktopHeader
             currentUser={currentUser}
