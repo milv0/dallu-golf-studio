@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Moon, Sun } from "lucide-react";
 import PlacementPreview from "./PlacementPreview";
 
 const QUALITY = [
@@ -69,11 +69,12 @@ export default function PreviewExportPanel({
           </button>
           <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
             <div className="flex overflow-hidden rounded-lg border border-line">
-              {[["dark", "다크"], ["light", "라이트"]].map(([key, label]) => (
+              {[["dark", Moon], ["light", Sun]].map(([key, Icon]) => (
                 <button key={key} onClick={() => setCardTheme(key)}
-                  className={"px-2 py-1 text-[11px] font-bold md:px-3 md:py-1.5 md:text-xs " +
+                  aria-label={key === "dark" ? "다크 카드" : "라이트 카드"}
+                  className={"flex items-center justify-center px-2 py-1 md:px-2.5 md:py-1.5 " +
                     (cardTheme === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                  {label}
+                  <Icon size={14} strokeWidth={2.2} />
                 </button>
               ))}
             </div>
