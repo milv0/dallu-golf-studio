@@ -342,11 +342,11 @@ function StudioWorkspace({ mode }) {
       theme={theme}
       onToggleTheme={toggleTheme}
     >
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(440px,500px)_1fr]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(440px,500px)_1fr] lg:gap-8">
         {/* ── 입력 패널 ── */}
-        <section className="space-y-6">
+        <section className="order-2 flex flex-col gap-5 lg:order-none lg:gap-6">
           {isReelsSizedScore && (
-            <div className="rounded-xl border border-line bg-panel p-4">
+            <div className="order-[30] rounded-xl border border-line bg-panel p-4 lg:order-none">
               <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
                 스코어카드 설정
               </div>
@@ -391,13 +391,15 @@ function StudioWorkspace({ mode }) {
 
           {/* 기본 정보 + 코스 (좌우 배치) */}
           {reelsCustom ? (
-            reelsV3 ? (
-              <ThreeHoleForm data={threeHole} setField={setTH} setHole={setTHHole} onReset={resetThreeHole} />
-            ) : (
-              <ManualNineForm data={manualNine} setHole={setManualNineHole} onReset={resetManualNine} />
-            )
+            <div className="order-[10] lg:order-none">
+              {reelsV3 ? (
+                <ThreeHoleForm data={threeHole} setField={setTH} setHole={setTHHole} onReset={resetThreeHole} />
+              ) : (
+                <ManualNineForm data={manualNine} setHole={setManualNineHole} onReset={resetManualNine} />
+              )}
+            </div>
           ) : isRoundEditor ? (
-            <div className={!isHole ? "grid items-start gap-4 md:grid-cols-2" : ""}>
+            <div className={"order-[20] lg:order-none " + (!isHole ? "grid items-start gap-4 md:grid-cols-2" : "")}>
               <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
                 <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft md:mb-3">
                   기본 정보
@@ -424,18 +426,20 @@ function StudioWorkspace({ mode }) {
               )}
             </div>
           ) : usesRoundSource ? (
-            <RoundSourcePanel
-              round={round}
-              summary={summary}
-              requiresScores={isReelsSizedScore}
-              hasRoundData={hasRoundData}
-              hasRoundScores={hasRoundScores}
-            />
+            <div className="order-[20] lg:order-none">
+              <RoundSourcePanel
+                round={round}
+                summary={summary}
+                requiresScores={isReelsSizedScore}
+                hasRoundData={hasRoundData}
+                hasRoundScores={hasRoundScores}
+              />
+            </div>
           ) : null}
 
           {/* 라운드 스코어카드: 홀별 입력 */}
           {isRoundEditor && !isHole && !reelsCustom && (
-            <>
+            <div className="order-[10] lg:order-none">
               <div className="rounded-xl border border-line bg-panel p-4">
                 <PanelHeader title="스코어 입력">
                   <div className="flex overflow-hidden rounded-lg border border-line">
@@ -493,32 +497,36 @@ function StudioWorkspace({ mode }) {
                   </div>
                 </div>
               </div>
-            </>
+            </div>
           )}
           {!isHole && reelsV3 && !reelsCustom && (
-            <LinkedThreeHolePanel
-              round={round}
-              selected={linkedThree.holes || []}
-              showHoleNumbers={linkedThree.showHoleNumbers !== false}
-              onSelect={selectLinkedThreeGroup}
-              onShowHoleNumbers={(v) => setLinkedThreeField("showHoleNumbers", v)}
-            />
+            <div className="order-[10] lg:order-none">
+              <LinkedThreeHolePanel
+                round={round}
+                selected={linkedThree.holes || []}
+                showHoleNumbers={linkedThree.showHoleNumbers !== false}
+                onSelect={selectLinkedThreeGroup}
+                onShowHoleNumbers={(v) => setLinkedThreeField("showHoleNumbers", v)}
+              />
+            </div>
           )}
 
           {isHole && (
-            <HoleCardForm
-              round={round}
-              holeCard={holeCard}
-              setHC={setHC}
-              loadHoleFromRound={loadHoleFromRound}
-              onReset={resetHoleCard}
-            />
+            <div className="order-[10] lg:order-none">
+              <HoleCardForm
+                round={round}
+                holeCard={holeCard}
+                setHC={setHC}
+                loadHoleFromRound={loadHoleFromRound}
+                onReset={resetHoleCard}
+              />
+            </div>
           )}
 
         </section>
 
         {/* ── 미리보기 & 내보내기 ── */}
-        <section>
+        <section className="order-1 lg:order-none">
           {/* 9홀 범위 */}
           {isScore9 && !reelsCustom && (
             <div className="mb-3 flex flex-wrap items-center gap-3">
@@ -567,7 +575,7 @@ function StudioWorkspace({ mode }) {
             </div>
           </div>
 
-          <div className="checker overflow-hidden rounded-xl border border-line p-6">
+          <div className="checker overflow-hidden rounded-xl border border-line p-3 md:p-6">
             <div ref={captureRef} className="preview-svg mx-auto w-full"
                  style={{ maxWidth: previewMaxWidth }}>
               {isHole
@@ -599,7 +607,7 @@ function StudioWorkspace({ mode }) {
           </div>
 
           {/* 실제 화면 배치 미리보기 */}
-          <div className="mt-6">
+          <div className="mt-6 hidden md:block">
             <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
               실제 배치 미리보기
               <span className="ml-2 normal-case tracking-normal text-txt-faint">
