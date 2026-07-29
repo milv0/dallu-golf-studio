@@ -33,58 +33,31 @@ export default function FlowHub({ flow = "custom" }) {
   };
 
   return (
-    <>
-      <main className="mx-auto hidden max-w-[980px] px-6 py-10 md:block">
-        <div className="mb-8 flex items-end justify-between gap-4 border-b border-line pb-6">
-          <div>
-            <div className="font-head text-[13px] font-semibold uppercase leading-tight tracking-[0.28em] text-accent">
-              {config.eyebrow} · @dallu_golf
-            </div>
-            <a href="/" className="mt-1 block font-head text-[44px] font-bold uppercase leading-none text-txt transition hover:text-accent">
-              {config.title}
-            </a>
+    <main className="mobile-home-main mx-auto max-w-[520px] px-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:max-w-[980px] md:px-6">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <a href="/" className="min-w-0 text-left transition active:scale-[0.98] active:opacity-80">
+          <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
+            @Dallu_Golf
           </div>
-          {currentUser ? (
-            <button type="button" onClick={logout}
-              className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
-              로그아웃
-            </button>
-          ) : (
-            <button type="button" disabled
-              className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
-              로그인 준비 중
-            </button>
-          )}
-        </div>
-        <FlowNotice text={config.notice} />
-      </main>
-
-      <main className="mobile-home-main mx-auto max-w-[520px] px-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:hidden">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <a href="/" className="min-w-0 text-left transition active:scale-[0.98] active:opacity-80">
-            <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
-              @Dallu_Golf
-            </div>
-            <h1 className="truncate font-head text-[34px] font-bold uppercase leading-none text-txt">
-              {config.title}
-            </h1>
-          </a>
-          {currentUser ? (
-            <button type="button" onClick={logout}
-              className="shrink-0 rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-soft active:border-accent active:text-txt">
-              로그아웃
-            </button>
-          ) : (
-            <button type="button" disabled
-              className="shrink-0 cursor-not-allowed rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-faint opacity-70">
-              로그인 준비 중
-            </button>
-          )}
-        </div>
-        <MobileTabBar sourceMode={config.source} />
-        <FlowNotice text={config.notice} />
-      </main>
-    </>
+          <h1 className="truncate font-head text-[34px] font-bold uppercase leading-none text-txt md:text-[44px]">
+            {config.title}
+          </h1>
+        </a>
+        {currentUser ? (
+          <button type="button" onClick={logout}
+            className="shrink-0 rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-soft active:border-accent active:text-txt">
+            로그아웃
+          </button>
+        ) : (
+          <button type="button" disabled
+            className="shrink-0 cursor-not-allowed rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-faint opacity-70">
+            로그인 준비 중
+          </button>
+        )}
+      </div>
+      <MobileTabBar sourceMode={config.source} />
+      <FlowNotice text={config.notice} />
+    </main>
   );
 }
 

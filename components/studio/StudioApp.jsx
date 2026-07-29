@@ -478,12 +478,12 @@ function StudioWorkspace({ mode }) {
       theme={theme}
       onToggleTheme={toggleTheme}
     >
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(440px,500px)_1fr] lg:gap-8">
+      <div className="mx-auto grid w-full max-w-[980px] grid-cols-1 gap-5">
         {/* ── 입력 패널 ── */}
-        <section className="order-2 flex flex-col gap-5 lg:order-none lg:gap-6">
+        <section className="order-2 flex flex-col gap-5">
           {/* 기본 정보 + 코스 (좌우 배치) */}
           {reelsCustom ? (
-            <div className="order-[10] lg:order-none">
+            <div className="order-[10]">
               {reelsV3 ? (
                 <ThreeHoleForm data={threeHole} setField={setTH} setHole={setTHHole} onReset={resetThreeHole} />
               ) : (
@@ -491,7 +491,7 @@ function StudioWorkspace({ mode }) {
               )}
             </div>
           ) : isRoundEditor && !isFullCustom ? (
-            <div className={"order-[20] lg:order-none " + (!isHole ? "grid items-start gap-4 md:grid-cols-2" : "")}>
+            <div className={"order-[20] " + (!isHole ? "grid items-start gap-4 md:grid-cols-2" : "")}>
               <BasicInfoPanel
                 title="기본 정보"
                 data={scoreRound}
@@ -507,7 +507,7 @@ function StudioWorkspace({ mode }) {
               )}
             </div>
           ) : usesRoundSource ? (
-            <div className="order-[20] lg:order-none">
+            <div className="order-[20]">
               <RoundSourcePanel
                 round={round}
                 summary={summary}
@@ -520,7 +520,7 @@ function StudioWorkspace({ mode }) {
 
           {/* 라운드 스코어카드: 홀별 입력 */}
           {isRoundEditor && !isHole && !reelsCustom && (
-            <div className="order-[10] lg:order-none">
+            <div className="order-[10]">
               <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
                 <PanelHeader title="스코어 입력">
                   {isFullCustom && (
@@ -581,7 +581,7 @@ function StudioWorkspace({ mode }) {
             </div>
           )}
           {!isHole && reelsV3 && !reelsCustom && (
-            <div className="order-[10] lg:order-none">
+            <div className="order-[10]">
               <LinkedThreeHolePanel
                 round={round}
                 selected={linkedThree.holes || []}
@@ -593,7 +593,7 @@ function StudioWorkspace({ mode }) {
           )}
 
           {isHole && (
-            <div className="order-[10] lg:order-none">
+            <div className="order-[10]">
               {isFullCustom && (
                 <div className="mb-3 flex justify-end">
                   <CustomPlayerControl
@@ -618,7 +618,7 @@ function StudioWorkspace({ mode }) {
         </section>
 
         {/* ── 미리보기 & 내보내기 ── */}
-        <section className="order-1 lg:order-none">
+        <section className="order-1">
           {/* 9홀 범위 */}
           {isScore9 && !reelsCustom && (
             <div className="mb-3 flex flex-wrap items-center gap-3">

@@ -78,8 +78,8 @@ export function MobileAppBar({ active }) {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-bg/95 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur md:hidden">
-      <div className="mx-auto flex max-w-[520px] items-center justify-between">
+    <header className="sticky top-0 z-40 border-b border-line bg-bg/95 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur">
+      <div className="mx-auto flex max-w-[520px] items-center justify-between md:max-w-[980px]">
         <div aria-hidden="true" className="h-11 w-11 shrink-0" />
         <button type="button" onClick={refreshPage} aria-label="새로고침"
           className="min-w-0 px-3 text-center transition active:scale-[0.98] active:opacity-80">
@@ -101,8 +101,8 @@ export function MobileAppBar({ active }) {
 export function MobileTabBar({ active, sourceMode = "custom" }) {
   const links = linksFor(sourceMode);
   return (
-    <nav className="mobile-tab-bar md:hidden">
-      <div className="mx-auto flex max-w-[520px] gap-2 rounded-2xl border border-line bg-panel p-1.5 shadow-lg">
+    <nav className="mobile-tab-bar">
+      <div className="mx-auto flex max-w-[520px] gap-2 rounded-2xl border border-line bg-panel p-1.5 shadow-lg md:max-w-[720px]">
         {links.map((link) => (
           <MobileTabLink key={link.href} href={link.href} label={link.label} active={active === link.id} />
         ))}

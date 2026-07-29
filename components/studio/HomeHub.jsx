@@ -24,68 +24,33 @@ export default function HomeHub() {
   ];
 
   return (
-    <>
-      <main className="mx-auto hidden max-w-[980px] px-6 py-10 md:block">
-        <div className="mb-8 flex items-end justify-between gap-4 border-b border-line pb-6">
-          <div>
-            <div className="font-head text-[13px] font-semibold uppercase leading-tight tracking-[0.28em] text-accent">
-              Broadcast Overlay Maker · @dallu_golf
-            </div>
-            <a href="/" className="mt-1 block font-head text-[44px] font-bold uppercase leading-none text-txt transition hover:text-accent">
-              Dallu Golf <span className="text-accent">Studio</span>
-            </a>
+    <main className="mobile-home-main mx-auto max-w-[520px] px-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:max-w-[980px] md:px-6">
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <button type="button" onClick={refreshPage} aria-label="새로고침"
+          className="min-w-0 text-left transition active:scale-[0.98] active:opacity-80">
+          <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
+            @Dallu_Golf
           </div>
-          {currentUser ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <button type="button" disabled
-                className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
-                내 라운딩 준비 중
-              </button>
-              <button type="button" onClick={logout}
-                className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
-                로그아웃
-              </button>
-            </div>
-          ) : (
-            <button type="button" disabled
-              className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
-              로그인 준비 중
-            </button>
-          )}
-        </div>
-
-        <FeatureNotice />
-        <CardGrid cards={cards} desktop />
-      </main>
-
-      <main className="mobile-home-main mx-auto max-w-[520px] px-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:hidden">
-        <div className="mb-6 flex items-center justify-between gap-3">
-          <button type="button" onClick={refreshPage} aria-label="새로고침"
-            className="min-w-0 text-left transition active:scale-[0.98] active:opacity-80">
-            <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
-              @Dallu_Golf
-            </div>
-            <h1 className="truncate font-head text-[34px] font-bold uppercase leading-none text-txt">
-              Studio
-            </h1>
+          <h1 className="truncate font-head text-[34px] font-bold uppercase leading-none text-txt md:text-[44px]">
+            Studio
+          </h1>
+        </button>
+        {currentUser ? (
+          <button type="button" onClick={logout}
+            className="shrink-0 rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-soft active:border-accent active:text-txt">
+            로그아웃
           </button>
-          {currentUser ? (
-            <button type="button" onClick={logout}
-              className="shrink-0 rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-soft active:border-accent active:text-txt">
-              로그아웃
-            </button>
-          ) : (
-            <button type="button" disabled
-              className="shrink-0 cursor-not-allowed rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-faint opacity-70">
-              로그인 준비 중
-            </button>
-          )}
-        </div>
+        ) : (
+          <button type="button" disabled
+            className="shrink-0 cursor-not-allowed rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-faint opacity-70">
+            로그인 준비 중
+          </button>
+        )}
+      </div>
 
-        <FeatureNotice />
-        <CardGrid cards={cards} />
-      </main>
-    </>
+      <FeatureNotice />
+      <CardGrid cards={cards} />
+    </main>
   );
 }
 
@@ -97,13 +62,13 @@ function FeatureNotice() {
   );
 }
 
-function CardGrid({ cards, desktop = false }) {
+function CardGrid({ cards }) {
   return (
-    <div className={desktop ? "grid gap-3 md:grid-cols-2" : "grid gap-3"}>
+    <div className="grid gap-3 md:grid-cols-2">
       {cards.map((item) => (
         <a key={item.href} href={item.href}
           className="rounded-xl border border-line bg-panel p-5 transition hover:border-accent hover:bg-panel-2 active:border-accent active:bg-panel-2">
-          <div className={"font-head font-bold uppercase leading-none text-txt " + (desktop ? "text-[34px]" : "text-[42px]")}>
+          <div className="font-head text-[42px] font-bold uppercase leading-none text-txt">
             {item.title}
           </div>
           <div className="mt-2 font-mono text-[11px] font-bold uppercase tracking-wider text-accent">
