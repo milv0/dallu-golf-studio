@@ -180,8 +180,8 @@ function StudioWorkspace({ mode }) {
   const availableRanges = RANGES.filter(([k]) => k !== "all");
   const effRange = isScore18 ? "all" : isReelsSizedScore && holeRange === "all" ? "front" : holeRange;
   const size = isHole ? holeSizeFor(holeData) : reelsV3 ? SIZE_REELS_THREE : FORMATS[format].sizeFor(effRange);
-  const previewScale = isHole ? 0.72 : reelsV3 ? 0.72 : 1;
-  const previewMobileScale = isHole ? 0.82 : reelsV3 ? 0.82 : 1;
+  const previewScale = isHole ? 0.52 : reelsV3 ? 0.52 : 1;
+  const previewMobileScale = isHole ? 0.62 : reelsV3 ? 0.62 : 1;
   const previewMaxWidth = Math.min(size.w, PREVIEW_MAX_H * (size.w / size.h)) * previewScale;
   const previewMobileMaxWidth = Math.min(size.w, PREVIEW_MOBILE_MAX_H * (size.w / size.h)) * previewMobileScale;
 
