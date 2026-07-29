@@ -134,14 +134,11 @@ export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLog
           {links.map((link) => (
             <a key={link.href} href={link.href}
               aria-current={active === link.id ? "page" : undefined}
-              className={"relative flex-1 rounded-lg py-1.5 text-center font-head leading-none transition " +
+              className={"flex-1 rounded-lg py-1.5 text-center font-head leading-none transition " +
                 (active === link.id
                   ? "bg-accent text-[#06210f] text-[15px] font-bold"
                   : "text-txt-soft text-[13px] font-semibold hover:bg-panel-2 hover:text-txt active:bg-panel-2")}>
               {link.label}
-              {active === link.id && (
-                <span className="absolute bottom-0 left-1/2 h-[2px] w-3/5 -translate-x-1/2 rounded-full bg-[#06210f]/40" />
-              )}
             </a>
           ))}
         </nav>
