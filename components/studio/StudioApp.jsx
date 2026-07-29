@@ -11,7 +11,6 @@ import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import HomeHub from "./HomeHub";
 import CoursePresets from "./CoursePresets";
 import { ManualNineForm, ThreeHoleForm, LinkedThreeHolePanel } from "./ManualScoreForms";
-import PlacementPreview from "./PlacementPreview";
 import RoundSourcePanel from "./RoundSourcePanel";
 import HoleGroup from "./RoundScoreGrid";
 import { RelativeScoreHint, ScoreModeToggle } from "./ScoreInputs";
@@ -21,52 +20,22 @@ import StudioShell from "./StudioShell";
 import HoleCardForm from "./HoleCardForm";
 import PanelHeader, { ResetButton } from "./PanelHeader";
 import { ConfirmDialog, Toast } from "./Feedback";
-import { createPngDataUrl, createZipBlob, dataUrlToFile, downloadBlob, downloadDataUrl, exportFileName, progressFileName, progressZipFileName } from "../../lib/exportImage";
-import { readJsonStorage, STUDIO_STORAGE_KEYS, writeJsonStorage } from "../../lib/studioStorage";
+import PreviewExportPanel from "./PreviewExportPanel";
+import useStudioPersistence from "./useStudioPersistence";
+import useStudioExport from "./useStudioExport";
+import { DEFAULT_CUSTOM_PLAYER, emptyHoleCard, emptyLinkedThree, emptyManualNine, emptyThreeHoleCard } from "./studioDefaults";
+import { STUDIO_STORAGE_KEYS, writeJsonStorage } from "../../lib/studioStorage";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
 const PREVIEW_MAX_H = 380;
 const PREVIEW_MOBILE_MAX_H = 460;
 const COURSE_DB_ENABLED = false;
-const DEFAULT_CUSTOM_PLAYER = "PLAYER";
 const FORMATS = {
   youtube: { Comp: HoleByHoleStrip, sizeFor: ytSizeFor },
   reels: { Comp: ReelsScorecard, sizeFor: reelsSizeFor },
 };
 
 const RANGES = [["all", "전체 18홀"], ["front", "전반 OUT 9"], ["back", "후반 IN 9"]];
-
-// 내보내기 품질 프리셋 — 최종 영상 해상도에 맞춤
-const QUALITY = [
-  { scale: 1, label: "FHD", desc: "1080p 영상용" },
-  { scale: 2, label: "4K", desc: "2160p 영상용 · iPhone 16" },
-  { scale: 3, label: "MAX", desc: "초고화질" },
-];
-
-const emptyHoleCard = () => ({
-  player: "", hole: "", par: "", distance: "", toPar: "", currentShot: "", club: "", unit: "m", showResultBanner: true,
-});
-
-const emptyThreeHoleCard = () => ({
-  showHoleNumbers: false,
-  total: "",
-  toPar: "",
-  holes: [
-    { hole: "1", par: "4", score: "" },
-    { hole: "2", par: "4", score: "" },
-    { hole: "3", par: "4", score: "" },
-  ],
-});
-
-const emptyManualNine = () => ({
-  player: "",
-  holes: Array.from({ length: 9 }, (_, i) => ({ hole: String(i + 1), par: "4", score: "" })),
-});
-
-const emptyLinkedThree = () => ({
-  showHoleNumbers: false,
-  holes: [0, 1, 2],
-});
 
 function roundWithScoresThrough(round, startIndex, count, progress) {
   const endIndex = startIndex + count;
@@ -93,12 +62,6 @@ function threeHoleWithScoresThrough(data, progress) {
 
 function hasAnyScore(holes = []) {
   return holes.some((hole) => hole?.score !== "" && hole?.score != null);
-}
-
-function nextFrame() {
-  return new Promise((resolve) => {
-    window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
-  });
 }
 
 function BasicInfoPanel({ title = "기본 정보", data, setMeta, clubNameList }) {
@@ -160,15 +123,11 @@ function StudioWorkspace({ mode }) {
   const [sourceMode, setSourceMode] = useState(() => initialSourceMode(mode)); // 'round' | 'custom'
   const [cardTheme, setCardTheme] = useState("light"); // 카드(프리셋) 색 테마
   const [exportScale, setExportScale] = useState(2);
-  const [busy, setBusy] = useState(false);
   const [theme, setTheme] = useState("light");
   const [scoreMode, setScoreMode] = useState("strokes"); // 'strokes' | 'relative' (기본: 타수)
   const [currentUser, setCurrentUser] = useState(null);
   const [toast, setToast] = useState("");
   const [confirmRequest, setConfirmRequest] = useState(null);
-  const [batchExportStep, setBatchExportStep] = useState(null);
-  const captureRef = useRef(null);
-  const batchCaptureRef = useRef(null);
   const scoreRefs = useRef([]);
 
   const isHole = mode === "hole";
@@ -319,6 +278,25 @@ function StudioWorkspace({ mode }) {
     ? reelsCustom ? hasAnyScore(threeHole.holes) : hasAnyScore(linkedThreeData.holes)
     : false;
   const canBatchExport = !isHole && batchProgressCount > 0 && hasBatchScores && linkedThreeReady;
+  const {
+    busy,
+    captureRef,
+    batchCaptureRef,
+    batchExportStep,
+    handleExport,
+    handleBatchExport,
+    handleShareExport,
+  } = useStudioExport({
+    canExport,
+    canBatchExport,
+    batchProgressCount,
+    size,
+    exportScale,
+    isHole,
+    isScore3,
+    isScore9,
+    showToast,
+  });
 
   const setMeta = (key, val) => setRound((r) => ({ ...r, [key]: val }));
   const setCustomMeta = (key, val) => setCustomRound((r) => ({ ...r, [key]: val }));
@@ -437,63 +415,22 @@ function StudioWorkspace({ mode }) {
     }));
   };
 
-  // 코스 DB 자동 불러오기는 공개 배포 전까지 비활성화한다.
-  const [builtinCourses, setBuiltinCourses] = useState([]);
-  // 즐겨찾기 (코스 이름 배열, localStorage)
-  const [favorites, setFavorites] = useState([]);
-  // KV 동기화 상태
-  const [dbStatus, setDbStatus] = useState({ state: "disabled", count: 0, at: null });
-  const loadCourseDb = () => {
-    setBuiltinCourses([]);
-    setDbStatus({ state: "disabled", count: 0, at: null });
-  };
-  const loadedRef = useRef(false);
-  useEffect(() => {
-    loadCourseDb();
-    const savedFavorites = readJsonStorage(STUDIO_STORAGE_KEYS.favorites, []);
-    setFavorites(Array.isArray(savedFavorites) ? savedFavorites : []);
-    // 라운드 스코어·홀카드 입력 복원
-    const savedRound = readJsonStorage(STUDIO_STORAGE_KEYS.round);
-    if (savedRound && Array.isArray(savedRound.holes)) setRound(savedRound);
-    const savedHoleCard = readJsonStorage(STUDIO_STORAGE_KEYS.holeCard);
-    if (savedHoleCard && typeof savedHoleCard === "object") setHoleCard(savedHoleCard);
-    const customSession = readJsonStorage(STUDIO_STORAGE_KEYS.customSession);
-    if (customSession && typeof customSession === "object") {
-      if (customSession.round && Array.isArray(customSession.round.holes)) {
-        setCustomRound({ ...customSession.round, country: "", course: "", date: "" });
-      }
-      if (customSession.holeCard && typeof customSession.holeCard === "object") setCustomHoleCard(customSession.holeCard);
-      if (customSession.threeHole && Array.isArray(customSession.threeHole.holes) && customSession.threeHole.holes.length === 3) setThreeHole(customSession.threeHole);
-      if (customSession.manualNine && Array.isArray(customSession.manualNine.holes) && customSession.manualNine.holes.length === 9) setManualNine(customSession.manualNine);
-    }
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem(STUDIO_STORAGE_KEYS.legacyThreeHole);
-      window.localStorage.removeItem(STUDIO_STORAGE_KEYS.legacyManualNine);
-    }
-    const savedLinkedThree = readJsonStorage(STUDIO_STORAGE_KEYS.linkedThree);
-    if (savedLinkedThree && Array.isArray(savedLinkedThree.holes)) setLinkedThree({ ...savedLinkedThree, showHoleNumbers: false });
-    loadedRef.current = true;
-  }, []);
-  // 입력값 자동 저장 (새로고침해도 유지)
-  useEffect(() => { if (loadedRef.current) writeJsonStorage(STUDIO_STORAGE_KEYS.round, round); }, [round]);
-  useEffect(() => { if (loadedRef.current) writeJsonStorage(STUDIO_STORAGE_KEYS.holeCard, holeCard); }, [holeCard]);
-  useEffect(() => { if (loadedRef.current) writeJsonStorage(STUDIO_STORAGE_KEYS.linkedThree, linkedThree); }, [linkedThree]);
-  useEffect(() => {
-    if (!loadedRef.current) return;
-    writeJsonStorage(STUDIO_STORAGE_KEYS.customSession, {
-      round: customRound,
-      manualNine,
-      threeHole,
-      holeCard: customHoleCard,
-    });
-  }, [customRound, customHoleCard, manualNine, threeHole]);
-  const toggleFav = (name) => {
-    setFavorites((prev) => {
-      const next = prev.includes(name) ? prev.filter((n) => n !== name) : [name, ...prev];
-      writeJsonStorage(STUDIO_STORAGE_KEYS.favorites, next);
-      return next;
-    });
-  };
+  const { builtinCourses, favorites, dbStatus, loadCourseDb, toggleFav } = useStudioPersistence({
+    round,
+    setRound,
+    holeCard,
+    setHoleCard,
+    linkedThree,
+    setLinkedThree,
+    customRound,
+    setCustomRound,
+    customHoleCard,
+    setCustomHoleCard,
+    manualNine,
+    setManualNine,
+    threeHole,
+    setThreeHole,
+  });
 
   // 골프장(클럽) 이름 자동완성 목록 — 디렉토리 541곳 + DB 클럽 (조합명 제외)
   const clubNameList = useMemo(() => {
@@ -504,16 +441,6 @@ function StudioWorkspace({ mode }) {
     }
     return out;
   }, [builtinCourses]);
-  async function createExportImage() {
-    if (!captureRef.current) return;
-    if (!canExport) return;
-    const exportNode = captureRef.current.querySelector("svg") || captureRef.current;
-    return {
-      dataUrl: await createPngDataUrl({ node: exportNode, size, scale: exportScale }),
-      fileName: exportFileName({ isHole, isScore3, isScore9 }),
-    };
-  }
-
   function renderBatchExportCard(step) {
     if (!step || isHole) return null;
     if (isScore3) {
@@ -537,72 +464,17 @@ function StudioWorkspace({ mode }) {
     return <C round={batchRound} summary={summarize(batchRound.holes)} range="all" theme={cardTheme} />;
   }
 
-  async function handleExport() {
-    setBusy(true);
-    try {
-      const image = await createExportImage();
-      if (image) {
-        downloadDataUrl(image.dataUrl, image.fileName);
-        showToast("PNG 다운로드를 시작했습니다.");
-      }
-    } catch (e) {
-      showToast("내보내기 실패: " + e.message);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleBatchExport() {
-    if (!canBatchExport) return;
-    setBusy(true);
-    try {
-      const files = [];
-      for (let step = 1; step <= batchProgressCount; step++) {
-        setBatchExportStep(step);
-        await nextFrame();
-        const exportNode = batchCaptureRef.current?.querySelector("svg");
-        if (!exportNode) throw new Error("진행 상태 내보내기 노드를 찾을 수 없습니다.");
-        const dataUrl = await createPngDataUrl({ node: exportNode, size, scale: exportScale });
-        const file = await dataUrlToFile(dataUrl, progressFileName({ isScore3, isScore9, step }));
-        files.push({ name: file.name, blob: file });
-      }
-      const zip = await createZipBlob(files);
-      downloadBlob(zip, progressZipFileName({ isScore3, isScore9 }));
-      showToast(`${batchProgressCount}장 PNG ZIP 다운로드를 시작했습니다.`);
-    } catch (e) {
-      showToast("진행별 내보내기 실패: " + e.message);
-    } finally {
-      setBatchExportStep(null);
-      setBusy(false);
-    }
-  }
-
-  async function handleShareExport() {
-    setBusy(true);
-    try {
-      const image = await createExportImage();
-      if (!image) return;
-      const file = await dataUrlToFile(image.dataUrl, image.fileName);
-      const sharePayload = { files: [file], title: image.fileName };
-      if (navigator.share && (!navigator.canShare || navigator.canShare(sharePayload))) {
-        await navigator.share(sharePayload);
-      } else {
-        downloadDataUrl(image.dataUrl, image.fileName);
-        showToast("공유 저장을 지원하지 않아 PNG 다운로드로 처리했습니다.");
-      }
-    } catch (e) {
-      if (e?.name !== "AbortError") {
-        showToast("공유 실패: " + e.message);
-      }
-    } finally {
-      setBusy(false);
-    }
-  }
-
   const Front = scoreRound.holes.slice(0, 9);
   const Back = scoreRound.holes.slice(9, 18);
   const setScoreHole = isFullCustom ? setCustomHole : setHole;
   const resetScoreRound = isFullCustom ? resetCustomRound : resetRound;
+  const renderActiveCard = () => {
+    if (isHole) return <HoleCard data={holeData} theme={cardTheme} />;
+    if (reelsV3) return <ReelsThreeHoleCard data={reelsCustom ? threeHole : linkedThreeData} theme={cardTheme} />;
+    if (reelsCustom) return <ReelsScorecard round={manualNineRound} summary={manualNineSummary} range="front" theme={cardTheme} />;
+    const C = FORMATS[format].Comp;
+    return <C round={scoreRound} summary={activeSummary} range={effRange} theme={cardTheme} />;
+  };
 
   return (
     <StudioShell
@@ -738,116 +610,34 @@ function StudioWorkspace({ mode }) {
 
         </section>
 
-        {/* ── 미리보기 & 내보내기 ── */}
-        <section className="order-1">
-          {/* 9홀 범위 */}
-          {isScore9 && !reelsCustom && (
-            <div className="mb-3 flex flex-wrap items-center gap-3">
-              <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">범위</div>
-              <div className="flex overflow-hidden rounded-lg border border-line">
-                {availableRanges.map(([key, label]) => (
-                  <button key={key} onClick={() => setHoleRange(key)}
-                    className={"px-4 py-1.5 text-sm font-semibold transition " +
-                      (effRange === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div className="rounded-xl border border-line bg-panel p-2 md:p-3">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-1.5 md:gap-2">
-              <div className="font-head text-xs font-semibold uppercase tracking-widest text-txt-soft md:text-sm">
-                미리보기 <span className="hidden text-txt-faint sm:inline">(투명 배경)</span>
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-                <div className="flex overflow-hidden rounded-lg border border-line">
-                  {[["dark", "다크"], ["light", "라이트"]].map(([key, label]) => (
-                    <button key={key} onClick={() => setCardTheme(key)}
-                      className={"px-2 py-1 text-[11px] font-bold md:px-3 md:py-1.5 md:text-xs " +
-                        (cardTheme === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex overflow-hidden rounded-lg border border-line">
-                  {QUALITY.map((qz) => (
-                    <button key={qz.scale} onClick={() => setExportScale(qz.scale)}
-                      title={`${qz.desc} · ${size.w * qz.scale}×${size.h * qz.scale}px`}
-                      className={"px-2 py-1 text-[11px] font-bold md:px-3 md:py-1.5 md:text-xs " +
-                        (exportScale === qz.scale ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                      {qz.label}
-                    </button>
-                  ))}
-                </div>
-                <button onClick={handleShareExport} disabled={busy || !canExport}
-                  title={!canExport ? "필수 입력을 먼저 완료하세요" : "iPhone에서는 공유 시트에서 이미지 저장을 선택하세요"}
-                  className="rounded-lg bg-accent px-3 py-1 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:hidden">
-                  {busy ? "생성 중…" : !canExport ? "입력 필요" : "공유"}
-                </button>
-                <button onClick={handleExport} disabled={busy || !canExport}
-                  title={!canExport ? "필수 입력을 먼저 완료하세요" : "PNG 다운로드"}
-                  className="hidden rounded-lg bg-accent px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:inline-block">
-                  {busy ? "생성 중…" : !canExport ? "입력 필요" : "PNG 다운로드"}
-                </button>
-                {batchProgressCount > 0 && (
-                  <button onClick={handleBatchExport} disabled={busy || !canBatchExport}
-                    title={!hasBatchScores ? "입력된 스코어가 필요합니다" : "홀 진행 상태별 PNG를 ZIP으로 다운로드합니다"}
-                    className="hidden rounded-lg border border-line bg-panel-2 px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-txt-soft transition hover:border-accent hover:text-txt disabled:opacity-60 md:inline-block">
-                    {busy ? "생성 중…" : `진행 ZIP ${batchProgressCount}장`}
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="checker overflow-hidden rounded-lg border border-line p-1 md:rounded-xl md:p-3">
-              <div ref={captureRef} className="preview-frame preview-svg mx-auto w-full"
-                   style={{ "--preview-max-desktop": `${previewMaxWidth}px`, "--preview-max-mobile": `${previewMobileMaxWidth}px` }}>
-                {isHole
-                  ? <HoleCard data={holeData} theme={cardTheme} />
-                  : reelsV3
-                  ? <ReelsThreeHoleCard data={reelsCustom ? threeHole : linkedThreeData} theme={cardTheme} />
-                  : reelsCustom
-                  ? <ReelsScorecard round={manualNineRound} summary={manualNineSummary} range="front" theme={cardTheme} />
-                  : (() => { const C = FORMATS[format].Comp; return <C round={scoreRound} summary={activeSummary} range={effRange} theme={cardTheme} />; })()}
-              </div>
-            </div>
-
-            <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] text-txt-soft md:gap-x-2 md:text-sm">
-              <b className="text-txt">출력</b>
-              <span className="rounded bg-panel-2 px-2 py-0.5 font-mono text-[12px] font-bold text-accent">
-                {(QUALITY.find((x) => x.scale === exportScale) || {}).label}
-              </span>
-              <span className="font-mono text-[11px] md:text-[13px]">투명 PNG · {size.w * exportScale}×{size.h * exportScale}px</span>
-              <span className="hidden text-[12px] text-txt-faint md:inline">버디=빨강 / 이글=골드 / 보기=파랑</span>
-            </div>
-            {!canExport && exportBlockReason && (
-              <div className="mt-2 rounded-md border border-[#ffb648]/40 bg-[#ffb648]/10 px-2.5 py-1.5 text-[12px] font-semibold text-[#ffb648]">
-                {exportBlockReason}
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* 실제 화면 배치 미리보기: 데스크탑 전용, 전체 작업 화면 최하단 */}
-        <section className="order-3 hidden md:block">
-          <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-            실제 배치 미리보기
-            <span className="ml-2 normal-case tracking-normal text-txt-faint">
-              {format === "youtube" ? "16:9 영상 기준" : "9:16 영상 기준"}
-            </span>
-          </div>
-          <PlacementPreview format={format} size={size} isHole={isHole}>
-            {isHole
-              ? <HoleCard data={holeData} theme={cardTheme} />
-              : reelsV3
-              ? <ReelsThreeHoleCard data={reelsCustom ? threeHole : linkedThreeData} theme={cardTheme} />
-              : reelsCustom
-              ? <ReelsScorecard round={manualNineRound} summary={manualNineSummary} range="front" theme={cardTheme} />
-              : (() => { const C = FORMATS[format].Comp; return <C round={scoreRound} summary={activeSummary} range={effRange} theme={cardTheme} />; })()}
-          </PlacementPreview>
-        </section>
+        <PreviewExportPanel
+          isScore9={isScore9}
+          reelsCustom={reelsCustom}
+          availableRanges={availableRanges}
+          effRange={effRange}
+          setHoleRange={setHoleRange}
+          cardTheme={cardTheme}
+          setCardTheme={setCardTheme}
+          exportScale={exportScale}
+          setExportScale={setExportScale}
+          size={size}
+          busy={busy}
+          canExport={canExport}
+          canBatchExport={canBatchExport}
+          hasBatchScores={hasBatchScores}
+          batchProgressCount={batchProgressCount}
+          exportBlockReason={exportBlockReason}
+          handleShareExport={handleShareExport}
+          handleExport={handleExport}
+          handleBatchExport={handleBatchExport}
+          captureRef={captureRef}
+          previewMaxWidth={previewMaxWidth}
+          previewMobileMaxWidth={previewMobileMaxWidth}
+          previewNode={renderActiveCard()}
+          placementPreviewNode={renderActiveCard()}
+          format={format}
+          isHole={isHole}
+        />
       </div>
       {batchExportStep != null && (
         <div className="pointer-events-none fixed left-[-10000px] top-0 z-[-1]" aria-hidden="true">

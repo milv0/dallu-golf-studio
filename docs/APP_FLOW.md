@@ -140,10 +140,13 @@
 
 ## 주요 컴포넌트 역할
 
-- `StudioApp`: 전체 상태, source 분기, 미리보기, PNG 저장.
+- `StudioApp`: 전체 상태 조립, source 분기, 입력 패널 연결.
 - `StudioShell`: 공통 레이아웃.
 - `StudioNav`: 18/9/3/1 상단 탭.
 - `FlowHub`: `/rounds`, `/custom` 리다이렉트 전용 진입 경로.
+- `PreviewExportPanel`: 미리보기, 공유/다운로드/진행 ZIP 버튼, 데스크탑 배치 미리보기.
+- `useStudioPersistence`: 작업 중 입력값 복원과 localStorage 자동 저장.
+- `useStudioExport`: 단일 PNG, 모바일 공유, 데스크탑 진행 ZIP 생성.
 - `ScoreEntryGrid`: 18/9/3 공통 스코어 입력 표.
 - `ScoreInputs`: 타수/파대비 입력 로직, 포커스 시 전체 선택.
 - `ManualScoreForms`: 9홀/3홀 직접 입력 폼.
