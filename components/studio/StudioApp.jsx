@@ -467,7 +467,7 @@ function StudioWorkspace({ mode, source }) {
               )}
             </div>
           ) : isRoundEditor && !isFullCustom ? (
-            <div className="order-[5] grid items-start gap-3 grid-cols-2">
+            <div className="order-[5] grid items-start gap-3 grid-cols-1 md:grid-cols-2">
               <BasicInfoPanel
                 title="기본 정보"
                 data={scoreRound}

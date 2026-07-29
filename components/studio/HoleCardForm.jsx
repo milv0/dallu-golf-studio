@@ -79,7 +79,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
         </div>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-4 border-t border-line pt-3">
         <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
           현재 타수 (지금 칠 샷)
         </span>
@@ -99,7 +99,10 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           </button>
         </div>
       </div>
-      <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div className="mt-4 border-t border-line pt-3">
+        <span className="mb-2 block font-head text-[10px] uppercase tracking-widest text-txt-faint">거리 / 클럽</span>
+      </div>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
           <div className="mb-1 flex items-center justify-between">
             <span className="font-head text-[11px] uppercase tracking-widest text-txt-faint">거리</span>

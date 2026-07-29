@@ -32,8 +32,8 @@ export default function HomeHub() {
   }, [theme]);
 
   const cards = [
-    { href: flowHrefs.round, title: "내 라운드 기록", desc: "18홀 라운드를 입력하고 9·3·1홀 카드를 자동 생성", icon: ClipboardList },
-    { href: flowHrefs.custom, title: "직접 만들기", desc: "원하는 홀 수만큼 자유롭게 스코어카드 제작", icon: Pencil },
+    { href: flowHrefs.round, title: "내 라운드 기록", desc: "18홀 라운드를 입력하고 9·3·1홀 카드를 자동 생성", icon: ClipboardList, accent: "border-t-[3px] border-t-accent" },
+    { href: flowHrefs.custom, title: "직접 만들기", desc: "원하는 홀 수만큼 자유롭게 스코어카드 제작", icon: Pencil, accent: "border-t-[3px] border-t-[#4a6cf7]" },
   ];
 
   return (
@@ -75,7 +75,7 @@ export default function HomeHub() {
             const Icon = item.icon;
             return (
               <a key={item.href} href={item.href}
-                className="group relative overflow-hidden rounded-2xl border border-line bg-panel p-6 transition hover:border-accent/60 hover:shadow-[0_0_30px_-8px_rgba(56,224,139,0.15)] active:scale-[0.98] md:p-8">
+                className={`group relative overflow-hidden rounded-2xl border border-line bg-panel p-6 transition hover:border-accent/60 hover:shadow-[0_0_30px_-8px_rgba(56,224,139,0.15)] active:scale-[0.98] md:p-8 ${item.accent}`}>
                 <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-accent/5 transition group-hover:bg-accent/10" />
                 <Icon size={28} strokeWidth={1.8} className="mb-4 text-accent" />
                 <div className="font-head text-[22px] font-bold leading-tight text-txt md:text-[26px]">

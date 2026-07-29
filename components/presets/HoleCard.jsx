@@ -16,24 +16,31 @@ const RESULT_LABEL = {
 function bannerFor(data) {
   const par = Number(data.par) || null;
   const shots = Number(data.currentShot) || 0;
-  if (data.showResultBanner === false || !par || shots <= 0) return "";
+  if (data.showResultBanner === false || !par || shots <= 0) return null;
   // currentShot = 지금 치려는 타수. 이 샷이 들어가면 shots가 최종 스코어.
   const diff = shots - par;
   if (par >= 5) {
-    if (diff === -2) return "FOR EAGLE";
-    if (diff === -1) return "FOR BIRDIE";
+    if (diff === -2) return { text: "FOR EAGLE", type: "good" };
+    if (diff === -1) return { text: "FOR BIRDIE", type: "good" };
   } else if (par === 4) {
-    if (diff === -1) return "FOR BIRDIE";
+    if (diff === -1) return { text: "FOR BIRDIE", type: "good" };
   } else if (par === 3) {
-    if (diff === -1) return "FOR BIRDIE";
+    if (diff === -1) return { text: "FOR BIRDIE", type: "good" };
   }
-  if (diff === 1) return "FOR BOGEY";
-  if (diff === 2) return "FOR DOUBLE BOGEY";
-  return "";
+  if (diff === 1) return { text: "FOR BOGEY", type: "bad" };
+  if (diff === 2) return { text: "FOR DOUBLE BOGEY", type: "worse" };
+  return null;
+}
+
+function bannerColor(banner, c) {
+  if (!banner) return c.accent;
+  if (banner.type === "bad") return "#4a6cf7";
+  if (banner.type === "worse") return "#8b5cf6";
+  return c.accent;
 }
 
 export function sizeFor(data) {
-  return bannerFor(data) ? SIZE : { w: SIZE.w, h: BAR_H };
+  return bannerFor(data) !== null ? SIZE : { w: SIZE.w, h: BAR_H };
 }
 
 export default function HoleCard({ data, theme = "dark" }) {
@@ -113,9 +120,9 @@ export default function HoleCard({ data, theme = "dark" }) {
       {/* FOR X 배너 */}
       {banner && (
         <g>
-          <rect x="224" y="228" width={w - 224} height="58" fill={c.accent} />
-          <text x={(224 + w) / 2} y="268" textAnchor="middle" fill={c.ink} fontFamily={HEAD}
-                fontSize="35" fontWeight="700" letterSpacing="1">{banner}</text>
+          <rect x="224" y="228" width={w - 224} height="58" fill={bannerColor(banner, c)} />
+          <text x={(224 + w) / 2} y="268" textAnchor="middle" fill={banner.type === "good" ? c.ink : "#ffffff"} fontFamily={HEAD}
+                fontSize="35" fontWeight="700" letterSpacing="1">{banner.text}</text>
         </g>
       )}
     </svg>
