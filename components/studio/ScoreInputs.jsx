@@ -25,6 +25,22 @@ const roundScoreClass =
 export const manualScoreClass =
   "border-l border-line bg-transparent px-2 py-2.5 text-center font-mono text-sm font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent";
 
+export function selectInputText(event) {
+  const el = event.currentTarget;
+  try { el.select(); } catch {}
+  if (typeof window !== "undefined") {
+    window.requestAnimationFrame(() => {
+      try { el.select(); } catch {}
+    });
+  }
+}
+
+export const replaceInputTextProps = {
+  onFocus: selectInputText,
+  onClick: selectInputText,
+  onMouseUp: (event) => event.preventDefault(),
+};
+
 export function RelativeScoreHint({ className = "mb-2" }) {
   return (
     <p className={`${className} text-[11px] text-txt-faint`}>
@@ -108,6 +124,7 @@ export function RelativeScoreInput({
   return (
     <input
       aria-label={ariaLabel}
+      {...replaceInputTextProps}
       value={buf}
       inputMode="text"
       enterKeyHint="next"
@@ -157,6 +174,7 @@ export function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreK
   return (
     <input
       aria-label={`홀 ${idx + 1} 스코어`}
+      {...replaceInputTextProps}
       value={buf}
       inputMode="numeric"
       ref={(el) => { if (scoreRefs) scoreRefs.current[idx] = el; }}

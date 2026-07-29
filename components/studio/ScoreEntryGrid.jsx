@@ -1,6 +1,6 @@
 "use client";
 
-import { ScoreInput } from "./ScoreInputs";
+import { replaceInputTextProps, ScoreInput } from "./ScoreInputs";
 
 const preventMetaCopy = (event) => event.preventDefault();
 const metaLockProps = {
@@ -17,6 +17,7 @@ function ParInput({ idx, value, setHole }) {
   return (
     <input
       {...metaLockProps}
+      {...replaceInputTextProps}
       aria-label={`홀 ${idx + 1} PAR`}
       value={value ?? ""}
       inputMode="numeric"
@@ -31,6 +32,7 @@ function HoleNumberInput({ idx, value, setHole, placeholder }) {
   return (
     <input
       {...metaLockProps}
+      {...replaceInputTextProps}
       aria-label={`${idx + 1}번째 홀 번호`}
       value={value ?? ""}
       onChange={(e) => setHole(idx, "hole", e.target.value)}

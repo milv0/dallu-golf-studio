@@ -2,6 +2,7 @@
 
 import { ClubField } from "./StudioFields";
 import PanelHeader, { ResetButton } from "./PanelHeader";
+import { replaceInputTextProps } from "./ScoreInputs";
 
 function CoreInput({ label, value, onChange, placeholder, inputMode = "text" }) {
   return (
@@ -10,6 +11,7 @@ function CoreInput({ label, value, onChange, placeholder, inputMode = "text" }) 
         {label}
       </span>
       <input
+        {...replaceInputTextProps}
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
