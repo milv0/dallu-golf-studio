@@ -153,6 +153,18 @@
 - `HoleCardForm`: 1홀 입력 폼.
 - `RoundSourcePanel`: 라운드 연동 데이터 안내.
 
+### 분리 원칙
+
+- `StudioApp`에는 화면 전체를 조립하는 상태와 분기만 둔다.
+- localStorage 복원/자동 저장은 `useStudioPersistence`에서만 처리한다.
+- 단일 PNG, 모바일 공유, 진행 ZIP 생성은 `useStudioExport`에서만 처리한다.
+- 미리보기 카드, 출력 버튼, 데스크탑 배치 미리보기 UI는 `PreviewExportPanel`에 둔다.
+- 기본 입력 데이터 모양은 `studioDefaults`에서 관리한다.
+- 스코어 입력 UI를 수정할 때는 `ScoreEntryGrid`, `ScoreInputs`, `ManualScoreForms`, `HoleCardForm` 중 기존 책임에 맞는 파일을 먼저 수정한다.
+- 새 기능을 추가할 때 `StudioApp`이 700줄을 다시 넘기면 훅 또는 패널 컴포넌트로 분리할 후보로 본다.
+- 내보내기 저장 파일명이나 ZIP 구조를 바꿀 때는 `lib/exportImage.js`를 우선 수정한다.
+- 저장 키나 localStorage 정책을 바꿀 때는 `lib/studioStorage.js`와 `useStudioPersistence`를 함께 확인한다.
+
 ## 저장소와 DB 상태
 
 ### localStorage
