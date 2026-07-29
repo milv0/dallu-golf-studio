@@ -58,12 +58,11 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
       <div className="overflow-hidden rounded-lg border border-line">
         <div className="grid grid-cols-4">
           {linked ? (
-            <div className="border-l border-line first:border-l-0">
+            <label className="block min-w-0 border-l border-line first:border-l-0">
               <span className="block bg-panel py-0.5 text-center font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">홀</span>
-              <div className="border-t border-line px-1 py-3 text-center font-mono text-xl font-bold text-txt">
-                {holeCard.hole || "–"}
-              </div>
-            </div>
+              <input readOnly value={holeCard.hole || "–"} tabIndex={-1}
+                className="w-full border-t border-line bg-transparent px-1 py-3 text-center font-mono text-xl font-bold text-txt outline-none" />
+            </label>
           ) : (
             <CoreInput label="홀" value={holeCard.hole} onChange={(v) => {
               if (v === "") { setHC("hole", ""); return; }
