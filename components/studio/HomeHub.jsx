@@ -16,7 +16,7 @@ export default function HomeHub() {
   };
 
   const secondary = [
-    { href: "/records", title: "내 라운딩", meta: "저장 기록" },
+    { href: "/records", title: "내 라운딩", meta: "준비 중", disabled: true },
     { href: "/score-9?source=custom", title: "9홀 직접", meta: "수동 입력" },
     { href: "/score-3?source=custom", title: "3홀 직접", meta: "수동 입력" },
   ];
@@ -34,10 +34,10 @@ export default function HomeHub() {
         </div>
         {currentUser ? (
           <div className="flex items-center gap-2">
-            <a href="/records"
-              className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
-              내 라운딩
-            </a>
+            <button type="button" disabled
+              className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
+              내 라운딩 준비 중
+            </button>
             <button type="button" onClick={logout}
               className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
               로그아웃
@@ -66,6 +66,15 @@ export default function HomeHub() {
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         {secondary.map((item) => (
+          item.disabled ? (
+            <div key={item.href}
+              className="cursor-not-allowed rounded-xl border border-line bg-panel p-4 opacity-70">
+              <div className="font-head text-xl font-bold uppercase text-txt-faint">{item.title}</div>
+              <div className="mt-2 font-mono text-[11px] font-bold uppercase tracking-wider text-txt-faint">
+                {item.meta}
+              </div>
+            </div>
+          ) : (
           <a key={item.href} href={item.href}
             className="rounded-xl border border-line bg-panel p-4 transition hover:border-accent hover:bg-panel-2">
             <div className="font-head text-xl font-bold uppercase text-txt">{item.title}</div>
@@ -73,6 +82,7 @@ export default function HomeHub() {
               {item.meta}
             </div>
           </a>
+          )
         ))}
       </div>
     </main>

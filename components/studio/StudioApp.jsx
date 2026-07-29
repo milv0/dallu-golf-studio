@@ -7,10 +7,8 @@ import ReelsScorecard, { sizeFor as reelsSizeFor } from "../presets/ReelsScoreca
 import HoleCard, { sizeFor as holeSizeFor } from "../presets/HoleCard";
 import ReelsThreeHoleCard, { SIZE as SIZE_REELS_THREE } from "../presets/ReelsThreeHoleCard";
 import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../../lib/score";
-import { createRoundRecordRemote } from "../../lib/api";
 import { COURSE_DIRECTORY } from "../../lib/courseDirectory";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
-import { saveRoundRecord } from "../../lib/roundHistory";
 import HomeHub from "./HomeHub";
 import CoursePresets from "./CoursePresets";
 import { ManualNineForm, ThreeHoleForm, LinkedThreeHolePanel } from "./ManualScoreForms";
@@ -82,7 +80,6 @@ function StudioWorkspace({ mode }) {
   const [busy, setBusy] = useState(false);
   const [theme, setTheme] = useState("light");
   const [scoreMode, setScoreMode] = useState("relative"); // 'strokes' | 'relative' (기본: 파대비)
-  const [savedRoundAt, setSavedRoundAt] = useState("");
   const [currentUser, setCurrentUser] = useState(null);
   const captureRef = useRef(null);
   const scoreRefs = useRef([]);
@@ -142,7 +139,6 @@ function StudioWorkspace({ mode }) {
       : mode === "hole" && !hasRoundData && !hasHoleCardData
       ? "현재 홀 정보를 먼저 입력하세요."
       : "";
-  const canSaveRound = isRoundEditor && hasRoundScores && Boolean(currentUser);
   const manualNineRound = useMemo(() => ({
     player: "",
     country: "",
@@ -260,7 +256,6 @@ function StudioWorkspace({ mode }) {
   useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-threehole", JSON.stringify(threeHole)); }, [threeHole]);
   useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-manual-nine", JSON.stringify(manualNine)); }, [manualNine]);
   useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-linked-three", JSON.stringify(linkedThree)); }, [linkedThree]);
-  useEffect(() => { if (loadedRef.current) setSavedRoundAt(""); }, [round]);
   const toggleFav = (name) => {
     setFavorites((prev) => {
       const next = prev.includes(name) ? prev.filter((n) => n !== name) : [name, ...prev];
@@ -305,29 +300,6 @@ function StudioWorkspace({ mode }) {
       setBusy(false);
     }
   }
-
-  const handleSaveRoundRecord = () => {
-    if (!canSaveRound) return;
-    createRoundRecordRemote(currentUser, round)
-      .then((record) => setSavedRoundAt(record.savedAt))
-      .catch(() => {
-        const record = saveRoundRecord(round, currentUser);
-        setSavedRoundAt(record.savedAt);
-      });
-  };
-  const handleLoadRoundRecord = (nextRound) => {
-    if (!nextRound || !Array.isArray(nextRound.holes)) return;
-    const baseRound = emptyRound();
-    setRound({
-      ...baseRound,
-      ...nextRound,
-      holes: baseRound.holes.map((hole, i) => ({
-        ...hole,
-        ...(nextRound.holes[i] || {}),
-      })),
-    });
-    setSavedRoundAt("");
-  };
 
   const Front = round.holes.slice(0, 9);
   const Back = round.holes.slice(9, 18);
@@ -383,7 +355,7 @@ function StudioWorkspace({ mode }) {
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="w-16 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">입력</div>
                   <div className="flex overflow-hidden rounded-lg border border-line">
-                    {[["linked", "저장 라운드"], ["custom", "직접 입력"]].map(([key, label]) => (
+                    {[["linked", "18홀 연동"], ["custom", "직접 입력"]].map(([key, label]) => (
                       <button key={key} onClick={() => setReelsSource(key)}
                         className={"px-4 py-1.5 text-sm font-semibold transition " +
                           (reelsSource === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
@@ -451,9 +423,6 @@ function StudioWorkspace({ mode }) {
               requiresScores={isReelsSizedScore}
               hasRoundData={hasRoundData}
               hasRoundScores={hasRoundScores}
-              currentUser={currentUser}
-              onLoadRound={handleLoadRoundRecord}
-              loginNext={isScore9 ? "/score-9" : isScore3 ? "/score-3" : "/hole"}
             />
           ) : null}
 
@@ -475,17 +444,10 @@ function StudioWorkspace({ mode }) {
                         </button>
                       ))}
                     </div>
-                    {currentUser ? (
-                      <button type="button" onClick={handleSaveRoundRecord} disabled={!canSaveRound}
-                        className="rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] transition hover:bg-accent-2 disabled:opacity-50">
-                        기록 저장
-                      </button>
-                    ) : (
-                      <button type="button" disabled
-                        className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-faint opacity-70">
-                        기록 저장 준비 중
-                      </button>
-                    )}
+                    <button type="button" disabled
+                      className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-faint opacity-70">
+                      기록 저장 준비 중
+                    </button>
                   </div>
                 </div>
                 {scoreMode === "relative" && (
@@ -518,17 +480,13 @@ function StudioWorkspace({ mode }) {
                 </div>
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
                   <div className="text-[12px] text-txt-faint">
-                    {!currentUser
-                      ? "라운딩 기록 저장은 정식 인증 연결 전까지 비활성화되어 있습니다."
-                      : savedRoundAt
-                      ? `내 라운딩에 저장됨 · ${new Date(savedRoundAt).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })}`
-                      : "스코어를 입력한 뒤 라운딩 기록으로 저장할 수 있습니다."}
+                    라운딩 기록 저장은 준비 중입니다.
                   </div>
                   <div className="flex items-center gap-2">
-                    <a href="/records"
-                      className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-semibold text-txt-soft transition hover:border-accent hover:text-txt">
-                      내 라운딩
-                    </a>
+                    <button type="button" disabled
+                      className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-semibold text-txt-faint opacity-70">
+                      내 라운딩 준비 중
+                    </button>
                   </div>
                 </div>
               </div>

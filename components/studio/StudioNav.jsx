@@ -19,9 +19,17 @@ function NavLink({ href, label, active }) {
   );
 }
 
+function DisabledNavItem({ label }) {
+  return (
+    <span className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
+      {label} 준비 중
+    </span>
+  );
+}
+
 export default function StudioNav({ active, currentUser }) {
   const secondaryLinks = [
-    { href: "/records", label: "내 라운딩", id: "records" },
+    { href: "/records", label: "내 라운딩", id: "records", disabled: true },
   ];
 
   return (
@@ -36,7 +44,9 @@ export default function StudioNav({ active, currentUser }) {
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {secondaryLinks.map((link) => (
-          <NavLink key={link.href} {...link} active={active === link.id} />
+          link.disabled
+            ? <DisabledNavItem key={link.href} label={link.label} />
+            : <NavLink key={link.href} {...link} active={active === link.id} />
         ))}
       </div>
     </nav>
