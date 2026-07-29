@@ -41,6 +41,13 @@ const QUALITY = [
   { scale: 3, label: "MAX", desc: "초고화질" },
 ];
 
+function exportFileName({ isHole, isScore3, isScore9 }) {
+  if (isHole) return "Hole1.png";
+  if (isScore3) return "Hole3.png";
+  if (isScore9) return "Hole9.png";
+  return "Hole18.png";
+}
+
 const emptyHoleCard = () => ({
   player: "", hole: "", par: "", distance: "", toPar: "", currentShot: "", club: "", unit: "m", showResultBanner: true,
 });
@@ -457,15 +464,7 @@ function StudioWorkspace({ mode }) {
       });
       const a = document.createElement("a");
       a.href = dataUrl;
-      const baseName = isHole
-        ? holeData.player
-        : reelsV3
-        ? "threehole"
-        : reelsCustom
-        ? manualNineRound.player
-        : scoreRound.player;
-      const name = (baseName || "scorecard").replace(/\s+/g, "_");
-      a.download = `${name}_${isHole ? "hole" : reelsV3 ? "score_3hole" : isScore9 ? `score_9hole_${effRange}` : "score_18hole"}.png`;
+      a.download = exportFileName({ isHole, isScore3, isScore9 });
       a.click();
     } catch (e) {
       alert("내보내기 실패: " + e.message);
