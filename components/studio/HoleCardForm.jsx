@@ -22,7 +22,7 @@ function CoreInput({ label, value, onChange, placeholder, inputMode = "text" }) 
   );
 }
 
-export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound, onReset }) {
+export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound, onReset, linked = true }) {
   return (
     <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
       <PanelHeader title="현재 홀 정보">
@@ -30,7 +30,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
       </PanelHeader>
       <div className="mb-2">
         <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
-          홀 선택 (PAR·토탈 자동 연동)
+          {linked ? "홀 선택 (PAR·토탈 자동 연동)" : "홀 선택"}
         </span>
         <div className="grid grid-cols-9 gap-1">
           {round.holes.map((h, i) => {
@@ -111,9 +111,11 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           </button>
         </div>
       </div>
-      <p className="mt-2 text-[12px] text-txt-faint">
-        홀 선택 → PAR·토탈·타수 자동 반영 · 거리/클럽은 직접 입력
-      </p>
+      {linked && (
+        <p className="mt-2 text-[12px] text-txt-faint">
+          홀 선택 → PAR·토탈·타수 자동 반영 · 거리/클럽은 직접 입력
+        </p>
+      )}
     </div>
   );
 }

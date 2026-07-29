@@ -618,6 +618,7 @@ function StudioWorkspace({ mode }) {
                 holeCard={activeHoleCard}
                 setHC={isFullCustom ? setCustomHC : setHC}
                 loadHoleFromRound={isFullCustom ? loadCustomHoleStandalone : loadHoleFromRound}
+                linked={!isFullCustom}
                 onReset={isFullCustom ? () => {
                   if (!confirmReset("커스텀 1홀 정보를 초기화할까요?")) return;
                   setCustomHoleCard(emptyHoleCard());
