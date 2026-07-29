@@ -55,7 +55,7 @@ export default function RoundSourcePanel({
         </div>
       </div>
       <div className="mt-3 border-t border-line pt-3 text-right">
-        <a href="/score-18" className="text-xs font-semibold text-txt-faint transition hover:text-accent">
+        <a href="/Hole18" className="text-xs font-semibold text-txt-faint transition hover:text-accent">
           18홀 입력/수정
         </a>
       </div>

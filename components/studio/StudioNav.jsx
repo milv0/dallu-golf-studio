@@ -9,16 +9,16 @@ export const LAST_ROUTE_KEY = {
 };
 
 export const CUSTOM_LINKS = [
-  { href: "/score-18?source=custom", label: "18홀", id: "score18" },
-  { href: "/score-9?source=custom", label: "9홀", id: "score9" },
-  { href: "/score-3?source=custom", label: "3홀", id: "score3" },
+  { href: "/Hole18?source=custom", label: "18홀", id: "score18" },
+  { href: "/Hole9?source=custom", label: "9홀", id: "score9" },
+  { href: "/Hole3?source=custom", label: "3홀", id: "score3" },
   { href: "/hole?source=custom", label: "1홀", id: "hole" },
 ];
 
 export const ROUND_LINKS = [
   { href: "/round", label: "18홀", id: "score18" },
-  { href: "/score-9?source=linked", label: "9홀", id: "score9" },
-  { href: "/score-3?source=linked", label: "3홀", id: "score3" },
+  { href: "/Hole9?source=linked", label: "9홀", id: "score9" },
+  { href: "/Hole3?source=linked", label: "3홀", id: "score3" },
   { href: "/hole?source=linked", label: "1홀", id: "hole" },
 ];
 
