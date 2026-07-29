@@ -17,10 +17,9 @@ function bannerFor(data) {
   const par = Number(data.par) || null;
   const shots = Number(data.currentShot) || 0;
   if (data.showResultBanner === false || !par || shots <= 0) return "";
-  // "다음 타에 넣으면" 기준: shots + 1 이 최종 스코어
-  const nextScore = shots + 1;
-  const diff = nextScore - par;
-  if (par === 5) {
+  // currentShot = 지금 치려는 타수. 이 샷이 들어가면 shots가 최종 스코어.
+  const diff = shots - par;
+  if (par >= 5) {
     if (diff <= -2) return "FOR EAGLE";
     if (diff === -1) return "FOR BIRDIE";
   } else if (par === 4) {

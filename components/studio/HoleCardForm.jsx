@@ -81,7 +81,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
 
       <div className="mt-3">
         <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
-          현재 타수 (지금까지 친 횟수)
+          현재 타수 (지금 칠 샷)
         </span>
         <div className="flex flex-wrap gap-1.5">
           {Array.from({ length: (Number(holeCard.par) || 4) * 2 }, (_, i) => i + 1).map((n) => (
