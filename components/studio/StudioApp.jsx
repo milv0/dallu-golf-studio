@@ -48,6 +48,12 @@ function exportFileName({ isHole, isScore3, isScore9 }) {
   return "Hole18.png";
 }
 
+async function dataUrlToFile(dataUrl, fileName) {
+  const res = await fetch(dataUrl);
+  const blob = await res.blob();
+  return new File([blob], fileName, { type: "image/png" });
+}
+
 const emptyHoleCard = () => ({
   player: "", hole: "", par: "", distance: "", toPar: "", currentShot: "", club: "", unit: "m", showResultBanner: true,
 });
@@ -446,28 +452,62 @@ function StudioWorkspace({ mode }) {
     }
     return out;
   }, [builtinCourses]);
-  async function handleExport() {
+  async function createExportImage() {
     if (!captureRef.current) return;
     if (!canExport) return;
     const exportNode = captureRef.current.querySelector("svg") || captureRef.current;
+    await document.fonts?.ready;
+    const dataUrl = await toPng(exportNode, {
+      canvasWidth: size.w * exportScale,
+      canvasHeight: size.h * exportScale,
+      width: size.w,
+      height: size.h,
+      backgroundColor: "rgba(0,0,0,0)",
+      cacheBust: true,
+      style: { background: "transparent", maxWidth: "none", width: `${size.w}px`, height: `${size.h}px` },
+    });
+    return {
+      dataUrl,
+      fileName: exportFileName({ isHole, isScore3, isScore9 }),
+    };
+  }
+
+  function downloadDataUrl(dataUrl, fileName) {
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = fileName;
+    a.click();
+  }
+
+  async function handleExport() {
     setBusy(true);
     try {
-      await document.fonts?.ready;
-      const dataUrl = await toPng(exportNode, {
-        canvasWidth: size.w * exportScale,
-        canvasHeight: size.h * exportScale,
-        width: size.w,
-        height: size.h,
-        backgroundColor: "rgba(0,0,0,0)",
-        cacheBust: true,
-        style: { background: "transparent", maxWidth: "none", width: `${size.w}px`, height: `${size.h}px` },
-      });
-      const a = document.createElement("a");
-      a.href = dataUrl;
-      a.download = exportFileName({ isHole, isScore3, isScore9 });
-      a.click();
+      const image = await createExportImage();
+      if (image) downloadDataUrl(image.dataUrl, image.fileName);
     } catch (e) {
       alert("내보내기 실패: " + e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleShareExport() {
+    setBusy(true);
+    try {
+      const image = await createExportImage();
+      if (!image) return;
+      const file = await dataUrlToFile(image.dataUrl, image.fileName);
+      const sharePayload = { files: [file], title: image.fileName };
+      if (navigator.share && (!navigator.canShare || navigator.canShare(sharePayload))) {
+        await navigator.share(sharePayload);
+      } else {
+        downloadDataUrl(image.dataUrl, image.fileName);
+        alert("이 브라우저는 이미지 공유 저장을 지원하지 않아 PNG 다운로드로 처리했습니다.");
+      }
+    } catch (e) {
+      if (e?.name !== "AbortError") {
+        alert("공유 실패: " + e.message);
+      }
     } finally {
       setBusy(false);
     }
@@ -672,6 +712,11 @@ function StudioWorkspace({ mode }) {
                     </button>
                   ))}
                 </div>
+                <button onClick={handleShareExport} disabled={busy || !canExport}
+                  title={!canExport ? "필수 입력을 먼저 완료하세요" : "iPhone에서는 공유 시트에서 이미지 저장을 선택하세요"}
+                  className="rounded-lg border border-line bg-panel-2 px-2.5 py-1 font-head text-xs font-bold uppercase tracking-wide text-txt-soft transition hover:border-accent hover:text-txt disabled:opacity-60 md:px-4 md:py-1.5 md:text-sm">
+                  공유
+                </button>
                 <button onClick={handleExport} disabled={busy || !canExport}
                   title={!canExport ? "필수 입력을 먼저 완료하세요" : "PNG 다운로드"}
                   className="rounded-lg bg-accent px-2.5 py-1 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:px-4 md:py-1.5 md:text-sm">
