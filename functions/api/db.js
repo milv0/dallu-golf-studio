@@ -178,12 +178,14 @@ async function writeDbWithBackup(env, nextDb, { baseRevision, action = "save", r
 export async function onRequestGet({ request, env }) {
   if (!env.COURSE_KV) return json({ error: "KV(COURSE_KV) 미바인딩" }, 500);
   const url = new URL(request.url);
-  const raw = await env.COURSE_KV.get(DB_KEY);
-  const db = parseJson(raw, {});
-  if (url.searchParams.get("admin") !== "1") return json(db);
+  if (url.searchParams.get("admin") !== "1") {
+    return json({ error: "코스 DB 공개 조회는 현재 비활성화되어 있습니다" }, 503);
+  }
 
   const authError = assertAdminAccess(request, env);
   if (authError) return authError;
+  const raw = await env.COURSE_KV.get(DB_KEY);
+  const db = parseJson(raw, {});
   const meta = await readMeta(env);
   const backups = await listKv(env, BACKUP_PREFIX, 50);
   const audit = await listKv(env, AUDIT_PREFIX, 50);

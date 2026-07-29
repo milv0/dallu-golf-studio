@@ -1,6 +1,6 @@
 "use client";
 
-export default function CoursePresets({ builtin = [], favorites = [], selectedClub = "", dbStatus, onRefresh, onToggleFav, onLoad }) {
+export default function CoursePresets({ builtin = [], favorites = [], selectedClub = "", dbStatus, disabled = false, onRefresh, onToggleFav, onLoad }) {
   const clubs = [...new Set(builtin.map((c) => c.club || c.name))];
   const sel = (selectedClub || "").trim();
   const activeClub = clubs.includes(sel) ? sel : "";
@@ -20,7 +20,7 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
     <div className="rounded-xl border border-line bg-panel p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">코스</div>
-        {onRefresh && (
+        {!disabled && onRefresh && (
           <button type="button" onClick={onRefresh} title="코스 목록 새로고침"
             className="flex items-center gap-1.5 rounded-md border border-line bg-panel-2 px-2 py-1 text-[11px] font-semibold text-txt-faint transition hover:text-txt">
             <span className={"inline-block h-1.5 w-1.5 rounded-full " +
@@ -31,7 +31,11 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
         )}
       </div>
 
-      {favCourses.length > 0 && (
+      {disabled ? (
+        <div className="rounded-lg border border-line bg-panel-2 px-3 py-3 text-[12px] leading-relaxed text-txt-soft">
+          코스 자동 불러오기는 현재 비활성화되어 있습니다. 홀별 PAR는 아래 스코어 입력에서 직접 입력하세요.
+        </div>
+      ) : favCourses.length > 0 && (
         <div className="mb-3">
           <div className="mb-1 text-[11px] uppercase tracking-widest text-[#ffb648]">★ 즐겨찾기</div>
           <div className="flex flex-wrap gap-2">
@@ -48,7 +52,7 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
         </div>
       )}
 
-      {!activeClub ? (
+      {!disabled && (!activeClub ? (
         <p className="text-[12px] text-txt-faint">기본 정보에서 <b className="text-txt-soft">골프장을 선택</b>하면 코스가 표시됩니다.</p>
       ) : clubCourses.length === 0 ? (
         <p className="text-[12px] text-txt-faint">{activeClub} · 등록된 코스가 없습니다.</p>
@@ -67,7 +71,7 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
             ))}
           </div>
         </div>
-      )}
+      ))}
     </div>
   );
 }

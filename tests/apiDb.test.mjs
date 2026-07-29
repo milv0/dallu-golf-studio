@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { onRequestPost } from "../functions/api/db.js";
+import { onRequestGet, onRequestPost } from "../functions/api/db.js";
 import { onRequest as onMiddlewareRequest } from "../functions/_middleware.js";
 
 const validDb = {
@@ -43,6 +43,37 @@ function kv() {
     },
   };
 }
+
+test("GET blocks public course DB reads", async () => {
+  const store = kv();
+  store.values.set("db", JSON.stringify(validDb));
+
+  const response = await onRequestGet({
+    request: new Request("https://example.com/api/db"),
+    env: { COURSE_KV: store },
+  });
+  const data = await response.json();
+
+  assert.equal(response.status, 503);
+  assert.match(data.error, /비활성화/);
+});
+
+test("GET requires admin access for protected course DB reads", async () => {
+  const store = kv();
+  store.values.set("db", JSON.stringify(validDb));
+
+  const response = await onRequestGet({
+    request: new Request("https://example.com/api/db?admin=1", {
+      headers: { "x-admin-token": "secret", "cf-connecting-ip": "203.0.113.7" },
+    }),
+    env: { COURSE_KV: store, ADMIN_TOKEN: "secret", ADMIN_ALLOWED_IPS: "203.0.113.7" },
+  });
+  const data = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(data.ok, true);
+  assert.deepEqual(data.db, validDb);
+});
 
 test("POST rejects writes when ADMIN_TOKEN is not configured", async () => {
   const response = await onRequestPost({ request: request(validDb), env: { COURSE_KV: kv() } });

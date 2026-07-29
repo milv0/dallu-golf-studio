@@ -7,9 +7,7 @@ import ReelsScorecard, { sizeFor as reelsSizeFor } from "../presets/ReelsScoreca
 import HoleCard, { sizeFor as holeSizeFor } from "../presets/HoleCard";
 import ReelsThreeHoleCard, { SIZE as SIZE_REELS_THREE } from "../presets/ReelsThreeHoleCard";
 import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../../lib/score";
-import { coursesFromDb, effectiveDb } from "../../lib/coursesDb";
-import { loadDb, saveDb } from "../../lib/nineStore";
-import { createRoundRecordRemote, fetchDb } from "../../lib/api";
+import { createRoundRecordRemote } from "../../lib/api";
 import { COURSE_DIRECTORY } from "../../lib/courseDirectory";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import { saveRoundRecord } from "../../lib/roundHistory";
@@ -26,6 +24,7 @@ import HoleCardForm from "./HoleCardForm";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
 const PREVIEW_MAX_H = 340;
+const COURSE_DB_ENABLED = false;
 
 const FORMATS = {
   youtube: { Comp: HoleByHoleStrip, sizeFor: ytSizeFor },
@@ -223,25 +222,15 @@ function StudioWorkspace({ mode }) {
     }));
   };
 
-  // 코스 DB (KV 원격)
+  // 코스 DB 자동 불러오기는 공개 배포 전까지 비활성화한다.
   const [builtinCourses, setBuiltinCourses] = useState([]);
   // 즐겨찾기 (코스 이름 배열, localStorage)
   const [favorites, setFavorites] = useState([]);
   // KV 동기화 상태
-  const [dbStatus, setDbStatus] = useState({ state: "loading", count: 0, at: null });
-  const loadCourseDb = async () => {
-    setDbStatus((s) => ({ ...s, state: "loading" }));
-    try {
-      const remote = await fetchDb();
-      saveDb(remote);
-      const courses = coursesFromDb(effectiveDb(remote));
-      setBuiltinCourses(courses);
-      setDbStatus({ state: "online", count: courses.length, at: new Date() });
-    } catch {
-      const courses = coursesFromDb(effectiveDb(loadDb()));
-      setBuiltinCourses(courses);
-      setDbStatus({ state: "offline", count: courses.length, at: new Date() });
-    }
+  const [dbStatus, setDbStatus] = useState({ state: "disabled", count: 0, at: null });
+  const loadCourseDb = () => {
+    setBuiltinCourses([]);
+    setDbStatus({ state: "disabled", count: 0, at: null });
   };
   const loadedRef = useRef(false);
   useEffect(() => {
@@ -450,7 +439,8 @@ function StudioWorkspace({ mode }) {
               {!isHole && (
                 <CoursePresets builtin={builtinCourses} favorites={favorites}
                                selectedClub={round.course}
-                               dbStatus={dbStatus} onRefresh={loadCourseDb}
+                               disabled={!COURSE_DB_ENABLED}
+                               dbStatus={dbStatus} onRefresh={COURSE_DB_ENABLED ? loadCourseDb : null}
                                onToggleFav={toggleFav} onLoad={applyPreset} />
               )}
             </div>
