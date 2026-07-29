@@ -21,7 +21,7 @@ import StudioShell from "./StudioShell";
 import HoleCardForm from "./HoleCardForm";
 import PanelHeader, { ResetButton } from "./PanelHeader";
 import { ConfirmDialog, Toast } from "./Feedback";
-import { createPngDataUrl, dataUrlToFile, downloadDataUrl, exportFileName, progressFileName } from "../../lib/exportImage";
+import { createPngDataUrl, createZipBlob, dataUrlToFile, downloadBlob, downloadDataUrl, exportFileName, progressFileName, progressZipFileName } from "../../lib/exportImage";
 import { readJsonStorage, STUDIO_STORAGE_KEYS, writeJsonStorage } from "../../lib/studioStorage";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
@@ -556,16 +556,19 @@ function StudioWorkspace({ mode }) {
     if (!canBatchExport) return;
     setBusy(true);
     try {
+      const files = [];
       for (let step = 1; step <= batchProgressCount; step++) {
         setBatchExportStep(step);
         await nextFrame();
         const exportNode = batchCaptureRef.current?.querySelector("svg");
         if (!exportNode) throw new Error("진행 상태 내보내기 노드를 찾을 수 없습니다.");
         const dataUrl = await createPngDataUrl({ node: exportNode, size, scale: exportScale });
-        downloadDataUrl(dataUrl, progressFileName({ isScore3, isScore9, step }));
-        await new Promise((resolve) => window.setTimeout(resolve, 120));
+        const file = await dataUrlToFile(dataUrl, progressFileName({ isScore3, isScore9, step }));
+        files.push({ name: file.name, blob: file });
       }
-      showToast(`${batchProgressCount}장 PNG 다운로드를 시작했습니다.`);
+      const zip = await createZipBlob(files);
+      downloadBlob(zip, progressZipFileName({ isScore3, isScore9 }));
+      showToast(`${batchProgressCount}장 PNG ZIP 다운로드를 시작했습니다.`);
     } catch (e) {
       showToast("진행별 내보내기 실패: " + e.message);
     } finally {
@@ -790,9 +793,9 @@ function StudioWorkspace({ mode }) {
                 </button>
                 {batchProgressCount > 0 && (
                   <button onClick={handleBatchExport} disabled={busy || !canBatchExport}
-                    title={!hasBatchScores ? "입력된 스코어가 필요합니다" : "홀 진행 상태별 PNG를 순차 다운로드합니다"}
+                    title={!hasBatchScores ? "입력된 스코어가 필요합니다" : "홀 진행 상태별 PNG를 ZIP으로 다운로드합니다"}
                     className="hidden rounded-lg border border-line bg-panel-2 px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-txt-soft transition hover:border-accent hover:text-txt disabled:opacity-60 md:inline-block">
-                    {busy ? "생성 중…" : `진행별 ${batchProgressCount}장`}
+                    {busy ? "생성 중…" : `진행 ZIP ${batchProgressCount}장`}
                   </button>
                 )}
               </div>
