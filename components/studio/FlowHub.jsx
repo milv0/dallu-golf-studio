@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
-import { MobileTabBar } from "./StudioNav";
+import { linksFor, MobileTabBar } from "./StudioNav";
+
+const LAST_ROUTE_KEY = {
+  custom: "sc-last-custom-route",
+  round: "sc-last-round-route",
+};
 
 const FLOW_CONFIG = {
   custom: {
@@ -26,6 +31,15 @@ export default function FlowHub({ flow = "custom" }) {
   useEffect(() => {
     setCurrentUser(loadCurrentUser());
   }, []);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const links = linksFor(config.source);
+    const defaultHref = links[0]?.href || "/";
+    const storageKey = LAST_ROUTE_KEY[config.source];
+    const savedHref = storageKey ? window.localStorage.getItem(storageKey) : "";
+    const targetHref = links.some((link) => link.href === savedHref) ? savedHref : defaultHref;
+    window.location.replace(targetHref);
+  }, [config.source]);
 
   const logout = () => {
     clearCurrentUser();

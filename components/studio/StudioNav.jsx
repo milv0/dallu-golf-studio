@@ -14,7 +14,7 @@ export const ROUND_LINKS = [
   { href: "/hole?source=linked", label: "1홀", id: "hole" },
 ];
 
-function linksFor(sourceMode = "custom") {
+export function linksFor(sourceMode = "custom") {
   return sourceMode === "round" ? ROUND_LINKS : CUSTOM_LINKS;
 }
 
