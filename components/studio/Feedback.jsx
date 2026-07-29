@@ -24,7 +24,7 @@ export function ConfirmDialog({ request, onCancel, onConfirm }) {
   if (!request) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/35 p-4 backdrop-blur-sm md:items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4 backdrop-blur-sm">
       <div className="w-full max-w-[360px] rounded-2xl border border-line bg-panel p-4 shadow-2xl">
         <div className="font-head text-xl font-bold uppercase text-txt">
           확인
