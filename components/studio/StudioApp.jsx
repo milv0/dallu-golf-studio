@@ -75,7 +75,7 @@ function StudioWorkspace({ mode }) {
   const [linkedThree, setLinkedThree] = useState(emptyLinkedThree);
   const [holeRange, setHoleRange] = useState("all"); // 'all' | 'front' | 'back'
   const [reelsVer, setReelsVer] = useState("v1");    // 릴스 레이아웃 v1(9홀) | v3(3홀)
-  const [reelsSource, setReelsSource] = useState("linked"); // 'linked' | 'custom'
+  const [reelsSource, setReelsSource] = useState(() => (mode === "score9" || mode === "score3" ? "custom" : "linked")); // 'linked' | 'custom'
   const [cardTheme, setCardTheme] = useState("light"); // 카드(프리셋) 색 테마
   const [exportScale, setExportScale] = useState(2);
   const [busy, setBusy] = useState(false);

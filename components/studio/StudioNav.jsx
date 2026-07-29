@@ -2,8 +2,8 @@
 
 const OUTPUT_LINKS = [
   { href: "/score-18", label: "18홀", id: "score18" },
-  { href: "/score-9", label: "9홀", id: "score9" },
-  { href: "/score-3", label: "3홀", id: "score3" },
+  { href: "/score-9?source=custom", label: "9홀", id: "score9" },
+  { href: "/score-3?source=custom", label: "3홀", id: "score3" },
   { href: "/hole", label: "1홀", id: "hole" },
 ];
 

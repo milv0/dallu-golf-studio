@@ -33,7 +33,7 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
 
       {disabled ? (
         <div className="rounded-lg border border-line bg-panel-2 px-3 py-3 text-[12px] leading-relaxed text-txt-soft">
-          코스 자동 불러오기는 현재 비활성화되어 있습니다. 홀별 PAR는 아래 스코어 입력에서 직접 입력하세요.
+          코스 자동 불러오기는 현재 비활성화되어 있습니다. 홀별 PAR는 아래 스코어 입력에서 직접 입력해주세요.
         </div>
       ) : favCourses.length > 0 && (
         <div className="mb-3">
