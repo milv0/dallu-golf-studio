@@ -500,20 +500,18 @@ function StudioWorkspace({ mode }) {
               )}
             </div>
           ) : isRoundEditor && !isFullCustom ? (
-            <div className={"order-[20] " + (!isHole ? "grid items-start gap-4 md:grid-cols-2" : "")}>
+            <div className="order-[5] grid items-start gap-3 grid-cols-2">
               <BasicInfoPanel
                 title="기본 정보"
                 data={scoreRound}
                 setMeta={setMeta}
                 clubNameList={clubNameList}
               />
-              {!isHole && (
-                <CoursePresets builtin={builtinCourses} favorites={favorites}
-                               selectedClub={round.course}
-                               disabled={!COURSE_DB_ENABLED}
-                               dbStatus={dbStatus} onRefresh={COURSE_DB_ENABLED ? loadCourseDb : null}
-                               onToggleFav={toggleFav} onLoad={applyPreset} />
-              )}
+              <CoursePresets builtin={builtinCourses} favorites={favorites}
+                             selectedClub={round.course}
+                             disabled={!COURSE_DB_ENABLED}
+                             dbStatus={dbStatus} onRefresh={COURSE_DB_ENABLED ? loadCourseDb : null}
+                             onToggleFav={toggleFav} onLoad={applyPreset} />
             </div>
           ) : usesRoundSource ? (
             <div className="order-[20]">

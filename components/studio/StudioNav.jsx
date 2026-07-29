@@ -33,6 +33,7 @@ export function defaultFlowHref(sourceMode = "custom") {
 export function storedFlowHref(sourceMode = "custom") {
   const links = linksFor(sourceMode);
   const fallback = links[0]?.href || "/";
+  if (sourceMode === "round") return fallback;
   if (typeof window === "undefined") return fallback;
 
   try {
