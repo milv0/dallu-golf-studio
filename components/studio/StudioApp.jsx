@@ -127,7 +127,7 @@ function StudioWorkspace({ mode }) {
   const [holeRange, setHoleRange] = useState("all"); // 'all' | 'front' | 'back'
   const [sourceMode, setSourceMode] = useState(() => initialSourceMode(mode)); // 'round' | 'custom'
   const [cardTheme, setCardTheme] = useState("light"); // 카드(프리셋) 색 테마
-  const [exportScale, setExportScale] = useState(2);
+  const [exportScale, setExportScale] = useState(mode === "score3" ? 1 : 2);
   const [theme, setTheme] = useState("light");
   const [scoreMode, setScoreMode] = useState("strokes"); // 'strokes' | 'relative' (기본: 타수)
   const [parLocked, setParLocked] = useState(false);
