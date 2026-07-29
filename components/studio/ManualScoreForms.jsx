@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { RelativeScoreHint, RelativeScoreInput, manualScoreClass } from "./ScoreInputs";
 import { Field } from "./StudioFields";
+import PanelHeader, { ResetButton } from "./PanelHeader";
 
 function useScoreRefs() {
   const scoreRefs = useRef([]);
@@ -15,14 +16,14 @@ function useScoreRefs() {
   return { scoreRefs, handleScoreKey };
 }
 
-export function ThreeHoleForm({ data, setField, setHole }) {
+export function ThreeHoleForm({ data, setField, setHole, onReset }) {
   const { scoreRefs, handleScoreKey } = useScoreRefs();
 
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
-      <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-        3홀 카드 수동 입력
-      </div>
+      <PanelHeader title="3홀 카드 수동 입력">
+        {onReset ? <ResetButton onClick={onReset} /> : null}
+      </PanelHeader>
       <label className="mb-3 flex items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm font-semibold text-txt-soft">
         <input type="checkbox" checked={data.showHoleNumbers !== false}
           onChange={(e) => setField("showHoleNumbers", e.target.checked)}
@@ -125,14 +126,14 @@ export function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onSelec
   );
 }
 
-export function ManualNineForm({ data, setHole }) {
+export function ManualNineForm({ data, setHole, onReset }) {
   const { scoreRefs, handleScoreKey } = useScoreRefs();
 
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
-      <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-        9홀 직접 입력
-      </div>
+      <PanelHeader title="9홀 직접 입력">
+        {onReset ? <ResetButton onClick={onReset} /> : null}
+      </PanelHeader>
       <div className="overflow-hidden rounded-lg border border-line">
         <div className="grid" style={{ gridTemplateColumns: "54px repeat(9, minmax(0,1fr))" }}>
           <div className="flex items-center justify-center bg-panel-2 py-2 font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint">

@@ -19,6 +19,7 @@ import { RelativeScoreHint } from "./ScoreInputs";
 import { ClubAutocomplete, Field } from "./StudioFields";
 import StudioNav from "./StudioNav";
 import HoleCardForm from "./HoleCardForm";
+import PanelHeader, { ResetButton } from "./PanelHeader";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
 const PREVIEW_MAX_H = 340;
@@ -80,7 +81,7 @@ function StudioWorkspace({ mode }) {
   const [exportScale, setExportScale] = useState(2);
   const [busy, setBusy] = useState(false);
   const [theme, setTheme] = useState("light");
-  const [scoreMode, setScoreMode] = useState("relative"); // 'strokes' | 'relative' (기본: 파대비)
+  const [scoreMode, setScoreMode] = useState("strokes"); // 'strokes' | 'relative' (기본: 타수)
   const [currentUser, setCurrentUser] = useState(null);
   const captureRef = useRef(null);
   const scoreRefs = useRef([]);
@@ -199,14 +200,33 @@ function StudioWorkspace({ mode }) {
       ...r,
       holes: r.holes.map((h, idx) => (idx === i ? { ...h, [key]: val } : h)),
     }));
+  const confirmReset = (message) => typeof window === "undefined" || window.confirm(message);
   const resetRound = () => {
-    if (typeof window !== "undefined" && !window.confirm("18홀 스코어카드를 초기화할까요?")) return;
+    if (!confirmReset("18홀 스코어카드를 초기화할까요?")) return;
     const next = emptyRound();
     setRound(next);
     setHoleRange("all");
     if (typeof window !== "undefined") {
       window.localStorage.setItem("sc-round", JSON.stringify(next));
     }
+  };
+  const resetManualNine = () => {
+    if (!confirmReset("9홀 스코어카드를 초기화할까요?")) return;
+    const next = emptyManualNine();
+    setManualNine(next);
+    if (typeof window !== "undefined") window.localStorage.setItem("sc-manual-nine", JSON.stringify(next));
+  };
+  const resetThreeHole = () => {
+    if (!confirmReset("3홀 스코어카드를 초기화할까요?")) return;
+    const next = emptyThreeHoleCard();
+    setThreeHole(next);
+    if (typeof window !== "undefined") window.localStorage.setItem("sc-threehole", JSON.stringify(next));
+  };
+  const resetHoleCard = () => {
+    if (!confirmReset("1홀 정보를 초기화할까요?")) return;
+    const next = emptyHoleCard();
+    setHoleCard(next);
+    if (typeof window !== "undefined") window.localStorage.setItem("sc-holecard", JSON.stringify(next));
   };
 
   const handleScoreKey = (e, idx) => {
@@ -403,9 +423,9 @@ function StudioWorkspace({ mode }) {
           {/* 기본 정보 + 코스 (좌우 배치) */}
           {reelsCustom ? (
             reelsV3 ? (
-              <ThreeHoleForm data={threeHole} setField={setTH} setHole={setTHHole} />
+              <ThreeHoleForm data={threeHole} setField={setTH} setHole={setTHHole} onReset={resetThreeHole} />
             ) : (
-              <ManualNineForm data={manualNine} setHole={setManualNineHole} />
+              <ManualNineForm data={manualNine} setHole={setManualNineHole} onReset={resetManualNine} />
             )
           ) : isRoundEditor ? (
             <div className={!isHole ? "grid items-start gap-4 md:grid-cols-2" : ""}>
@@ -448,30 +468,22 @@ function StudioWorkspace({ mode }) {
           {isRoundEditor && !isHole && !reelsCustom && (
             <>
               <div className="rounded-xl border border-line bg-panel p-4">
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-                    스코어 입력
-                  </span>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex overflow-hidden rounded-lg border border-line">
-                      {[["strokes", "타수"], ["relative", "파대비"]].map(([key, label]) => (
-                        <button key={key} type="button" onClick={() => setScoreMode(key)}
-                          className={"px-3 py-1 text-xs font-semibold transition " +
-                            (scoreMode === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                    <button type="button" disabled
-                      className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-faint opacity-70">
-                      기록 저장 준비 중
-                    </button>
-                    <button type="button" onClick={resetRound}
-                      className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-soft transition hover:border-[#ff6b57] hover:text-[#ff6b57]">
-                      초기화
-                    </button>
+                <PanelHeader title="스코어 입력">
+                  <div className="flex overflow-hidden rounded-lg border border-line">
+                    {[["strokes", "타수"], ["relative", "파대비"]].map(([key, label]) => (
+                      <button key={key} type="button" onClick={() => setScoreMode(key)}
+                        className={"px-3 py-1 text-xs font-semibold transition " +
+                          (scoreMode === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
+                        {label}
+                      </button>
+                    ))}
                   </div>
-                </div>
+                  <button type="button" disabled
+                    className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-faint opacity-70">
+                    기록 저장 준비 중
+                  </button>
+                  <ResetButton onClick={resetRound} />
+                </PanelHeader>
                 {scoreMode === "relative" && (
                   <RelativeScoreHint />
                 )}
@@ -530,6 +542,7 @@ function StudioWorkspace({ mode }) {
               holeCard={holeCard}
               setHC={setHC}
               loadHoleFromRound={loadHoleFromRound}
+              onReset={resetHoleCard}
             />
           )}
 

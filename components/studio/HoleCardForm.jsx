@@ -1,13 +1,14 @@
 "use client";
 
 import { ClubField, Field } from "./StudioFields";
+import PanelHeader, { ResetButton } from "./PanelHeader";
 
-export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound }) {
+export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound, onReset }) {
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
-      <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-        현재 홀 정보
-      </div>
+      <PanelHeader title="현재 홀 정보">
+        {onReset ? <ResetButton onClick={onReset} /> : null}
+      </PanelHeader>
       <div className="mb-3">
         <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
           홀 선택 (PAR·토탈 자동 연동)
