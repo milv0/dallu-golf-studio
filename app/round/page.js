@@ -1,5 +1,5 @@
 import StudioApp from "../../components/studio/StudioApp";
 
 export default function RoundPage() {
-  return <StudioApp mode="score18" />;
+  return <StudioApp mode="round" />;
 }

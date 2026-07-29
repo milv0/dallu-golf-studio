@@ -145,7 +145,21 @@ function StudioWorkspace({ mode }) {
     date: "",
   }), [customRound]);
   const scoreRound = isFullCustom ? customDisplayRound : round;
-  const activeHoleCard = isFullCustom ? customHoleCard : holeCard;
+  const linkedHoleCard = useMemo(() => {
+    const n = Number(holeCard.hole);
+    if (!n) return holeCard;
+    const idx = n - 1;
+    const h = round.holes[idx];
+    if (!h) return holeCard;
+    const hasScore = h.score !== "" && h.score != null;
+    return {
+      ...holeCard,
+      par: String(h.par ?? holeCard.par ?? ""),
+      currentShot: hasScore ? String(h.score) : holeCard.currentShot,
+      toPar: hasScore ? toParLabel(cumulativeToPar(round.holes, idx)) : holeCard.toPar,
+    };
+  }, [holeCard, round.holes]);
+  const activeHoleCard = isFullCustom ? customHoleCard : linkedHoleCard;
   const holeData = {
     ...activeHoleCard,
     player: isFullCustom ? ((customHoleCard.player || "").trim() || DEFAULT_CUSTOM_PLAYER) : scoreRound.player,
@@ -447,7 +461,14 @@ function StudioWorkspace({ mode }) {
       });
       const a = document.createElement("a");
       a.href = dataUrl;
-      const name = ((reelsV3 ? "threehole" : scoreRound.player) || "scorecard").replace(/\s+/g, "_");
+      const baseName = isHole
+        ? holeData.player
+        : reelsV3
+        ? "threehole"
+        : reelsCustom
+        ? manualNineRound.player
+        : scoreRound.player;
+      const name = (baseName || "scorecard").replace(/\s+/g, "_");
       a.download = `${name}_${isHole ? "hole" : reelsV3 ? "score_3hole" : isScore9 ? `score_9hole_${effRange}` : "score_18hole"}.png`;
       a.click();
     } catch (e) {
@@ -474,7 +495,7 @@ function StudioWorkspace({ mode }) {
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(440px,500px)_1fr] lg:gap-8">
         {/* ── 입력 패널 ── */}
         <section className="order-2 flex flex-col gap-5 lg:order-none lg:gap-6">
-          {isReelsSizedScore && (
+          {isReelsSizedScore && (REELS_SOURCE_SWITCH_ENABLED || isLegacyReels) && (
             <div className="order-[30] rounded-xl border border-line bg-panel p-4 lg:order-none">
               <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
                 스코어카드 설정
