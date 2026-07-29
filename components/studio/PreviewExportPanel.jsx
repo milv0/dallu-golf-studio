@@ -81,12 +81,9 @@ export default function PreviewExportPanel({
               {QUALITY.map((qz) => (
                 <button key={qz.scale} onClick={() => setExportScale(qz.scale)}
                   title={`${qz.desc} · ${size.w * qz.scale}x${size.h * qz.scale}px`}
-                  className={"flex flex-col items-center px-2 py-1 text-[11px] font-bold leading-tight md:px-3 md:py-1.5 md:text-xs " +
+                  className={"px-2 py-1 text-[11px] font-bold md:px-3 md:py-1.5 md:text-xs " +
                     (exportScale === qz.scale ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                  <span>{qz.label}</span>
-                  <span className={"text-[8px] font-semibold " + (exportScale === qz.scale ? "text-[#06210f]/70" : "text-txt-faint")}>
-                    {size.w * qz.scale}x{size.h * qz.scale}
-                  </span>
+                  {qz.label}
                 </button>
               ))}
             </div>
