@@ -15,10 +15,10 @@ export default function HomeHub() {
     setCurrentUser(null);
   };
 
-  const secondary = [
-    { href: "/records", title: "내 라운딩", meta: "준비 중", disabled: true },
-    { href: "/score-9?source=custom", title: "9홀 직접", meta: "수동 입력" },
-    { href: "/score-3?source=custom", title: "3홀 직접", meta: "수동 입력" },
+  const cards = [
+    { href: "/score-18", title: "18홀", meta: "수동 입력" },
+    { href: "/score-9?source=custom", title: "9홀", meta: "수동 입력" },
+    { href: "/score-3?source=custom", title: "3홀", meta: "수동 입력" },
   ];
 
   return (
@@ -51,38 +51,15 @@ export default function HomeHub() {
         )}
       </div>
 
-      <a href="/score-18"
-        className="block rounded-xl border border-line bg-panel p-6 transition hover:border-accent hover:bg-panel-2">
-        <div className="font-head text-[34px] font-bold uppercase leading-none text-txt">
-          라운딩 입력 시작
-        </div>
-        <p className="mt-2 text-sm leading-relaxed text-txt-soft">
-          선수, 코스, 날짜, 18홀 스코어를 입력한 뒤 18홀/9홀/3홀/1홀 오버레이로 저장합니다.
-        </p>
-        <div className="mt-5 inline-flex rounded-lg bg-accent px-4 py-2 font-head text-sm font-bold uppercase tracking-wide text-[#06210f]">
-          시작하기
-        </div>
-      </a>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        {secondary.map((item) => (
-          item.disabled ? (
-            <div key={item.href}
-              className="cursor-not-allowed rounded-xl border border-line bg-panel p-4 opacity-70">
-              <div className="font-head text-xl font-bold uppercase text-txt-faint">{item.title}</div>
-              <div className="mt-2 font-mono text-[11px] font-bold uppercase tracking-wider text-txt-faint">
-                {item.meta}
-              </div>
-            </div>
-          ) : (
+      <div className="grid gap-3 sm:grid-cols-3">
+        {cards.map((item) => (
           <a key={item.href} href={item.href}
-            className="rounded-xl border border-line bg-panel p-4 transition hover:border-accent hover:bg-panel-2">
-            <div className="font-head text-xl font-bold uppercase text-txt">{item.title}</div>
+            className="rounded-xl border border-line bg-panel p-5 transition hover:border-accent hover:bg-panel-2">
+            <div className="font-head text-[34px] font-bold uppercase leading-none text-txt">{item.title}</div>
             <div className="mt-2 font-mono text-[11px] font-bold uppercase tracking-wider text-accent">
               {item.meta}
             </div>
           </a>
-          )
         ))}
       </div>
     </main>
