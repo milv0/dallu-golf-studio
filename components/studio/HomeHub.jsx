@@ -44,10 +44,10 @@ export default function HomeHub() {
             </button>
           </div>
         ) : (
-          <a href="/login"
-            className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
-            로그인
-          </a>
+          <button type="button" disabled
+            className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
+            로그인 준비 중
+          </button>
         )}
       </div>
 

@@ -122,12 +122,12 @@ export default function RoundRecords() {
 
       {!currentUser ? (
         <div className="rounded-xl border border-line bg-panel p-8 text-center">
-          <div className="font-head text-2xl font-bold text-txt">로그인이 필요합니다</div>
-          <p className="mt-2 text-sm text-txt-soft">이름과 이메일로 로그인하면 내 라운딩 기록을 이메일 기준으로 분리해서 저장합니다.</p>
-          <a href="/login?next=/records"
-            className="mt-5 inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-bold text-[#06210f] transition hover:bg-accent-2">
-            로그인하기
-          </a>
+          <div className="font-head text-2xl font-bold text-txt">내 라운딩 준비 중</div>
+          <p className="mt-2 text-sm text-txt-soft">사용자 인증과 기록 저장 기능은 정식 인증 구조를 붙이기 전까지 닫아두었습니다.</p>
+          <button type="button" disabled
+            className="mt-5 inline-flex cursor-not-allowed rounded-lg border border-line bg-panel-2 px-4 py-2 text-sm font-bold text-txt-faint opacity-70">
+            로그인 준비 중
+          </button>
         </div>
       ) : (
         <>

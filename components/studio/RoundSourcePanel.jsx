@@ -104,12 +104,12 @@ export default function RoundSourcePanel({
         <div className="mt-4 border-t border-line pt-3">
           {!currentUser ? (
             <div className="rounded-lg border border-line bg-panel-2 px-3 py-3 text-sm text-txt-soft">
-              <div className="font-semibold text-txt">로그인이 필요합니다</div>
-              <div className="mt-1 text-xs text-txt-faint">이메일 기준으로 저장된 라운딩을 불러옵니다.</div>
-              <a href={`/login?next=${encodeURIComponent(loginNext)}`}
-                className="mt-3 inline-flex rounded-lg bg-accent px-3 py-1.5 text-xs font-bold text-[#06210f] transition hover:bg-accent-2">
-                로그인
-              </a>
+              <div className="font-semibold text-txt">저장 라운드 기능 준비 중</div>
+              <div className="mt-1 text-xs text-txt-faint">사용자 인증 연결 전까지 저장된 라운딩 불러오기는 비활성화되어 있습니다.</div>
+              <button type="button" disabled
+                className="mt-3 inline-flex cursor-not-allowed rounded-lg border border-line bg-panel px-3 py-1.5 text-xs font-bold text-txt-faint opacity-70">
+                로그인 준비 중
+              </button>
             </div>
           ) : status === "loading" ? (
             <div className="rounded-lg border border-line bg-panel-2 px-3 py-3 text-sm text-txt-faint">
