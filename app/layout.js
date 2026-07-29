@@ -1,4 +1,26 @@
+import { Barlow_Condensed, Barlow, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+
+const barlowCondensed = Barlow_Condensed({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-barlow-condensed",
+  display: "swap",
+});
+
+const barlow = Barlow({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-barlow",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["500", "700"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
 
 export const metadata = {
   title: "Dallu Golf Studio — 골프 스코어카드 오버레이 메이커",
@@ -24,7 +46,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ko" data-theme="light" suppressHydrationWarning>
+    <html lang="ko" data-theme="light" suppressHydrationWarning
+      className={`${barlowCondensed.variable} ${barlow.variable} ${jetbrainsMono.variable}`}>
       <body>{children}</body>
     </html>
   );

@@ -1,5 +1,5 @@
-import FlowHub from "../../components/studio/FlowHub";
+import { redirect } from "next/navigation";
 
 export default function RoundsPage() {
-  return <FlowHub flow="round" />;
+  redirect("/round");
 }
