@@ -75,9 +75,9 @@ export default function useStudioExport({
       }
       const zip = await createZipBlob(files);
       downloadBlob(zip, progressZipFileName({ isScore3, isScore9 }));
-      showToast(`${batchProgressCount}장 PNG ZIP 다운로드를 시작했습니다.`);
+      showToast(`홀별 이미지 ${batchProgressCount}장을 ZIP으로 저장합니다.`);
     } catch (e) {
-      showToast("진행별 내보내기 실패: " + e.message);
+      showToast("홀별 저장 실패: " + e.message);
     } finally {
       setBatchExportStep(null);
       setBusy(false);

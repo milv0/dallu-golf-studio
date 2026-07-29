@@ -23,12 +23,8 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
-  const noFlash = `(function(){document.documentElement.setAttribute('data-theme','light');})();`;
   return (
     <html lang="ko" data-theme="light" suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: noFlash }} />
-      </head>
       <body>{children}</body>
     </html>
   );

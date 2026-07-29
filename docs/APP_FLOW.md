@@ -132,11 +132,11 @@
 - 모바일/PWA에서는 `공유` 버튼이 기본 저장 동선이다.
 - iPhone에서는 공유 시트에서 `이미지 저장`을 선택해야 사진앱에 저장된다.
 - 데스크탑에서는 `PNG 다운로드`가 기본 저장 동선이다.
-- 데스크탑에서만 `진행 ZIP N장` 버튼을 제공한다.
-- `진행 ZIP N장`은 18홀은 18장, 9홀은 9장, 3홀은 3장을 하나의 ZIP 파일로 다운로드한다.
-- 진행별 저장은 원본 입력값을 바꾸지 않고, N홀 이후 스코어를 빈 값으로 둔 복사본으로 합계와 TO PAR를 다시 계산한다.
+- 데스크탑에서만 `홀별 N장 저장` 버튼을 제공한다.
+- `홀별 N장 저장`은 18홀은 18장, 9홀은 9장, 3홀은 3장을 하나의 ZIP 파일로 다운로드한다.
+- 홀별 저장은 원본 입력값을 바꾸지 않고, N홀 이후 스코어를 빈 값으로 둔 복사본으로 합계와 TO PAR를 다시 계산한다.
 - 파일명은 `Hole18.png`, `Hole9.png`, `Hole3.png`, `Hole1.png`로 단순화한다.
-- 진행별 파일명은 `Hole18-01.png`, `Hole9-01.png`, `Hole3-01.png` 형식을 사용한다.
+- 홀별 파일명은 `Hole18-01.png`, `Hole9-01.png`, `Hole3-01.png` 형식을 사용한다.
 
 ## 주요 컴포넌트 역할
 
@@ -144,9 +144,9 @@
 - `StudioShell`: 공통 레이아웃.
 - `StudioNav`: 18/9/3/1 상단 탭.
 - `FlowHub`: `/rounds`, `/custom` 리다이렉트 전용 진입 경로.
-- `PreviewExportPanel`: 미리보기, 공유/다운로드/진행 ZIP 버튼, 데스크탑 배치 미리보기.
+- `PreviewExportPanel`: 미리보기, 공유/다운로드/홀별 ZIP 버튼, 데스크탑 배치 미리보기.
 - `useStudioPersistence`: 작업 중 입력값 복원과 localStorage 자동 저장.
-- `useStudioExport`: 단일 PNG, 모바일 공유, 데스크탑 진행 ZIP 생성.
+- `useStudioExport`: 단일 PNG, 모바일 공유, 데스크탑 홀별 ZIP 생성.
 - `ScoreEntryGrid`: 18/9/3 공통 스코어 입력 표.
 - `ScoreInputs`: 타수/파대비 입력 로직, 포커스 시 전체 선택.
 - `ManualScoreForms`: 9홀/3홀 직접 입력 폼.
@@ -157,7 +157,7 @@
 
 - `StudioApp`에는 화면 전체를 조립하는 상태와 분기만 둔다.
 - localStorage 복원/자동 저장은 `useStudioPersistence`에서만 처리한다.
-- 단일 PNG, 모바일 공유, 진행 ZIP 생성은 `useStudioExport`에서만 처리한다.
+- 단일 PNG, 모바일 공유, 홀별 ZIP 생성은 `useStudioExport`에서만 처리한다.
 - 미리보기 카드, 출력 버튼, 데스크탑 배치 미리보기 UI는 `PreviewExportPanel`에 둔다.
 - 기본 입력 데이터 모양은 `studioDefaults`에서 관리한다.
 - 스코어 입력 UI를 수정할 때는 `ScoreEntryGrid`, `ScoreInputs`, `ManualScoreForms`, `HoleCardForm` 중 기존 책임에 맞는 파일을 먼저 수정한다.

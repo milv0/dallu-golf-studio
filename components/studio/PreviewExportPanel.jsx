@@ -91,9 +91,9 @@ export default function PreviewExportPanel({
             </button>
             {batchProgressCount > 0 && (
               <button onClick={handleBatchExport} disabled={busy || !canBatchExport}
-                title={!hasBatchScores ? "입력된 스코어가 필요합니다" : "홀 진행 상태별 PNG를 ZIP으로 다운로드합니다"}
+                title={!hasBatchScores ? "입력된 스코어가 필요합니다" : "홀별 PNG를 ZIP으로 저장합니다"}
                 className="hidden rounded-lg border border-line bg-panel-2 px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-txt-soft transition hover:border-accent hover:text-txt disabled:opacity-60 md:inline-block">
-                {busy ? "생성 중..." : `진행 ZIP ${batchProgressCount}장`}
+                {busy ? "생성 중..." : `홀별 ${batchProgressCount}장 저장`}
               </button>
             )}
           </div>
