@@ -104,11 +104,6 @@ function CustomPlayerControl({ value, onChange }) {
 }
 
 function initialSourceMode(mode) {
-  if (typeof window !== "undefined") {
-    const source = new URLSearchParams(window.location.search).get("source");
-    if (source === "linked") return "round";
-    if (source === "custom") return "custom";
-  }
   return mode === "round" ? "round" : "custom";
 }
 
