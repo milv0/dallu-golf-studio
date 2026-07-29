@@ -53,10 +53,11 @@ function MobileUtilityBar({ currentUser, theme, onToggleTheme }) {
   );
 }
 
-export default function StudioShell({ active, currentUser, onLogout, theme, onToggleTheme, children }) {
+export default function StudioShell({ active, sourceMode = "custom", currentUser, onLogout, theme, onToggleTheme, children }) {
   return (
     <>
       <MobileAppBar active={active} />
+      <MobileTabBar active={active} sourceMode={sourceMode} />
       <main className="mobile-shell-main mx-auto max-w-[1500px] px-4 pt-4 md:px-6 md:py-8">
         <div className="hidden md:block">
           <DesktopHeader
@@ -65,12 +66,11 @@ export default function StudioShell({ active, currentUser, onLogout, theme, onTo
             theme={theme}
             onToggleTheme={onToggleTheme}
           />
-          <StudioNav active={active} />
+          <StudioNav active={active} sourceMode={sourceMode} />
         </div>
         <MobileUtilityBar currentUser={currentUser} theme={theme} onToggleTheme={onToggleTheme} />
         {children}
       </main>
-      <MobileTabBar active={active} />
     </>
   );
 }

@@ -2,8 +2,37 @@
 
 import { useEffect, useState } from "react";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
+import { MobileTabBar } from "./StudioNav";
 
-export default function HomeHub() {
+const FLOW_CONFIG = {
+  custom: {
+    eyebrow: "Full Custom",
+    title: "풀 커스텀",
+    notice: "라운드 저장과 분리된 커스텀 작업입니다. 18홀, 9홀, 3홀, 1홀은 같은 커스텀 정보를 공유합니다.",
+    source: "custom",
+    cards: [
+      { href: "/score-18?source=custom", title: "18홀", meta: "커스텀" },
+      { href: "/score-9?source=custom", title: "9홀", meta: "커스텀" },
+      { href: "/score-3?source=custom", title: "3홀", meta: "커스텀" },
+      { href: "/hole?source=custom", title: "1홀", meta: "커스텀" },
+    ],
+  },
+  round: {
+    eyebrow: "Round Source",
+    title: "정보 입력",
+    notice: "18홀 라운드 정보를 기준으로 18홀, 9홀, 3홀, 1홀 출력물을 연동합니다.",
+    source: "round",
+    cards: [
+      { href: "/round", title: "18홀", meta: "라운드 입력" },
+      { href: "/score-9?source=linked", title: "9홀", meta: "라운드 연동" },
+      { href: "/score-3?source=linked", title: "3홀", meta: "라운드 연동" },
+      { href: "/hole?source=linked", title: "1홀", meta: "라운드 연동" },
+    ],
+  },
+};
+
+export default function FlowHub({ flow = "custom" }) {
+  const config = FLOW_CONFIG[flow] || FLOW_CONFIG.custom;
   const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
@@ -14,14 +43,6 @@ export default function HomeHub() {
     clearCurrentUser();
     setCurrentUser(null);
   };
-  const refreshPage = () => {
-    if (typeof window !== "undefined") window.location.reload();
-  };
-
-  const cards = [
-    { href: "/rounds", title: "정보 입력", meta: "라운드 기반" },
-    { href: "/custom", title: "풀 커스텀", meta: "수동 입력" },
-  ];
 
   return (
     <>
@@ -29,23 +50,17 @@ export default function HomeHub() {
         <div className="mb-8 flex items-end justify-between gap-4 border-b border-line pb-6">
           <div>
             <div className="font-head text-[13px] font-semibold uppercase leading-tight tracking-[0.28em] text-accent">
-              Broadcast Overlay Maker · @dallu_golf
+              {config.eyebrow} · @dallu_golf
             </div>
             <a href="/" className="mt-1 block font-head text-[44px] font-bold uppercase leading-none text-txt transition hover:text-accent">
-              Dallu Golf <span className="text-accent">Studio</span>
+              {config.title}
             </a>
           </div>
           {currentUser ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <button type="button" disabled
-                className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
-                내 라운딩 준비 중
-              </button>
-              <button type="button" onClick={logout}
-                className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
-                로그아웃
-              </button>
-            </div>
+            <button type="button" onClick={logout}
+              className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
+              로그아웃
+            </button>
           ) : (
             <button type="button" disabled
               className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
@@ -53,22 +68,20 @@ export default function HomeHub() {
             </button>
           )}
         </div>
-
-        <FeatureNotice />
-        <CardGrid cards={cards} desktop />
+        <FlowNotice text={config.notice} />
+        <CardGrid cards={config.cards} desktop />
       </main>
 
       <main className="mobile-home-main mx-auto max-w-[520px] px-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:hidden">
-        <div className="mb-6 flex items-center justify-between gap-3">
-          <button type="button" onClick={refreshPage} aria-label="새로고침"
-            className="min-w-0 text-left transition active:scale-[0.98] active:opacity-80">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <a href="/" className="min-w-0 text-left transition active:scale-[0.98] active:opacity-80">
             <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
               @Dallu_Golf
             </div>
             <h1 className="truncate font-head text-[34px] font-bold uppercase leading-none text-txt">
-              Studio
+              {config.title}
             </h1>
-          </button>
+          </a>
           {currentUser ? (
             <button type="button" onClick={logout}
               className="shrink-0 rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-soft active:border-accent active:text-txt">
@@ -81,25 +94,25 @@ export default function HomeHub() {
             </button>
           )}
         </div>
-
-        <FeatureNotice />
-        <CardGrid cards={cards} />
+        <MobileTabBar sourceMode={config.source} />
+        <FlowNotice text={config.notice} />
+        <CardGrid cards={config.cards} />
       </main>
     </>
   );
 }
 
-function FeatureNotice() {
+function FlowNotice({ text }) {
   return (
     <div className="mb-4 rounded-xl border border-line bg-panel px-4 py-3 text-sm font-semibold leading-relaxed text-txt-soft">
-      로그인, 코스 DB, 내 라운드 정보 저장 등의 기능은 준비 중입니다.
+      {text}
     </div>
   );
 }
 
 function CardGrid({ cards, desktop = false }) {
   return (
-    <div className={desktop ? "grid gap-3 md:grid-cols-2" : "grid gap-3"}>
+    <div className={desktop ? "grid gap-3 md:grid-cols-4" : "grid gap-3"}>
       {cards.map((item) => (
         <a key={item.href} href={item.href}
           className="rounded-xl border border-line bg-panel p-5 transition hover:border-accent hover:bg-panel-2 active:border-accent active:bg-panel-2">

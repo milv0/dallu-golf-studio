@@ -1,14 +1,25 @@
 "use client";
 
-export const OUTPUT_LINKS = [
-  { href: "/score-18", label: "18홀", id: "score18" },
+export const CUSTOM_LINKS = [
+  { href: "/score-18?source=custom", label: "18홀", id: "score18" },
   { href: "/score-9?source=custom", label: "9홀", id: "score9" },
   { href: "/score-3?source=custom", label: "3홀", id: "score3" },
-  { href: "/hole", label: "1홀", id: "hole" },
+  { href: "/hole?source=custom", label: "1홀", id: "hole" },
 ];
 
+export const ROUND_LINKS = [
+  { href: "/round", label: "18홀", id: "score18" },
+  { href: "/score-9?source=linked", label: "9홀", id: "score9" },
+  { href: "/score-3?source=linked", label: "3홀", id: "score3" },
+  { href: "/hole?source=linked", label: "1홀", id: "hole" },
+];
+
+function linksFor(sourceMode = "custom") {
+  return sourceMode === "round" ? ROUND_LINKS : CUSTOM_LINKS;
+}
+
 export function getActiveLabel(active) {
-  return OUTPUT_LINKS.find((link) => link.id === active)?.label || (active === "records" ? "내 라운딩" : "작업");
+  return CUSTOM_LINKS.find((link) => link.id === active)?.label || (active === "records" ? "내 라운딩" : "작업");
 }
 
 function NavLink({ href, label, active }) {
@@ -87,11 +98,12 @@ export function MobileAppBar({ active }) {
   );
 }
 
-export function MobileTabBar({ active }) {
+export function MobileTabBar({ active, sourceMode = "custom" }) {
+  const links = linksFor(sourceMode);
   return (
     <nav className="mobile-tab-bar md:hidden">
       <div className="mx-auto flex max-w-[520px] gap-2 rounded-2xl border border-line bg-panel p-1.5 shadow-lg">
-        {OUTPUT_LINKS.map((link) => (
+        {links.map((link) => (
           <MobileTabLink key={link.href} href={link.href} label={link.label} active={active === link.id} />
         ))}
       </div>
@@ -99,7 +111,8 @@ export function MobileTabBar({ active }) {
   );
 }
 
-export default function StudioNav({ active }) {
+export default function StudioNav({ active, sourceMode = "custom" }) {
+  const links = linksFor(sourceMode);
   const secondaryLinks = [
     { href: "/records", label: "내 라운딩", id: "records", disabled: true },
   ];
@@ -110,7 +123,7 @@ export default function StudioNav({ active }) {
         <span className="mr-1 hidden shrink-0 font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint sm:inline">
           출력 선택
         </span>
-        {OUTPUT_LINKS.map((link) => (
+        {links.map((link) => (
           <NavLink key={link.href} {...link} active={active === link.id} />
         ))}
       </div>

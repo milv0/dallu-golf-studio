@@ -65,19 +65,40 @@ const emptyLinkedThree = () => ({
   holes: [0, 1, 2],
 });
 
+function BasicInfoPanel({ title = "기본 정보", data, setMeta, clubNameList }) {
+  return (
+    <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
+      <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft md:mb-3">
+        {title}
+      </div>
+      <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2 md:gap-3">
+        <Field label="선수명" full value={data.player}
+               onChange={(v) => setMeta("player", v)} placeholder="선수 이름 입력" />
+        <ClubAutocomplete value={data.course} onChange={(v) => setMeta("course", v)}
+          onPick={(v) => setMeta("course", v)} options={clubNameList} />
+        <Field label="날짜" type="date" value={data.date}
+               onChange={(v) => setMeta("date", v)} />
+      </div>
+    </div>
+  );
+}
+
 export default function StudioApp({ mode = "home" } = {}) {
   return mode === "home" ? <HomeHub /> : <StudioWorkspace mode={mode} />;
 }
 
 function StudioWorkspace({ mode }) {
   const [round, setRound] = useState(emptyRound);
+  const [customRound, setCustomRound] = useState(emptyRound);
   const [holeCard, setHoleCard] = useState(emptyHoleCard);
+  const [customHoleCard, setCustomHoleCard] = useState(emptyHoleCard);
   const [threeHole, setThreeHole] = useState(emptyThreeHoleCard);
   const [manualNine, setManualNine] = useState(emptyManualNine);
   const [linkedThree, setLinkedThree] = useState(emptyLinkedThree);
   const [holeRange, setHoleRange] = useState("all"); // 'all' | 'front' | 'back'
   const [reelsVer, setReelsVer] = useState("v1");    // 릴스 레이아웃 v1(9홀) | v3(3홀)
   const [reelsSource, setReelsSource] = useState(() => (mode === "score9" || mode === "score3" ? "custom" : "linked")); // 'linked' | 'custom'
+  const [sourceMode, setSourceMode] = useState(() => (mode === "round" ? "round" : "custom")); // 'round' | 'custom'
   const [cardTheme, setCardTheme] = useState("light"); // 카드(프리셋) 색 테마
   const [exportScale, setExportScale] = useState(2);
   const [busy, setBusy] = useState(false);
@@ -93,12 +114,15 @@ function StudioWorkspace({ mode }) {
   const isScore3 = mode === "score3" || (isLegacyReels && reelsVer === "v3");
   const isScore9 = mode === "score9" || (isLegacyReels && reelsVer !== "v3");
   const isReelsSizedScore = isScore9 || isScore3;
+  const isFullCustom = sourceMode === "custom";
   const format = isReelsSizedScore ? "reels" : "youtube";
   const reelsV3 = isScore3;
-  const reelsCustom = isReelsSizedScore && reelsSource === "custom";
+  const reelsCustom = isReelsSizedScore && isFullCustom && reelsSource === "custom";
   const isRoundEditor = isScore18;
-  const usesRoundSource = (isReelsSizedScore && !reelsCustom) || mode === "hole";
-  const holeData = { player: round.player, ...holeCard };
+  const usesRoundSource = !isFullCustom && ((isReelsSizedScore && !reelsCustom) || mode === "hole");
+  const scoreRound = isFullCustom ? customRound : round;
+  const activeHoleCard = isFullCustom ? customHoleCard : holeCard;
+  const holeData = { player: scoreRound.player, ...activeHoleCard };
   const activeNav = isScore18 ? "score18" : isScore9 ? "score9" : isScore3 ? "score3" : isHole ? "hole" : "";
   // 18홀은 전체 고정, 9홀만 전반/후반을 선택한다.
   const availableRanges = RANGES.filter(([k]) => k !== "all");
@@ -118,6 +142,19 @@ function StudioWorkspace({ mode }) {
     const source = new URLSearchParams(window.location.search).get("source");
     if (source === "custom" || source === "linked") setReelsSource(source);
   }, [isReelsSizedScore]);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const source = new URLSearchParams(window.location.search).get("source");
+    if (source === "custom") {
+      setSourceMode("custom");
+      return;
+    }
+    if (source === "linked") {
+      setSourceMode("round");
+      return;
+    }
+    setSourceMode(mode === "round" ? "round" : "custom");
+  }, [mode]);
   const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
   const logout = () => {
     clearCurrentUser();
@@ -125,12 +162,14 @@ function StudioWorkspace({ mode }) {
   };
 
   const summary = useMemo(() => summarize(round.holes), [round]);
-  const hasRoundMeta = Boolean((round.player || "").trim() || (round.course || "").trim() || (round.date || "").trim());
-  const hasRoundScores = summary.thru > 0;
+  const customSummary = useMemo(() => summarize(customRound.holes), [customRound]);
+  const activeSummary = isFullCustom ? customSummary : summary;
+  const hasRoundMeta = Boolean((scoreRound.player || "").trim() || (scoreRound.course || "").trim() || (scoreRound.date || "").trim());
+  const hasRoundScores = activeSummary.thru > 0;
   const hasRoundData = hasRoundMeta || hasRoundScores;
   const linkedThreeCount = Array.isArray(linkedThree.holes) ? Math.min(linkedThree.holes.length, 3) : 0;
   const linkedThreeReady = !reelsV3 || reelsCustom || linkedThreeCount === 3;
-  const hasHoleCardData = Boolean(holeCard.hole || holeCard.par || holeCard.distance || holeCard.currentShot || holeCard.club || holeCard.toPar);
+  const hasHoleCardData = Boolean(activeHoleCard.hole || activeHoleCard.par || activeHoleCard.distance || activeHoleCard.currentShot || activeHoleCard.club || activeHoleCard.toPar);
   const canExport =
     !(isReelsSizedScore && !reelsCustom && !hasRoundScores) &&
     linkedThreeReady &&
@@ -144,15 +183,15 @@ function StudioWorkspace({ mode }) {
       ? "현재 홀 정보를 먼저 입력하세요."
       : "";
   const manualNineRound = useMemo(() => ({
-    player: "",
+    player: customRound.player,
     country: "",
-    course: "",
-    date: "",
+    course: customRound.course,
+    date: customRound.date,
     holes: [
       ...manualNine.holes.map((h) => ({ par: h.par, score: h.score })),
       ...Array.from({ length: 9 }, () => ({ par: 4, score: "" })),
     ],
-  }), [manualNine]);
+  }), [customRound.course, customRound.date, customRound.player, manualNine]);
   const manualNineSummary = useMemo(() => summarize(manualNineRound.holes), [manualNineRound]);
   const linkedThreeData = useMemo(() => {
     const holes = (linkedThree.holes || []).slice(0, 3).map((idx) => {
@@ -164,7 +203,9 @@ function StudioWorkspace({ mode }) {
   }, [linkedThree, round.holes]);
 
   const setMeta = (key, val) => setRound((r) => ({ ...r, [key]: val }));
+  const setCustomMeta = (key, val) => setCustomRound((r) => ({ ...r, [key]: val }));
   const setHC = (key, val) => setHoleCard((s) => ({ ...s, [key]: val }));
+  const setCustomHC = (key, val) => setCustomHoleCard((s) => ({ ...s, [key]: val }));
   const setTH = (key, val) => setThreeHole((s) => ({ ...s, [key]: val }));
   const setTHHole = (idx, key, val) =>
     setThreeHole((s) => ({
@@ -197,8 +238,26 @@ function StudioWorkspace({ mode }) {
       toPar: toParLabel(cumulativeToPar(round.holes, idx)),
     }));
   };
+  const loadHoleFromCustomRound = (n) => {
+    if (!n) return;
+    const idx = Number(n) - 1;
+    const h = customRound.holes[idx];
+    if (!h) return;
+    setCustomHoleCard((s) => ({
+      ...s,
+      hole: String(n),
+      par: String(h.par ?? ""),
+      currentShot: h.score !== "" && h.score != null ? String(h.score) : s.currentShot,
+      toPar: toParLabel(cumulativeToPar(customRound.holes, idx)),
+    }));
+  };
   const setHole = (i, key, val) =>
     setRound((r) => ({
+      ...r,
+      holes: r.holes.map((h, idx) => (idx === i ? { ...h, [key]: val } : h)),
+    }));
+  const setCustomHole = (i, key, val) =>
+    setCustomRound((r) => ({
       ...r,
       holes: r.holes.map((h, idx) => (idx === i ? { ...h, [key]: val } : h)),
     }));
@@ -211,6 +270,18 @@ function StudioWorkspace({ mode }) {
     if (typeof window !== "undefined") {
       window.localStorage.setItem("sc-round", JSON.stringify(next));
     }
+  };
+  const resetCustomRound = () => {
+    if (!confirmReset("커스텀 18홀 스코어카드를 초기화할까요?")) return;
+    const next = emptyRound();
+    setCustomRound((prev) => ({
+      ...next,
+      player: prev.player,
+      country: prev.country,
+      course: prev.course,
+      date: prev.date,
+    }));
+    setHoleRange("all");
   };
   const resetManualNine = () => {
     if (!confirmReset("9홀 스코어카드를 초기화할까요?")) return;
@@ -268,13 +339,28 @@ function StudioWorkspace({ mode }) {
     // 라운드 스코어·홀카드 입력 복원
     try { const r = JSON.parse(localStorage.getItem("sc-round") || "null"); if (r && Array.isArray(r.holes)) setRound(r); } catch {}
     try { const hc = JSON.parse(localStorage.getItem("sc-holecard") || "null"); if (hc && typeof hc === "object") setHoleCard(hc); } catch {}
+    let loadedCustom = false;
+    try {
+      const cs = JSON.parse(localStorage.getItem("sc-custom-session") || "null");
+      if (cs && typeof cs === "object") {
+        if (cs.round && Array.isArray(cs.round.holes)) setCustomRound(cs.round);
+        if (cs.holeCard && typeof cs.holeCard === "object") setCustomHoleCard(cs.holeCard);
+        if (cs.threeHole && Array.isArray(cs.threeHole.holes) && cs.threeHole.holes.length === 3) setThreeHole(cs.threeHole);
+        if (cs.manualNine && Array.isArray(cs.manualNine.holes) && cs.manualNine.holes.length === 9) setManualNine(cs.manualNine);
+        loadedCustom = true;
+      }
+    } catch {}
     try {
       const th = JSON.parse(localStorage.getItem("sc-threehole") || "null");
-      if (th && Array.isArray(th.holes) && th.holes.length === 3) setThreeHole({ ...th, showHoleNumbers: false });
+      if (!loadedCustom && th && Array.isArray(th.holes) && th.holes.length === 3) setThreeHole({ ...th, showHoleNumbers: false });
     } catch {}
     try {
       const mn = JSON.parse(localStorage.getItem("sc-manual-nine") || "null");
-      if (mn && Array.isArray(mn.holes) && mn.holes.length === 9) setManualNine(mn);
+      if (!loadedCustom && mn && Array.isArray(mn.holes) && mn.holes.length === 9) setManualNine(mn);
+    } catch {}
+    try {
+      const hc = JSON.parse(localStorage.getItem("sc-holecard") || "null");
+      if (!loadedCustom && hc && typeof hc === "object") setCustomHoleCard(hc);
     } catch {}
     try {
       const lt = JSON.parse(localStorage.getItem("sc-linked-three") || "null");
@@ -288,6 +374,15 @@ function StudioWorkspace({ mode }) {
   useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-threehole", JSON.stringify(threeHole)); }, [threeHole]);
   useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-manual-nine", JSON.stringify(manualNine)); }, [manualNine]);
   useEffect(() => { if (loadedRef.current) localStorage.setItem("sc-linked-three", JSON.stringify(linkedThree)); }, [linkedThree]);
+  useEffect(() => {
+    if (!loadedRef.current) return;
+    localStorage.setItem("sc-custom-session", JSON.stringify({
+      round: customRound,
+      manualNine,
+      threeHole,
+      holeCard: customHoleCard,
+    }));
+  }, [customRound, customHoleCard, manualNine, threeHole]);
   const toggleFav = (name) => {
     setFavorites((prev) => {
       const next = prev.includes(name) ? prev.filter((n) => n !== name) : [name, ...prev];
@@ -323,7 +418,7 @@ function StudioWorkspace({ mode }) {
       });
       const a = document.createElement("a");
       a.href = dataUrl;
-      const name = ((reelsV3 ? "threehole" : round.player) || "scorecard").replace(/\s+/g, "_");
+      const name = ((reelsV3 ? "threehole" : scoreRound.player) || "scorecard").replace(/\s+/g, "_");
       a.download = `${name}_${isHole ? "hole" : reelsV3 ? "score_3hole" : isScore9 ? `score_9hole_${effRange}` : "score_18hole"}.png`;
       a.click();
     } catch (e) {
@@ -333,12 +428,15 @@ function StudioWorkspace({ mode }) {
     }
   }
 
-  const Front = round.holes.slice(0, 9);
-  const Back = round.holes.slice(9, 18);
+  const Front = scoreRound.holes.slice(0, 9);
+  const Back = scoreRound.holes.slice(9, 18);
+  const setScoreHole = isFullCustom ? setCustomHole : setHole;
+  const resetScoreRound = isFullCustom ? resetCustomRound : resetRound;
 
   return (
     <StudioShell
       active={activeNav}
+      sourceMode={sourceMode}
       currentUser={currentUser}
       onLogout={logout}
       theme={theme}
@@ -402,24 +500,13 @@ function StudioWorkspace({ mode }) {
             </div>
           ) : isRoundEditor ? (
             <div className={"order-[20] lg:order-none " + (!isHole ? "grid items-start gap-4 md:grid-cols-2" : "")}>
-              <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
-                <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft md:mb-3">
-                  기본 정보
-                </div>
-                <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2 md:gap-3">
-                  <Field label="선수명" full value={round.player}
-                         onChange={(v) => setMeta("player", v)} placeholder="선수 이름 입력" />
-                  {!isHole && (
-                    <>
-                      <ClubAutocomplete value={round.course} onChange={(v) => setMeta("course", v)}
-                        onPick={(v) => setMeta("course", v)} options={clubNameList} />
-                      <Field label="날짜" type="date" value={round.date}
-                             onChange={(v) => setMeta("date", v)} />
-                    </>
-                  )}
-                </div>
-              </div>
-              {!isHole && (
+              <BasicInfoPanel
+                title={isFullCustom ? "커스텀 정보" : "기본 정보"}
+                data={scoreRound}
+                setMeta={isFullCustom ? setCustomMeta : setMeta}
+                clubNameList={clubNameList}
+              />
+              {!isFullCustom && !isHole && (
                 <CoursePresets builtin={builtinCourses} favorites={favorites}
                                selectedClub={round.course}
                                disabled={!COURSE_DB_ENABLED}
@@ -439,6 +526,17 @@ function StudioWorkspace({ mode }) {
             </div>
           ) : null}
 
+          {isFullCustom && !isRoundEditor && (
+            <div className="order-[20] lg:order-none">
+              <BasicInfoPanel
+                title="커스텀 정보"
+                data={customRound}
+                setMeta={setCustomMeta}
+                clubNameList={clubNameList}
+              />
+            </div>
+          )}
+
           {/* 라운드 스코어카드: 홀별 입력 */}
           {isRoundEditor && !isHole && !reelsCustom && (
             <div className="order-[10] lg:order-none">
@@ -457,33 +555,33 @@ function StudioWorkspace({ mode }) {
                     className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-faint opacity-70">
                     기록 저장 준비 중
                   </button>
-                  <ResetButton onClick={resetRound} />
+                  <ResetButton onClick={resetScoreRound} />
                 </PanelHeader>
                 {scoreMode === "relative" && (
                   <RelativeScoreHint />
                 )}
-                <HoleGroup label="FRONT 9" holes={Front} offset={0} setHole={setHole}
+                <HoleGroup label="FRONT 9" holes={Front} offset={0} setHole={setScoreHole}
                            scoreRefs={scoreRefs} onScoreKey={handleScoreKey} scoreMode={scoreMode} />
-                <HoleGroup label="BACK 9" holes={Back} offset={9} setHole={setHole}
+                <HoleGroup label="BACK 9" holes={Back} offset={9} setHole={setScoreHole}
                            scoreRefs={scoreRefs} onScoreKey={handleScoreKey} scoreMode={scoreMode} />
                 <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line pt-3 text-[12px] text-txt-soft">
                   <span>
                     PAR{" "}
-                    <b className={"font-mono " + (summary.totalPar === 72 ? "text-txt" : "text-[#ffb648]")}>
-                      OUT {summary.outPar} · IN {summary.inPar} · 합 {summary.totalPar}
+                    <b className={"font-mono " + (activeSummary.totalPar === 72 ? "text-txt" : "text-[#ffb648]")}>
+                      OUT {activeSummary.outPar} · IN {activeSummary.inPar} · 합 {activeSummary.totalPar}
                     </b>
-                    {summary.totalPar !== 72 && (
+                    {activeSummary.totalPar !== 72 && (
                       <span className="ml-1.5 font-semibold text-[#ffb648]">
                         ⚠ 표준 파72와 다름 (확인)
                       </span>
                     )}
                   </span>
-                  {summary.thru > 0 && (
+                  {activeSummary.thru > 0 && (
                     <span>
                       스코어{" "}
-                      <b className="font-mono text-txt">{summary.totalScore}</b>{" "}
-                      <span className="text-accent">{toParLabel(summary.toPar)}</span>
-                      <span className="text-txt-faint"> · {summary.thru}홀</span>
+                      <b className="font-mono text-txt">{activeSummary.totalScore}</b>{" "}
+                      <span className="text-accent">{toParLabel(activeSummary.toPar)}</span>
+                      <span className="text-txt-faint"> · {activeSummary.thru}홀</span>
                     </span>
                   )}
                 </div>
@@ -516,11 +614,14 @@ function StudioWorkspace({ mode }) {
           {isHole && (
             <div className="order-[10] lg:order-none">
               <HoleCardForm
-                round={round}
-                holeCard={holeCard}
-                setHC={setHC}
-                loadHoleFromRound={loadHoleFromRound}
-                onReset={resetHoleCard}
+                round={scoreRound}
+                holeCard={activeHoleCard}
+                setHC={isFullCustom ? setCustomHC : setHC}
+                loadHoleFromRound={isFullCustom ? loadHoleFromCustomRound : loadHoleFromRound}
+                onReset={isFullCustom ? () => {
+                  if (!confirmReset("커스텀 1홀 정보를 초기화할까요?")) return;
+                  setCustomHoleCard(emptyHoleCard());
+                } : resetHoleCard}
               />
             </div>
           )}
@@ -586,7 +687,7 @@ function StudioWorkspace({ mode }) {
                 ? <ReelsThreeHoleCard data={reelsCustom ? threeHole : linkedThreeData} theme={cardTheme} />
                 : reelsCustom
                 ? <ReelsScorecard round={manualNineRound} summary={manualNineSummary} range="front" theme={cardTheme} />
-                : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={effRange} theme={cardTheme} />; })()}
+                : (() => { const C = FORMATS[format].Comp; return <C round={scoreRound} summary={activeSummary} range={effRange} theme={cardTheme} />; })()}
             </div>
           </div>
 
@@ -623,7 +724,7 @@ function StudioWorkspace({ mode }) {
                 ? <ReelsThreeHoleCard data={reelsCustom ? threeHole : linkedThreeData} theme={cardTheme} />
                 : reelsCustom
                 ? <ReelsScorecard round={manualNineRound} summary={manualNineSummary} range="front" theme={cardTheme} />
-                : (() => { const C = FORMATS[format].Comp; return <C round={round} summary={summary} range={effRange} theme={cardTheme} />; })()}
+                : (() => { const C = FORMATS[format].Comp; return <C round={scoreRound} summary={activeSummary} range={effRange} theme={cardTheme} />; })()}
             </PlacementPreview>
           </div>
         </section>
