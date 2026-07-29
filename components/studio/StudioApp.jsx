@@ -23,6 +23,7 @@ import HoleCardForm from "./HoleCardForm";
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
 const PREVIEW_MAX_H = 340;
 const COURSE_DB_ENABLED = false;
+const REELS_SOURCE_SWITCH_ENABLED = false;
 
 const FORMATS = {
   youtube: { Comp: HoleByHoleStrip, sizeFor: ytSizeFor },
@@ -356,13 +357,21 @@ function StudioWorkspace({ mode }) {
                   <div className="w-16 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">입력</div>
                   <div className="flex overflow-hidden rounded-lg border border-line">
                     {[["linked", "18홀 연동"], ["custom", "직접 입력"]].map(([key, label]) => (
-                      <button key={key} onClick={() => setReelsSource(key)}
+                      <button key={key} disabled={!REELS_SOURCE_SWITCH_ENABLED}
+                        onClick={() => REELS_SOURCE_SWITCH_ENABLED && setReelsSource(key)}
                         className={"px-4 py-1.5 text-sm font-semibold transition " +
-                          (reelsSource === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
+                          (!REELS_SOURCE_SWITCH_ENABLED
+                            ? reelsSource === key
+                              ? "cursor-not-allowed bg-panel-2 text-txt-soft"
+                              : "cursor-not-allowed bg-panel text-txt-faint opacity-60"
+                            : reelsSource === key
+                            ? "bg-accent text-[#06210f]"
+                            : "bg-panel text-txt-soft hover:text-txt")}>
                         {label}
                       </button>
                     ))}
                   </div>
+                  <span className="text-[11px] font-semibold text-txt-faint">전환 준비 중</span>
                 </div>
                 {isLegacyReels && (
                   <div className="flex flex-wrap items-center gap-3">
