@@ -20,7 +20,7 @@ export function relativeScoreDisplay(score, par) {
 }
 
 const roundScoreClass =
-  "w-full bg-transparent py-3.5 text-center font-mono text-xl font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent md:py-3 md:text-xl";
+  "w-full bg-transparent py-5 text-center font-mono text-xl font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent md:py-3.5 md:text-xl";
 
 export const manualScoreClass =
   "border-l border-line bg-transparent px-2 py-2.5 text-center font-mono text-sm font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent";
