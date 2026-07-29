@@ -66,7 +66,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
       style={{ display: "block", background: "transparent" }}
     >
       {/* 카드 배경 */}
-      <rect x="0" y="0" width={w} height={h} rx="20" fill={c.bg} opacity="0.92" />
+      <rect x="0" y="0" width={w} height={h} fill={c.bg} opacity="0.92" />
       {/* 좌/우 구분선 */}
       <line x1={LP} y1="28" x2={LP} y2={h - 28} stroke={c.line} strokeWidth="2" />
 
@@ -116,7 +116,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
             col.key === "out" ? summary.hasFront : col.key === "in" ? summary.hasBack : summary.thru > 0;
           return (
             <g key={idx}>
-              <rect x={cx - cw / 2 + 3} y={top} width={cw - 6} height={rowH * 3 - 8} rx="8"
+              <rect x={cx - cw / 2 + 3} y={top} width={cw - 6} height={rowH * 3 - 8}
                     fill={c.accent} opacity="0.10" />
               <text x={cx} y={yHole + 6} textAnchor="middle" fill={c.accent}
                     fontFamily={HEAD} fontSize="27" fontWeight="700" letterSpacing="1" className="score-meta-lock">

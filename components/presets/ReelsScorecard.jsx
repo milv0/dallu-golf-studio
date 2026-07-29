@@ -48,7 +48,7 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
          xmlns="http://www.w3.org/2000/svg" style={{ display: "block", background: "transparent" }}>
-      <rect x="0" y="0" width={w} height={h} rx="24" fill={c.bg} opacity="0.92" />
+      <rect x="0" y="0" width={w} height={h} fill={c.bg} opacity="0.92" />
       <text x={pad} y="70" fill={c.accent} fontFamily={HEAD} fontSize="30" fontWeight="600"
             letterSpacing="4">
         {[round.date ? round.date.replaceAll("-", ".") : "", rangeLabel].filter(Boolean).join(" · ")}
@@ -87,7 +87,7 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
         const x = pad + i * (tW + 16);
         return (
           <g key={label}>
-            <rect x={x} y={545} width={tW} height="80" rx="10" fill={c.accent} opacity={i === 3 ? 0.14 : 0.07} />
+            <rect x={x} y={545} width={tW} height="80" fill={c.accent} opacity={i === 3 ? 0.14 : 0.07} />
             <text x={x + tW / 2} y={575} textAnchor="middle" fill={c.sub} fontFamily={HEAD} fontSize="20" letterSpacing="2">{label}</text>
             <text x={x + tW / 2} y={611} textAnchor="middle" fill={color} fontFamily={MONO} fontSize="34" fontWeight="700">{val}</text>
           </g>

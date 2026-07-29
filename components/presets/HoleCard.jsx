@@ -50,10 +50,9 @@ export default function HoleCard({ data, theme = "dark" }) {
     <svg viewBox={`0 0 ${w} ${size.h}`} width={w} height={size.h}
          xmlns="http://www.w3.org/2000/svg" style={{ display: "block", background: "transparent" }}>
       {/* 메인 바 */}
-      <rect x="0" y="0" width={w} height={barH} rx="16" fill={c.bg} opacity="0.94" />
+      <rect x="0" y="0" width={w} height={barH} fill={c.bg} opacity="0.94" />
       {/* 홀 세그먼트 (더 어둡게) */}
-      <path d={`M18,0 H${segW} V${barH} H18 Q0,${barH} 0,${barH - 18} V18 Q0,0 18,0 Z`}
-            fill={c.seg} />
+      <rect x="0" y="0" width={segW} height={barH} fill={c.seg} />
       <line x1={segW} y1="18" x2={segW} y2={barH - 18} stroke={c.line} strokeWidth="2" />
 
       {/* 홀 번호 · PAR · 거리 */}
@@ -72,8 +71,7 @@ export default function HoleCard({ data, theme = "dark" }) {
             fontSize={playerSize} fontWeight="700" letterSpacing="0.5">{player}</text>
 
       {/* 토탈(to-par) 우측 블록 */}
-      <path d={`M${w - tpW},0 H${w - 18} Q${w},0 ${w},18 V${row2Y - 20} Q${w},${row2Y - 2} ${w - 18},${row2Y - 2} H${w - tpW} Z`}
-            fill={c.accent} />
+      <rect x={w - tpW} y="0" width={tpW} height={row2Y - 2} fill={c.accent} />
       <text x={w - tpW / 2} y="91" textAnchor="middle" fill={c.ink} fontFamily={HEAD}
             fontSize="64" fontWeight="700">{data.toPar || "E"}</text>
 
@@ -105,7 +103,7 @@ export default function HoleCard({ data, theme = "dark" }) {
       {/* FOR X 배너 */}
       {banner && (
         <g>
-          <rect x="224" y="228" width={w - 224} height="58" rx="10" fill={c.accent} />
+          <rect x="224" y="228" width={w - 224} height="58" fill={c.accent} />
           <text x={(224 + w) / 2} y="268" textAnchor="middle" fill={c.ink} fontFamily={HEAD}
                 fontSize="35" fontWeight="700" letterSpacing="1">{banner}</text>
         </g>

@@ -30,9 +30,9 @@ export function ResultMarker({ kind, cx, cy, size = 30 }) {
     <>
       {under && <circle cx={cx} cy={cy} r={size} fill="none" stroke={color} strokeWidth="3.5" />}
       {kind === "eagle" && <circle cx={cx} cy={cy} r={outer} fill="none" stroke={color} strokeWidth="3" />}
-      {over && <rect x={cx - size} y={cy - size} width={size * 2} height={size * 2} rx="5" fill="none" stroke={color} strokeWidth="3.5" />}
+      {over && <rect x={cx - size} y={cy - size} width={size * 2} height={size * 2} fill="none" stroke={color} strokeWidth="3.5" />}
       {(kind === "double" || kind === "triple") &&
-        <rect x={cx - outer} y={cy - outer} width={outer * 2} height={outer * 2} rx="5" fill="none" stroke={color} strokeWidth="3" />}
+        <rect x={cx - outer} y={cy - outer} width={outer * 2} height={outer * 2} fill="none" stroke={color} strokeWidth="3" />}
     </>
   );
 }
@@ -88,7 +88,7 @@ export function CompactScorecard({ w, h, c, holes, startIndex = 0, showHoleNumbe
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
       xmlns="http://www.w3.org/2000/svg" style={{ display: "block", background: "transparent" }}>
-      <rect x="0" y="0" width={w} height={h} rx="24" fill={c.bg} opacity="0.92" />
+      <rect x="0" y="0" width={w} height={h} fill={c.bg} opacity="0.92" />
       {(holes || []).map((hole, i) => (
         <CompactHoleCell key={i} cx={cx(i)} rowY={rowY} hole={hole} index={startIndex + i} c={c} showHoleNumbers={showHoleNumbers} />
       ))}
