@@ -23,14 +23,6 @@ function NavLink({ href, label, active }) {
   );
 }
 
-export function BackIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
-      <path d="M15 18 9 12l6-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 export function HomeIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
@@ -69,7 +61,7 @@ function MobileTabLink({ href, label, active }) {
   );
 }
 
-export function MobileAppBar({ active, onBack }) {
+export function MobileAppBar({ active }) {
   const refreshPage = () => {
     if (typeof window !== "undefined") window.location.reload();
   };
@@ -77,9 +69,7 @@ export function MobileAppBar({ active, onBack }) {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/95 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur md:hidden">
       <div className="mx-auto flex max-w-[520px] items-center justify-between">
-        <MobileIconButton label="뒤로가기" onClick={onBack}>
-          <BackIcon />
-        </MobileIconButton>
+        <div aria-hidden="true" className="h-11 w-11 shrink-0" />
         <button type="button" onClick={refreshPage} aria-label="새로고침"
           className="min-w-0 px-3 text-center transition active:scale-[0.98] active:opacity-80">
           <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">

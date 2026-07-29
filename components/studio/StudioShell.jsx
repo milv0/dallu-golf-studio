@@ -54,15 +54,9 @@ function MobileUtilityBar({ currentUser, theme, onToggleTheme }) {
 }
 
 export default function StudioShell({ active, currentUser, onLogout, theme, onToggleTheme, children }) {
-  const goBack = () => {
-    if (typeof window === "undefined") return;
-    if (window.history.length > 1) window.history.back();
-    else window.location.href = "/";
-  };
-
   return (
     <>
-      <MobileAppBar active={active} onBack={goBack} />
+      <MobileAppBar active={active} />
       <main className="mobile-shell-main mx-auto max-w-[1500px] px-4 pt-4 md:px-6 md:py-8">
         <div className="hidden md:block">
           <DesktopHeader

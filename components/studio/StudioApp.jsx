@@ -398,11 +398,11 @@ function StudioWorkspace({ mode }) {
             )
           ) : isRoundEditor ? (
             <div className={!isHole ? "grid items-start gap-4 md:grid-cols-2" : ""}>
-              <div className="rounded-xl border border-line bg-panel p-4">
-                <div className="mb-3 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
+              <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
+                <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft md:mb-3">
                   기본 정보
                 </div>
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-1 gap-2.5 md:grid-cols-2 md:gap-3">
                   <Field label="선수명" full value={round.player}
                          onChange={(v) => setMeta("player", v)} placeholder="선수 이름 입력" />
                   {!isHole && (

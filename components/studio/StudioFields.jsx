@@ -33,14 +33,14 @@ function normalizeClubValue(value) {
 
 export function Field({ label, value, onChange, onBlur, placeholder, full, type = "text", list }) {
   return (
-    <label className={"block " + (full ? "col-span-2" : "")}>
-      <span className="mb-1 block font-head text-[11px] uppercase tracking-widest text-txt-faint">
+    <label className={"block min-w-0 " + (full ? "md:col-span-2" : "")}>
+      <span className="mb-0.5 block font-head text-[10px] uppercase tracking-widest text-txt-faint md:mb-1 md:text-[11px]">
         {label}
       </span>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur} list={list} placeholder={placeholder}
         onClick={type === "date" ? (e) => { try { e.currentTarget.showPicker?.(); } catch {} } : undefined}
-        className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent [color-scheme:dark]" />
+        className="min-w-0 max-w-full w-full rounded-lg border border-line-2 bg-panel-2 px-2.5 py-1.5 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent md:px-3 md:py-2 [color-scheme:dark]" />
     </label>
   );
 }
@@ -50,13 +50,13 @@ export function ClubAutocomplete({ value, onChange, onPick, options }) {
   const q = (value || "").trim();
   const matches = q ? options.filter((o) => o.includes(q)).slice(0, 8) : [];
   return (
-    <label className="relative col-span-2 block">
-      <span className="mb-1 block font-head text-[11px] uppercase tracking-widest text-txt-faint">골프장</span>
+    <label className="relative block min-w-0 md:col-span-2">
+      <span className="mb-0.5 block font-head text-[10px] uppercase tracking-widest text-txt-faint md:mb-1 md:text-[11px]">골프장</span>
       <input value={value} placeholder="골프장 이름 검색"
         onChange={(e) => { onChange(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
-        className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent" />
+        className="min-w-0 max-w-full w-full rounded-lg border border-line-2 bg-panel-2 px-2.5 py-1.5 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent md:px-3 md:py-2" />
       {open && matches.length > 0 && (
         <ul className="absolute z-30 mt-1 max-h-56 w-full overflow-auto rounded-lg border border-line-2 bg-panel shadow-lg">
           {matches.map((m) => (
@@ -76,8 +76,8 @@ export function ClubAutocomplete({ value, onChange, onPick, options }) {
 export function ClubField({ value, onChange }) {
   const suggestions = clubSuggestions(value);
   return (
-    <label className="col-span-2 block">
-      <span className="mb-1 block font-head text-[11px] uppercase tracking-widest text-txt-faint">
+    <label className="block min-w-0 md:col-span-2">
+      <span className="mb-0.5 block font-head text-[10px] uppercase tracking-widest text-txt-faint md:mb-1 md:text-[11px]">
         선택 클럽
       </span>
       <input value={value}
@@ -91,7 +91,7 @@ export function ClubField({ value, onChange }) {
           }
         }}
         placeholder="3, Driver, Putter"
-        className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent" />
+        className="min-w-0 max-w-full w-full rounded-lg border border-line-2 bg-panel-2 px-2.5 py-1.5 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent md:px-3 md:py-2" />
       <div className="mt-1.5 flex gap-1.5 overflow-x-auto pb-1">
         {suggestions.map((club) => (
           <button key={club} type="button" onClick={() => onChange(club)}
