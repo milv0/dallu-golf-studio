@@ -28,30 +28,32 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
       <PanelHeader title="현재 홀 정보">
         {onReset ? <ResetButton onClick={onReset} /> : null}
       </PanelHeader>
-      <div className="mb-2">
-        <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
-          {linked ? "홀 선택 (PAR·토탈 자동 연동)" : "홀 선택"}
-        </span>
-        <div className="grid grid-cols-9 gap-1">
-          {round.holes.map((h, i) => {
-            const n = i + 1;
-            const active = String(n) === String(holeCard.hole);
-            const has = h.score !== "" && h.score != null;
-            return (
-              <button key={i} type="button" onClick={() => loadHoleFromRound(n)}
-                title={`${n}번 홀 · Par ${h.par}${has ? ` · ${h.score}타` : ""}`}
-                className={"rounded-md py-1.5 text-center font-mono text-[13px] font-bold transition " +
-                  (active
-                    ? "bg-accent text-[#06210f]"
-                    : has
-                      ? "border border-line-2 bg-panel-2 text-txt-soft hover:text-txt"
-                      : "border border-line bg-panel-2 text-txt-faint hover:text-txt")}>
-                {n}
-              </button>
-            );
-          })}
+      {linked && (
+        <div className="mb-2">
+          <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
+            홀 선택 (PAR·토탈 자동 연동)
+          </span>
+          <div className="grid grid-cols-9 gap-1">
+            {round.holes.map((h, i) => {
+              const n = i + 1;
+              const active = String(n) === String(holeCard.hole);
+              const has = h.score !== "" && h.score != null;
+              return (
+                <button key={i} type="button" onClick={() => loadHoleFromRound(n)}
+                  title={`${n}번 홀 · Par ${h.par}${has ? ` · ${h.score}타` : ""}`}
+                  className={"rounded-md py-1.5 text-center font-mono text-[13px] font-bold transition " +
+                    (active
+                      ? "bg-accent text-[#06210f]"
+                      : has
+                        ? "border border-line-2 bg-panel-2 text-txt-soft hover:text-txt"
+                        : "border border-line bg-panel-2 text-txt-faint hover:text-txt")}>
+                  {n}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="overflow-hidden rounded-lg border border-line">
         <div className="grid grid-cols-4">
