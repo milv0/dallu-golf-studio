@@ -69,13 +69,6 @@ export function HomeIcon() {
   );
 }
 
-function MobileIconButton({ label, href, onClick, children }) {
-  const className = "flex h-11 w-11 items-center justify-center rounded-full border border-line bg-panel text-txt-soft shadow-sm transition active:scale-95 active:border-accent active:text-txt";
-  if (href) {
-    return <a href={href} aria-label={label} title={label} className={className}>{children}</a>;
-  }
-  return <button type="button" aria-label={label} title={label} onClick={onClick} className={className}>{children}</button>;
-}
 
 function DisabledNavItem({ label }) {
   return (
@@ -137,25 +130,18 @@ function MobileTabLink({ href, label, active }) {
 }
 
 export function MobileAppBar({ active, currentUser, onLogout, theme, onToggleTheme }) {
-  const refreshPage = () => {
-    if (typeof window !== "undefined") window.location.reload();
-  };
-
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-bg/95 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur">
-      <div className="mx-auto grid max-w-[520px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 md:max-w-[980px]">
-        <MobileIconButton label="홈" href="/">
-          <HomeIcon />
-        </MobileIconButton>
-        <button type="button" onClick={refreshPage} aria-label="새로고침"
-          className="min-w-0 px-3 text-center transition active:scale-[0.98] active:opacity-80">
-          <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
-            @Dallu_Golf
-          </div>
-          <div className="truncate font-head text-[24px] font-bold uppercase leading-none text-txt">
+    <header className="sticky top-0 z-40 border-b border-line bg-bg/95 px-4 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] backdrop-blur">
+      <div className="mx-auto flex max-w-[520px] items-center justify-between gap-3 md:max-w-[980px]">
+        <a href="/" className="flex items-center gap-2 transition active:opacity-80">
+          <span className="font-head text-[13px] font-bold uppercase tracking-[0.15em] text-accent">
+            Dallu Golf
+          </span>
+          <span className="hidden text-txt-faint sm:inline">·</span>
+          <span className="hidden font-head text-[14px] font-semibold text-txt sm:inline">
             {getActiveLabel(active)}
-          </div>
-        </button>
+          </span>
+        </a>
         <TopActions currentUser={currentUser} onLogout={onLogout} theme={theme} onToggleTheme={onToggleTheme} />
       </div>
     </header>
