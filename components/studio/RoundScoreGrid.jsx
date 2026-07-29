@@ -9,6 +9,24 @@ const metaLockProps = {
   onContextMenu: preventMetaCopy,
 };
 
+function ParInput({ idx, value, setHole }) {
+  const handleChange = (next) => {
+    if (next === "" || /^[345]$/.test(next)) setHole(idx, "par", next);
+  };
+
+  return (
+    <input
+      {...metaLockProps}
+      aria-label={`홀 ${idx + 1} PAR`}
+      value={value ?? ""}
+      inputMode="numeric"
+      maxLength={1}
+      onChange={(e) => handleChange(e.target.value)}
+      className="score-meta-lock w-full bg-transparent py-1 text-center font-mono text-sm font-semibold text-txt-soft outline-none focus:bg-accent/10 focus:text-txt focus:ring-1 focus:ring-inset focus:ring-accent"
+    />
+  );
+}
+
 export default function HoleGroup({ holes, offset, setHole, scoreRefs, onScoreKey, scoreMode }) {
   const isBack = offset === 9;
   const parSum = holes.reduce((a, h) => a + (Number(h.par) || 0), 0);
@@ -33,8 +51,8 @@ export default function HoleGroup({ holes, offset, setHole, scoreRefs, onScoreKe
           PAR
         </div>
         {holes.map((h, i) => (
-          <div key={"p" + i} {...metaLockProps} className="score-meta-lock flex items-center justify-center border-l border-t border-line bg-panel-2 py-1 font-mono text-sm font-semibold text-txt-soft">
-            {h.par || "–"}
+          <div key={"p" + i} className="border-l border-t border-line bg-panel-2">
+            <ParInput idx={offset + i} value={h.par} setHole={setHole} />
           </div>
         ))}
         <div {...metaLockProps} className="score-meta-lock flex items-center justify-center border-l border-t border-line bg-panel-2 py-1 font-mono text-sm font-bold text-txt">
