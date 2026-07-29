@@ -24,7 +24,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
                   (active
                     ? "bg-accent text-[#06210f]"
                     : has
-                      ? "border border-accent/40 bg-panel-2 text-accent hover:border-accent"
+                      ? "border border-line-2 bg-panel-2 text-txt-soft hover:text-txt"
                       : "border border-line bg-panel-2 text-txt-faint hover:text-txt")}>
                 {n}
               </button>
@@ -32,7 +32,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           })}
         </div>
         <div className="mt-1 text-[11px] text-txt-faint">
-          라임 = 선택된 홀 · 초록 테두리 = 스코어 입력된 홀
+          라임 배경 = 선택된 홀
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
