@@ -4,19 +4,19 @@ import StudioNav from "./StudioNav";
 
 export default function RoundRecords() {
   return (
-    <main className="mx-auto max-w-[1180px] px-6 py-8">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b border-line pb-5">
+    <main className="mx-auto max-w-[1180px] px-5 py-6 sm:px-6 sm:py-8">
+      <div className="mb-5 flex flex-col items-start justify-between gap-4 border-b border-line pb-5 sm:mb-6 sm:flex-row sm:items-end">
         <div>
-          <div className="font-head text-[13px] font-semibold uppercase tracking-[0.28em] text-accent">
+          <div className="font-head text-[11px] font-semibold uppercase leading-tight tracking-[0.14em] text-accent sm:text-[13px] sm:tracking-[0.28em]">
             Round Archive · @dallu_golf
           </div>
-          <a href="/" className="mt-1 block font-head text-[40px] font-bold uppercase leading-none tracking-tight text-txt transition hover:text-accent">
+          <a href="/" className="mt-1 block font-head text-[34px] font-bold uppercase leading-none tracking-tight text-txt transition hover:text-accent sm:text-[40px]">
             Dallu Golf <span className="text-accent">Studio</span>
           </a>
           <p className="mt-2 text-sm text-txt-soft">라운딩 기록 저장과 불러오기는 준비 중입니다.</p>
         </div>
         <a href="/score-18"
-          className="rounded-lg bg-accent px-4 py-2 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2">
+          className="rounded-lg bg-accent px-3 py-1.5 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 sm:px-4 sm:py-2 sm:text-sm">
           18홀 입력
         </a>
       </div>

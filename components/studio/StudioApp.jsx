@@ -306,21 +306,21 @@ function StudioWorkspace({ mode }) {
   const Back = round.holes.slice(9, 18);
 
   return (
-    <main className="mx-auto max-w-[1500px] px-6 py-8">
+    <main className="mx-auto max-w-[1500px] px-5 py-6 sm:px-6 sm:py-8">
       {/* Header */}
-      <div className="mb-6 flex items-end justify-between gap-4 border-b border-line pb-5">
+      <div className="mb-5 flex flex-col items-start justify-between gap-4 border-b border-line pb-5 sm:mb-6 sm:flex-row sm:items-end">
         <div>
-          <div className="font-head text-[13px] font-semibold uppercase tracking-[0.28em] text-accent">
+          <div className="font-head text-[11px] font-semibold uppercase leading-tight tracking-[0.14em] text-accent sm:text-[13px] sm:tracking-[0.28em]">
             Broadcast Overlay Maker · @dallu_golf
           </div>
-          <a href="/" className="mt-1 block font-head text-[40px] font-bold uppercase leading-none tracking-tight text-txt transition hover:text-accent">
+          <a href="/" className="mt-1 block font-head text-[34px] font-bold uppercase leading-none tracking-tight text-txt transition hover:text-accent sm:text-[40px]">
             Dallu Golf <span className="text-accent">Studio</span>
           </a>
-          <p className="mt-2 text-sm text-txt-soft">
+          <p className="mt-2 hidden text-sm text-txt-soft sm:block">
             골프 영상 편집용 스코어카드 오버레이를 메이저 대회 방송 스타일로 제작 · 투명 PNG로 내보내기
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto">
           {currentUser ? (
             <div className="hidden rounded-lg border border-line bg-panel px-3 py-2 text-xs font-semibold text-txt-soft md:block">
               <span className="text-txt">{currentUser.name || currentUser.email}</span>
@@ -330,12 +330,12 @@ function StudioWorkspace({ mode }) {
             </div>
           ) : (
             <button type="button" disabled
-              className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
+              className="cursor-not-allowed rounded-lg border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-faint opacity-70 sm:px-3.5 sm:py-2 sm:text-sm">
               로그인 준비 중
             </button>
           )}
           <button onClick={toggleTheme} aria-label="테마 전환"
-            className="flex shrink-0 items-center gap-2 rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-soft transition hover:text-txt">
+            className="flex shrink-0 items-center gap-2 rounded-lg border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-soft transition hover:text-txt sm:px-3.5 sm:py-2 sm:text-sm">
             <span className="text-base">{theme === "dark" ? "☀️" : "🌙"}</span>
             {theme === "dark" ? "라이트" : "다크"}
           </button>

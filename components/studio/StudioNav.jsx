@@ -33,16 +33,16 @@ export default function StudioNav({ active, currentUser }) {
   ];
 
   return (
-    <nav className="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-1 font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint">
+    <nav className="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <div className="-mx-5 flex items-center gap-2 overflow-x-auto px-5 pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
+        <span className="mr-1 hidden shrink-0 font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint sm:inline">
           출력 선택
         </span>
         {OUTPUT_LINKS.map((link) => (
           <NavLink key={link.href} {...link} active={active === link.id} />
         ))}
       </div>
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="hidden flex-wrap items-center gap-2 sm:flex">
         {secondaryLinks.map((link) => (
           link.disabled
             ? <DisabledNavItem key={link.href} label={link.label} />

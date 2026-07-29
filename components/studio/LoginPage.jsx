@@ -2,12 +2,12 @@
 
 export default function LoginPage() {
   return (
-    <main className="mx-auto max-w-[720px] px-6 py-10">
-      <div className="mb-8 border-b border-line pb-6">
-        <div className="font-head text-[13px] font-semibold uppercase tracking-[0.28em] text-accent">
+    <main className="mx-auto max-w-[720px] px-5 py-7 sm:px-6 sm:py-10">
+      <div className="mb-6 border-b border-line pb-5 sm:mb-8 sm:pb-6">
+        <div className="font-head text-[11px] font-semibold uppercase leading-tight tracking-[0.14em] text-accent sm:text-[13px] sm:tracking-[0.28em]">
           Dallu Golf Account
         </div>
-        <a href="/" className="mt-1 block font-head text-[44px] font-bold uppercase leading-none text-txt transition hover:text-accent">
+        <a href="/" className="mt-1 block font-head text-[34px] font-bold uppercase leading-none text-txt transition hover:text-accent sm:text-[44px]">
           Dallu Golf <span className="text-accent">Studio</span>
         </a>
       </div>
