@@ -134,7 +134,7 @@ export function ManualNineForm({ data, setHole }) {
         9홀 직접 입력
       </div>
       <div className="overflow-x-auto rounded-lg border border-line">
-        <div className="grid min-w-[520px]" style={{ gridTemplateColumns: "54px repeat(9, minmax(44px,1fr))" }}>
+        <div className="grid min-w-[520px] sm:min-w-0" style={{ gridTemplateColumns: "54px repeat(9, minmax(0,1fr))" }}>
           <div className="flex items-center justify-center bg-panel-2 py-2 font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint">
             홀
           </div>

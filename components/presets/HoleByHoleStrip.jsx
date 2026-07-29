@@ -9,7 +9,7 @@ import { HEAD, MONO, ResultMarker, ScoreNumber } from "./scorecardPrimitives";
 // 레이아웃 상수 (모듈 공유) — 칸 폭 고정, 9홀은 세로 동일 & 가로만 짧게
 const H = 232;
 const LP = 150;              // 좌측 선수 패널 폭 (course/player/TO PAR만)
-const LABEL_W = 64;          // 행 라벨 컬럼
+const LABEL_W = 82;          // 행 라벨 컬럼
 const TABLE_X = LP + LABEL_W;
 const CW = 74;               // 칸 폭 (스코어 영역 확대)
 const RM = 24;               // 우측 여백
@@ -98,7 +98,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
       {/* 행 라벨 (좌측 작은 태그) */}
       {[["HOLE", yHole], ["PAR", yPar], ["SCORE", yScore]].map(([lbl, y]) => (
         <text key={lbl} x={tableX - 16} y={y + 6} textAnchor="end" fill={c.faint}
-              fontFamily={HEAD} fontSize="18" letterSpacing="1"
+              fontFamily={HEAD} fontSize="16" letterSpacing="0.8"
               className={lbl === "SCORE" ? undefined : "score-meta-lock"}>
           {lbl}
         </text>
