@@ -691,12 +691,12 @@ function StudioWorkspace({ mode }) {
                 </div>
                 <button onClick={handleShareExport} disabled={busy || !canExport}
                   title={!canExport ? "필수 입력을 먼저 완료하세요" : "iPhone에서는 공유 시트에서 이미지 저장을 선택하세요"}
-                  className="rounded-lg bg-accent px-3 py-1 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:border md:border-line md:bg-panel-2 md:px-4 md:py-1.5 md:text-sm md:text-txt-soft md:hover:border-accent md:hover:bg-panel-2 md:hover:text-txt">
+                  className="rounded-lg bg-accent px-3 py-1 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:hidden">
                   {busy ? "생성 중…" : !canExport ? "입력 필요" : "공유"}
                 </button>
                 <button onClick={handleExport} disabled={busy || !canExport}
                   title={!canExport ? "필수 입력을 먼저 완료하세요" : "PNG 다운로드"}
-                  className="rounded-lg border border-line bg-panel-2 px-2.5 py-1 font-head text-xs font-bold uppercase tracking-wide text-txt-soft transition hover:border-accent hover:text-txt disabled:opacity-60 md:border-0 md:bg-accent md:px-4 md:py-1.5 md:text-sm md:text-[#06210f] md:hover:bg-accent-2">
+                  className="hidden rounded-lg bg-accent px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:inline-block">
                   {busy ? "생성 중…" : !canExport ? "입력 필요" : "PNG 다운로드"}
                 </button>
               </div>
