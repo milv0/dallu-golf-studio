@@ -53,6 +53,22 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
   );
 }
 
+function InlinePlayerControl({ value, onChange }) {
+  return (
+    <label className="flex min-w-[160px] items-center gap-2 rounded-lg border border-line bg-panel-2 px-2 py-1">
+      <span className="font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">
+        이름
+      </span>
+      <input
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="PLAYER"
+        className="min-w-0 flex-1 bg-transparent text-right font-head text-sm font-bold uppercase text-txt outline-none placeholder:text-txt-faint"
+      />
+    </label>
+  );
+}
+
 export function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onSelect, onShowHoleNumbers }) {
   const selectedStart = Array.isArray(selected) && selected.length === 3 ? Math.min(...selected) : 0;
   const groupLabel = (start) => {
@@ -105,13 +121,14 @@ export function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onSelec
   );
 }
 
-export function ManualNineForm({ data, setHole, onReset }) {
+export function ManualNineForm({ data, setField, setHole, onReset }) {
   const { scoreRefs, handleScoreKey } = useScoreRefs();
   const [scoreMode, setScoreMode] = useState("strokes");
 
   return (
     <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
       <PanelHeader title="9홀 입력">
+        <InlinePlayerControl value={data.player} onChange={(v) => setField("player", v)} />
         <ScoreModeToggle value={scoreMode} onChange={setScoreMode} />
         {onReset ? <ResetButton onClick={onReset} /> : null}
       </PanelHeader>

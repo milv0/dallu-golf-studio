@@ -43,7 +43,7 @@ const QUALITY = [
 ];
 
 const emptyHoleCard = () => ({
-  hole: "", par: "", distance: "", toPar: "", currentShot: "", club: "", unit: "m", showResultBanner: true,
+  player: "", hole: "", par: "", distance: "", toPar: "", currentShot: "", club: "", unit: "m", showResultBanner: true,
 });
 
 const emptyThreeHoleCard = () => ({
@@ -58,6 +58,7 @@ const emptyThreeHoleCard = () => ({
 });
 
 const emptyManualNine = () => ({
+  player: "",
   holes: Array.from({ length: 9 }, (_, i) => ({ hole: String(i + 1), par: "4", score: "" })),
 });
 
@@ -145,7 +146,13 @@ function StudioWorkspace({ mode }) {
   }), [customRound]);
   const scoreRound = isFullCustom ? customDisplayRound : round;
   const activeHoleCard = isFullCustom ? customHoleCard : holeCard;
-  const holeData = { player: scoreRound.player, ...activeHoleCard };
+  const holeData = {
+    ...activeHoleCard,
+    player: isFullCustom ? ((customHoleCard.player || "").trim() || DEFAULT_CUSTOM_PLAYER) : scoreRound.player,
+  };
+  const customHoleSelectorRound = useMemo(() => ({
+    holes: Array.from({ length: 18 }, () => ({ par: "4", score: "" })),
+  }), []);
   const activeNav = isScore18 ? "score18" : isScore9 ? "score9" : isScore3 ? "score3" : isHole ? "hole" : "";
   // 18홀은 전체 고정, 9홀만 전반/후반을 선택한다.
   const availableRanges = RANGES.filter(([k]) => k !== "all");
@@ -208,7 +215,7 @@ function StudioWorkspace({ mode }) {
       ? "현재 홀 정보를 먼저 입력하세요."
       : "";
   const manualNineRound = useMemo(() => ({
-    player: (customRound.player || "").trim() || DEFAULT_CUSTOM_PLAYER,
+    player: (manualNine.player || "").trim() || DEFAULT_CUSTOM_PLAYER,
     country: "",
     course: "",
     date: "",
@@ -216,7 +223,7 @@ function StudioWorkspace({ mode }) {
       ...manualNine.holes.map((h) => ({ par: h.par, score: h.score })),
       ...Array.from({ length: 9 }, () => ({ par: 4, score: "" })),
     ],
-  }), [customRound.player, manualNine]);
+  }), [manualNine]);
   const manualNineSummary = useMemo(() => summarize(manualNineRound.holes), [manualNineRound]);
   const linkedThreeData = useMemo(() => {
     const holes = (linkedThree.holes || []).slice(0, 3).map((idx) => {
@@ -232,6 +239,7 @@ function StudioWorkspace({ mode }) {
   const setHC = (key, val) => setHoleCard((s) => ({ ...s, [key]: val }));
   const setCustomHC = (key, val) => setCustomHoleCard((s) => ({ ...s, [key]: val }));
   const setTH = (key, val) => setThreeHole((s) => ({ ...s, [key]: val }));
+  const setManualNineField = (key, val) => setManualNine((s) => ({ ...s, [key]: val }));
   const setTHHole = (idx, key, val) =>
     setThreeHole((s) => ({
       ...s,
@@ -263,17 +271,11 @@ function StudioWorkspace({ mode }) {
       toPar: toParLabel(cumulativeToPar(round.holes, idx)),
     }));
   };
-  const loadHoleFromCustomRound = (n) => {
+  const loadCustomHoleStandalone = (n) => {
     if (!n) return;
-    const idx = Number(n) - 1;
-    const h = customRound.holes[idx];
-    if (!h) return;
     setCustomHoleCard((s) => ({
       ...s,
       hole: String(n),
-      par: String(h.par ?? ""),
-      currentShot: h.score !== "" && h.score != null ? String(h.score) : s.currentShot,
-      toPar: toParLabel(cumulativeToPar(customRound.holes, idx)),
     }));
   };
   const setHole = (i, key, val) =>
@@ -522,7 +524,7 @@ function StudioWorkspace({ mode }) {
               {reelsV3 ? (
                 <ThreeHoleForm data={threeHole} setField={setTH} setHole={setTHHole} onReset={resetThreeHole} />
               ) : (
-                <ManualNineForm data={manualNine} setHole={setManualNineHole} onReset={resetManualNine} />
+                <ManualNineForm data={manualNine} setField={setManualNineField} setHole={setManualNineHole} onReset={resetManualNine} />
               )}
             </div>
           ) : isRoundEditor && !isFullCustom ? (
@@ -632,16 +634,16 @@ function StudioWorkspace({ mode }) {
               {isFullCustom && (
                 <div className="mb-3 flex justify-end">
                   <CustomPlayerControl
-                    value={customRound.player}
-                    onChange={(v) => setCustomMeta("player", v)}
+                    value={customHoleCard.player}
+                    onChange={(v) => setCustomHC("player", v)}
                   />
                 </div>
               )}
               <HoleCardForm
-                round={scoreRound}
+                round={isFullCustom ? customHoleSelectorRound : scoreRound}
                 holeCard={activeHoleCard}
                 setHC={isFullCustom ? setCustomHC : setHC}
-                loadHoleFromRound={isFullCustom ? loadHoleFromCustomRound : loadHoleFromRound}
+                loadHoleFromRound={isFullCustom ? loadCustomHoleStandalone : loadHoleFromRound}
                 onReset={isFullCustom ? () => {
                   if (!confirmReset("커스텀 1홀 정보를 초기화할까요?")) return;
                   setCustomHoleCard(emptyHoleCard());
