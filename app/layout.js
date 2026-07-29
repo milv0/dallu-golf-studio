@@ -5,6 +5,15 @@ export const metadata = {
   description:
     "골프 영상 편집용 스코어카드 오버레이(투명 PNG)를 유튜브·릴스 포맷과 메이저 대회 방송 스타일로 제작. @dallu_golf",
   icons: { icon: "/icon.svg" },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Dallu Golf",
+    statusBarStyle: "default",
+  },
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export default function RootLayout({ children }) {
