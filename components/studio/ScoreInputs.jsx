@@ -91,7 +91,8 @@ export function RelativeScoreInput({
     <input
       aria-label={ariaLabel}
       value={buf}
-      inputMode="numeric"
+      inputMode="text"
+      enterKeyHint="next"
       ref={(el) => { if (scoreRefs) scoreRefs.current[idx] = el; }}
       onKeyDown={handleKeyDown}
       onChange={(e) => handleChange(e.target.value)}
