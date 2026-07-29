@@ -67,6 +67,7 @@ body {
 
 /* 미리보기 SVG를 컨테이너 폭에 맞춰 반응형으로 (내보내기는 원본 해상도로 별도 렌더) */
 .preview-svg svg { width: 100% !important; height: auto !important; display: block; }
+.preview-frame { max-width: var(--preview-max-desktop); }
 
 /* 투명 영역 시각화용 체커보드 */
 .checker {
@@ -101,23 +102,25 @@ body {
 
   .mobile-home-main {
     min-height: 100dvh;
-    padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(9rem + env(safe-area-inset-bottom));
   }
 
   .mobile-shell-main {
-    padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(9rem + env(safe-area-inset-bottom));
   }
 
   .mobile-tab-bar {
     position: fixed;
     left: 0;
     right: 0;
-    bottom: 0;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom));
     z-index: 60;
-    border-top: 1px solid var(--c-line);
-    background: var(--c-bg);
-    padding: 0.5rem 0.75rem calc(0.6rem + env(safe-area-inset-bottom));
+    padding: 0 0.75rem;
     -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
+  }
+
+  .preview-frame {
+    max-width: min(100%, var(--preview-max-mobile));
   }
 }

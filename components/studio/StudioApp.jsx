@@ -23,6 +23,7 @@ import PanelHeader, { ResetButton } from "./PanelHeader";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
 const PREVIEW_MAX_H = 340;
+const PREVIEW_MOBILE_MAX_H = 430;
 const COURSE_DB_ENABLED = false;
 const REELS_SOURCE_SWITCH_ENABLED = false;
 
@@ -104,6 +105,7 @@ function StudioWorkspace({ mode }) {
   const effRange = isScore18 ? "all" : isReelsSizedScore && holeRange === "all" ? "front" : holeRange;
   const size = isHole ? holeSizeFor(holeData) : reelsV3 ? SIZE_REELS_THREE : FORMATS[format].sizeFor(effRange);
   const previewMaxWidth = Math.min(size.w, PREVIEW_MAX_H * (size.w / size.h)) * (reelsV3 ? 0.72 : 1);
+  const previewMobileMaxWidth = Math.min(size.w, PREVIEW_MOBILE_MAX_H * (size.w / size.h)) * (reelsV3 ? 0.9 : 1);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -543,15 +545,15 @@ function StudioWorkspace({ mode }) {
             </div>
           )}
 
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line bg-panel px-3 py-2">
-            <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-              미리보기 <span className="text-txt-faint">(투명 배경)</span>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-1.5 rounded-lg border border-line bg-panel px-2 py-1.5 md:mb-3 md:gap-2 md:rounded-xl md:px-3 md:py-2">
+            <div className="font-head text-xs font-semibold uppercase tracking-widest text-txt-soft md:text-sm">
+              미리보기 <span className="hidden text-txt-faint sm:inline">(투명 배경)</span>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
               <div className="flex overflow-hidden rounded-lg border border-line">
                 {[["dark", "다크"], ["light", "라이트"]].map(([key, label]) => (
                   <button key={key} onClick={() => setCardTheme(key)}
-                    className={"px-3 py-1.5 text-xs font-bold " +
+                    className={"px-2 py-1 text-[11px] font-bold md:px-3 md:py-1.5 md:text-xs " +
                       (cardTheme === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
                     {label}
                   </button>
@@ -561,7 +563,7 @@ function StudioWorkspace({ mode }) {
                 {QUALITY.map((qz) => (
                   <button key={qz.scale} onClick={() => setExportScale(qz.scale)}
                     title={`${qz.desc} · ${size.w * qz.scale}×${size.h * qz.scale}px`}
-                    className={"px-3 py-1.5 text-xs font-bold " +
+                    className={"px-2 py-1 text-[11px] font-bold md:px-3 md:py-1.5 md:text-xs " +
                       (exportScale === qz.scale ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
                     {qz.label}
                   </button>
@@ -569,15 +571,15 @@ function StudioWorkspace({ mode }) {
               </div>
               <button onClick={handleExport} disabled={busy || !canExport}
                 title={!canExport ? "필수 입력을 먼저 완료하세요" : "PNG 다운로드"}
-                className="rounded-lg bg-accent px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60">
+                className="rounded-lg bg-accent px-2.5 py-1 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:px-4 md:py-1.5 md:text-sm">
                 {busy ? "생성 중…" : !canExport ? "입력 필요" : "PNG 다운로드"}
               </button>
             </div>
           </div>
 
-          <div className="checker overflow-hidden rounded-xl border border-line p-3 md:p-6">
-            <div ref={captureRef} className="preview-svg mx-auto w-full"
-                 style={{ maxWidth: previewMaxWidth }}>
+          <div className="checker overflow-hidden rounded-xl border border-line p-2 md:p-6">
+            <div ref={captureRef} className="preview-frame preview-svg mx-auto w-full"
+                 style={{ "--preview-max-desktop": `${previewMaxWidth}px`, "--preview-max-mobile": `${previewMobileMaxWidth}px` }}>
               {isHole
                 ? <HoleCard data={holeData} theme={cardTheme} />
                 : reelsV3
@@ -588,15 +590,15 @@ function StudioWorkspace({ mode }) {
             </div>
           </div>
 
-          <div className="mt-4 rounded-xl border border-line bg-panel p-4 text-sm text-txt-soft">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <div className="mt-2 rounded-lg border border-line bg-panel px-2.5 py-2 text-[11px] text-txt-soft md:mt-4 md:rounded-xl md:p-4 md:text-sm">
+            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 md:gap-x-2">
               <b className="text-txt">출력</b>
               <span className="rounded bg-panel-2 px-2 py-0.5 font-mono text-[12px] font-bold text-accent">
                 {(QUALITY.find((x) => x.scale === exportScale) || {}).label}
               </span>
-              <span className="font-mono text-[13px]">투명 PNG · {size.w * exportScale}×{size.h * exportScale}px</span>
+              <span className="font-mono text-[11px] md:text-[13px]">투명 PNG · {size.w * exportScale}×{size.h * exportScale}px</span>
             </div>
-            <div className="mt-2 text-[12px] text-txt-faint">
+            <div className="mt-1 hidden text-[12px] text-txt-faint md:block">
               색상: 버디=빨강 / 이글=골드 / 보기=파랑
             </div>
             {!canExport && exportBlockReason && (

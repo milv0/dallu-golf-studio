@@ -66,7 +66,7 @@ export default function HomeHub() {
           <button type="button" onClick={refreshPage} aria-label="새로고침"
             className="min-w-0 text-left transition active:scale-[0.98] active:opacity-80">
             <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
-              @Dallu Golf
+              @Dallu_Golf
             </div>
             <h1 className="truncate font-head text-[34px] font-bold uppercase leading-none text-txt">
               Studio
