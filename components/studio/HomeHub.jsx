@@ -64,8 +64,8 @@ export default function HomeHub() {
 
       <div className="mx-auto flex w-full max-w-[520px] flex-1 flex-col justify-center pb-[env(safe-area-inset-bottom)] md:max-w-[980px]">
         <div className="mb-10 text-center">
-          <h1 className="font-head text-[48px] font-bold uppercase leading-[0.9] text-txt md:text-[64px]">
-            Golf<br />Studio
+          <h1 className="font-head text-[48px] font-bold uppercase leading-none text-txt md:text-[64px]">
+            Golf Studio
           </h1>
           <p className="mt-3 text-sm text-txt-soft">골프 스코어카드를 이미지로 만들어 공유하세요</p>
         </div>
