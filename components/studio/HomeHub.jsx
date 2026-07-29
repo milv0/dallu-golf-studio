@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
-import { defaultFlowHref, storedFlowHref } from "./StudioNav";
+import { defaultFlowHref, storedFlowHref, TopActions } from "./StudioNav";
 
 export default function HomeHub() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -10,6 +10,7 @@ export default function HomeHub() {
     round: defaultFlowHref("round"),
     custom: defaultFlowHref("custom"),
   });
+  const [theme, setTheme] = useState("light");
 
   useEffect(() => {
     setCurrentUser(loadCurrentUser());
@@ -23,9 +24,14 @@ export default function HomeHub() {
     clearCurrentUser();
     setCurrentUser(null);
   };
+  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
   const refreshPage = () => {
     if (typeof window !== "undefined") window.location.reload();
   };
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   const cards = [
     { href: flowHrefs.round, title: "내 라운드 기록", meta: "라운드 기반" },
@@ -44,17 +50,7 @@ export default function HomeHub() {
             Studio
           </h1>
         </button>
-        {currentUser ? (
-          <button type="button" onClick={logout}
-            className="shrink-0 rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-soft active:border-accent active:text-txt">
-            로그아웃
-          </button>
-        ) : (
-          <button type="button" disabled
-            className="shrink-0 cursor-not-allowed rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-faint opacity-70">
-            로그인 준비 중
-          </button>
-        )}
+        <TopActions currentUser={currentUser} onLogout={logout} theme={theme} onToggleTheme={toggleTheme} />
       </div>
 
       <FeatureNotice />
@@ -66,7 +62,7 @@ export default function HomeHub() {
 function FeatureNotice() {
   return (
     <div className="mb-4 rounded-xl border border-line bg-panel px-4 py-3 text-sm font-semibold leading-relaxed text-txt-soft">
-      로그인, 코스 DB, 내 라운드 정보 저장 등의 기능은 준비 중입니다.
+      로그인, 코스 DB, 내 라운드 정보 저장은 현재 비활성화되어 있습니다.
     </div>
   );
 }

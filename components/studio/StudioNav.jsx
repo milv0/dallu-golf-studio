@@ -78,9 +78,47 @@ function MobileIconButton({ label, href, onClick, children }) {
 
 function DisabledNavItem({ label }) {
   return (
-    <span className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
-      {label} 준비 중
+    <span aria-disabled="true" title="현재 비활성화되어 있습니다"
+      className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
+      {label}
     </span>
+  );
+}
+
+function ThemeButton({ theme, onToggleTheme }) {
+  return (
+    <button type="button" onClick={onToggleTheme}
+      className="rounded-full border border-line bg-panel px-2.5 py-1.5 text-xs font-bold text-txt-soft transition active:border-accent active:text-txt sm:px-3"
+      title="라이트/다크 테마 전환">
+      {theme === "dark" ? "라이트" : "다크"}
+    </button>
+  );
+}
+
+function LoginButton({ currentUser, onLogout }) {
+  if (currentUser) {
+    return (
+      <button type="button" onClick={onLogout}
+        className="rounded-full border border-line bg-panel px-2.5 py-1.5 text-xs font-semibold text-txt-soft transition active:border-accent active:text-txt sm:px-3">
+        로그아웃
+      </button>
+    );
+  }
+
+  return (
+    <button type="button" disabled title="로그인 기능은 현재 비활성화되어 있습니다"
+      className="cursor-not-allowed rounded-full border border-line bg-panel px-2.5 py-1.5 text-xs font-semibold text-txt-faint opacity-70 sm:px-3">
+      로그인
+    </button>
+  );
+}
+
+export function TopActions({ currentUser, onLogout, theme, onToggleTheme }) {
+  return (
+    <div className="flex shrink-0 items-center gap-1.5">
+      <ThemeButton theme={theme} onToggleTheme={onToggleTheme} />
+      <LoginButton currentUser={currentUser} onLogout={onLogout} />
+    </div>
   );
 }
 
@@ -97,15 +135,17 @@ function MobileTabLink({ href, label, active }) {
   );
 }
 
-export function MobileAppBar({ active }) {
+export function MobileAppBar({ active, currentUser, onLogout, theme, onToggleTheme }) {
   const refreshPage = () => {
     if (typeof window !== "undefined") window.location.reload();
   };
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/95 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur">
-      <div className="mx-auto flex max-w-[520px] items-center justify-between md:max-w-[980px]">
-        <div aria-hidden="true" className="h-11 w-11 shrink-0" />
+      <div className="mx-auto grid max-w-[520px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 md:max-w-[980px]">
+        <MobileIconButton label="홈" href="/">
+          <HomeIcon />
+        </MobileIconButton>
         <button type="button" onClick={refreshPage} aria-label="새로고침"
           className="min-w-0 px-3 text-center transition active:scale-[0.98] active:opacity-80">
           <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
@@ -115,9 +155,7 @@ export function MobileAppBar({ active }) {
             {getActiveLabel(active)}
           </div>
         </button>
-        <MobileIconButton label="홈" href="/">
-          <HomeIcon />
-        </MobileIconButton>
+        <TopActions currentUser={currentUser} onLogout={onLogout} theme={theme} onToggleTheme={onToggleTheme} />
       </div>
     </header>
   );
