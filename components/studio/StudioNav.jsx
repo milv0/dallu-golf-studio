@@ -70,20 +70,25 @@ function MobileTabLink({ href, label, active }) {
 }
 
 export function MobileAppBar({ active, onBack }) {
+  const refreshPage = () => {
+    if (typeof window !== "undefined") window.location.reload();
+  };
+
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/95 px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] backdrop-blur md:hidden">
       <div className="mx-auto flex max-w-[520px] items-center justify-between">
         <MobileIconButton label="뒤로가기" onClick={onBack}>
           <BackIcon />
         </MobileIconButton>
-        <div className="min-w-0 px-3 text-center">
+        <button type="button" onClick={refreshPage} aria-label="새로고침"
+          className="min-w-0 px-3 text-center transition active:scale-[0.98] active:opacity-80">
           <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
             @Dallu Golf
           </div>
           <div className="truncate font-head text-[24px] font-bold uppercase leading-none text-txt">
             {getActiveLabel(active)}
           </div>
-        </div>
+        </button>
         <MobileIconButton label="홈" href="/">
           <HomeIcon />
         </MobileIconButton>

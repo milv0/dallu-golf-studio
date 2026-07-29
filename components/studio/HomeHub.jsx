@@ -15,6 +15,9 @@ export default function HomeHub() {
     clearCurrentUser();
     setCurrentUser(null);
   };
+  const refreshPage = () => {
+    if (typeof window !== "undefined") window.location.reload();
+  };
 
   const cards = [
     { href: "/score-18", title: "18홀", meta: "수동 입력" },
@@ -60,14 +63,15 @@ export default function HomeHub() {
 
       <main className="mobile-home-main mx-auto max-w-[520px] px-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:hidden">
         <div className="mb-6 flex items-center justify-between gap-3">
-          <div className="min-w-0">
+          <button type="button" onClick={refreshPage} aria-label="새로고침"
+            className="min-w-0 text-left transition active:scale-[0.98] active:opacity-80">
             <div className="font-head text-[11px] font-semibold uppercase tracking-[0.18em] text-accent">
               @Dallu Golf
             </div>
             <h1 className="truncate font-head text-[34px] font-bold uppercase leading-none text-txt">
               Studio
             </h1>
-          </div>
+          </button>
           {currentUser ? (
             <button type="button" onClick={logout}
               className="shrink-0 rounded-full border border-line bg-panel px-3 py-1.5 text-xs font-semibold text-txt-soft active:border-accent active:text-txt">
