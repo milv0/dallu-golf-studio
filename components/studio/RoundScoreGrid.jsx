@@ -33,8 +33,8 @@ export default function HoleGroup({ holes, offset, setHole, scoreRefs, onScoreKe
   const scoreSum = holes.reduce((a, h) => a + (Number(h.score) || 0), 0);
   const hasScore = holes.some((h) => h.score !== "" && h.score != null);
   return (
-    <div className="mb-3 overflow-x-auto rounded-lg border border-line last:mb-0">
-      <div className="grid min-w-[540px] sm:min-w-0" style={{ gridTemplateColumns: "46px repeat(9, minmax(0,1fr)) 50px" }}>
+    <div className="mb-3 overflow-hidden rounded-lg border border-line last:mb-0">
+      <div className="grid" style={{ gridTemplateColumns: "46px repeat(9, minmax(0,1fr)) 50px" }}>
         <div {...metaLockProps} className="score-meta-lock flex items-center justify-center bg-panel py-1.5 font-head text-[10px] font-bold uppercase tracking-wider text-accent">
           {isBack ? "IN" : "OUT"}
         </div>
