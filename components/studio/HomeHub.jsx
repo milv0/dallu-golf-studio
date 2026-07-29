@@ -33,7 +33,7 @@ export default function HomeHub() {
 
   const cards = [
     { href: flowHrefs.round, title: "내 라운드 기록", desc: "18홀 라운드를 입력하고 9·3·1홀 카드를 자동 생성", icon: ClipboardList, accent: "border-t-[3px] border-t-accent" },
-    { href: flowHrefs.custom, title: "직접 만들기", desc: "원하는 홀 수만큼 자유롭게 스코어카드 제작", icon: Pencil, accent: "border-t-[3px] border-t-[#4a6cf7]" },
+    { href: flowHrefs.custom, title: "직접 만들기", desc: "원하는 홀 수만큼 자유롭게 스코어카드 제작", icon: Pencil, accent: "border-t-[3px] border-t-[#2bb673]" },
   ];
 
   return (
