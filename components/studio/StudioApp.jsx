@@ -21,7 +21,7 @@ import StudioShell from "./StudioShell";
 import HoleCardForm from "./HoleCardForm";
 import PanelHeader, { ResetButton } from "./PanelHeader";
 import { ConfirmDialog, Toast } from "./Feedback";
-import { createPngDataUrl, dataUrlToFile, downloadDataUrl, exportFileName } from "../../lib/exportImage";
+import { createPngDataUrl, dataUrlToFile, downloadDataUrl, exportFileName, progressFileName } from "../../lib/exportImage";
 import { readJsonStorage, STUDIO_STORAGE_KEYS, writeJsonStorage } from "../../lib/studioStorage";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
@@ -67,6 +67,39 @@ const emptyLinkedThree = () => ({
   showHoleNumbers: false,
   holes: [0, 1, 2],
 });
+
+function roundWithScoresThrough(round, startIndex, count, progress) {
+  const endIndex = startIndex + count;
+  return {
+    ...round,
+    holes: (round.holes || []).map((hole, idx) => ({
+      ...hole,
+      score: idx >= startIndex && idx < endIndex && idx >= startIndex + progress ? "" : hole.score,
+    })),
+  };
+}
+
+function threeHoleWithScoresThrough(data, progress) {
+  return {
+    ...data,
+    total: "",
+    toPar: "",
+    holes: (data.holes || []).slice(0, 3).map((hole, idx) => ({
+      ...hole,
+      score: idx >= progress ? "" : hole.score,
+    })),
+  };
+}
+
+function hasAnyScore(holes = []) {
+  return holes.some((hole) => hole?.score !== "" && hole?.score != null);
+}
+
+function nextFrame() {
+  return new Promise((resolve) => {
+    window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
+  });
+}
 
 function BasicInfoPanel({ title = "기본 정보", data, setMeta, clubNameList }) {
   return (
@@ -133,7 +166,9 @@ function StudioWorkspace({ mode }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [toast, setToast] = useState("");
   const [confirmRequest, setConfirmRequest] = useState(null);
+  const [batchExportStep, setBatchExportStep] = useState(null);
   const captureRef = useRef(null);
+  const batchCaptureRef = useRef(null);
   const scoreRefs = useRef([]);
 
   const isHole = mode === "hole";
@@ -275,6 +310,15 @@ function StudioWorkspace({ mode }) {
     while (holes.length < 3) holes.push({ hole: "", par: "", score: "" });
     return { showHoleNumbers: linkedThree.showHoleNumbers !== false, holes };
   }, [linkedThree, round.holes]);
+  const batchProgressCount = isScore18 ? 18 : isScore9 ? 9 : isScore3 ? 3 : 0;
+  const hasBatchScores = isScore18
+    ? activeSummary.thru > 0
+    : isScore9
+    ? reelsCustom ? manualNineSummary.thru > 0 : hasRoundScores
+    : isScore3
+    ? reelsCustom ? hasAnyScore(threeHole.holes) : hasAnyScore(linkedThreeData.holes)
+    : false;
+  const canBatchExport = !isHole && batchProgressCount > 0 && hasBatchScores && linkedThreeReady;
 
   const setMeta = (key, val) => setRound((r) => ({ ...r, [key]: val }));
   const setCustomMeta = (key, val) => setCustomRound((r) => ({ ...r, [key]: val }));
@@ -470,6 +514,29 @@ function StudioWorkspace({ mode }) {
     };
   }
 
+  function renderBatchExportCard(step) {
+    if (!step || isHole) return null;
+    if (isScore3) {
+      const data = threeHoleWithScoresThrough(reelsCustom ? threeHole : linkedThreeData, step);
+      return <ReelsThreeHoleCard data={data} theme={cardTheme} />;
+    }
+    if (isScore9) {
+      const startIndex = reelsCustom ? 0 : effRange === "back" ? 9 : 0;
+      const batchRound = roundWithScoresThrough(reelsCustom ? manualNineRound : scoreRound, startIndex, 9, step);
+      return (
+        <ReelsScorecard
+          round={batchRound}
+          summary={summarize(batchRound.holes)}
+          range={reelsCustom ? "front" : effRange}
+          theme={cardTheme}
+        />
+      );
+    }
+    const batchRound = roundWithScoresThrough(scoreRound, 0, 18, step);
+    const C = FORMATS[format].Comp;
+    return <C round={batchRound} summary={summarize(batchRound.holes)} range="all" theme={cardTheme} />;
+  }
+
   async function handleExport() {
     setBusy(true);
     try {
@@ -481,6 +548,28 @@ function StudioWorkspace({ mode }) {
     } catch (e) {
       showToast("내보내기 실패: " + e.message);
     } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleBatchExport() {
+    if (!canBatchExport) return;
+    setBusy(true);
+    try {
+      for (let step = 1; step <= batchProgressCount; step++) {
+        setBatchExportStep(step);
+        await nextFrame();
+        const exportNode = batchCaptureRef.current?.querySelector("svg");
+        if (!exportNode) throw new Error("진행 상태 내보내기 노드를 찾을 수 없습니다.");
+        const dataUrl = await createPngDataUrl({ node: exportNode, size, scale: exportScale });
+        downloadDataUrl(dataUrl, progressFileName({ isScore3, isScore9, step }));
+        await new Promise((resolve) => window.setTimeout(resolve, 120));
+      }
+      showToast(`${batchProgressCount}장 PNG 다운로드를 시작했습니다.`);
+    } catch (e) {
+      showToast("진행별 내보내기 실패: " + e.message);
+    } finally {
+      setBatchExportStep(null);
       setBusy(false);
     }
   }
@@ -699,6 +788,13 @@ function StudioWorkspace({ mode }) {
                   className="hidden rounded-lg bg-accent px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:inline-block">
                   {busy ? "생성 중…" : !canExport ? "입력 필요" : "PNG 다운로드"}
                 </button>
+                {batchProgressCount > 0 && (
+                  <button onClick={handleBatchExport} disabled={busy || !canBatchExport}
+                    title={!hasBatchScores ? "입력된 스코어가 필요합니다" : "홀 진행 상태별 PNG를 순차 다운로드합니다"}
+                    className="hidden rounded-lg border border-line bg-panel-2 px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-txt-soft transition hover:border-accent hover:text-txt disabled:opacity-60 md:inline-block">
+                    {busy ? "생성 중…" : `진행별 ${batchProgressCount}장`}
+                  </button>
+                )}
               </div>
             </div>
 
@@ -750,6 +846,13 @@ function StudioWorkspace({ mode }) {
           </PlacementPreview>
         </section>
       </div>
+      {batchExportStep != null && (
+        <div className="pointer-events-none fixed left-[-10000px] top-0 z-[-1]" aria-hidden="true">
+          <div ref={batchCaptureRef}>
+            {renderBatchExportCard(batchExportStep)}
+          </div>
+        </div>
+      )}
       <Toast message={toast} onClose={() => setToast("")} />
       <ConfirmDialog request={confirmRequest} onCancel={closeConfirm} onConfirm={runConfirm} />
     </StudioShell>
