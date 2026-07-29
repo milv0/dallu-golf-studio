@@ -7,7 +7,7 @@ import PlacementPreview from "./PlacementPreview";
 const QUALITY = [
   { scale: 1, label: "Reels", desc: "Instagram / TikTok" },
   { scale: 2, label: "YouTube", desc: "4K video overlay" },
-  { scale: 3, label: "Print", desc: "Max resolution" },
+  { scale: 3, label: "MAX", desc: "Max resolution" },
 ];
 
 export default function PreviewExportPanel({
