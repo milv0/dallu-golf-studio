@@ -15,7 +15,7 @@ export default function RoundRecords() {
           </a>
           <p className="mt-2 text-sm text-txt-soft">라운딩 기록 저장과 불러오기는 현재 비활성화되어 있습니다.</p>
         </div>
-        <a href="/Hole18"
+        <a href="/round"
           className="rounded-lg bg-accent px-3 py-1.5 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 sm:px-4 sm:py-2 sm:text-sm">
           18홀 입력
         </a>

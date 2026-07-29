@@ -103,15 +103,11 @@ function CustomPlayerControl({ value, onChange }) {
   );
 }
 
-function initialSourceMode(mode) {
-  return mode === "round" ? "round" : "custom";
+export default function StudioApp({ mode = "home", source } = {}) {
+  return mode === "home" ? <HomeHub /> : <StudioWorkspace mode={mode} source={source} />;
 }
 
-export default function StudioApp({ mode = "home" } = {}) {
-  return mode === "home" ? <HomeHub /> : <StudioWorkspace mode={mode} />;
-}
-
-function StudioWorkspace({ mode }) {
+function StudioWorkspace({ mode, source }) {
   const [round, setRound] = useState(emptyRound);
   const [customRound, setCustomRound] = useState(emptyRound);
   const [holeCard, setHoleCard] = useState(emptyHoleCard);
@@ -120,7 +116,7 @@ function StudioWorkspace({ mode }) {
   const [manualNine, setManualNine] = useState(emptyManualNine);
   const [linkedThree, setLinkedThree] = useState(emptyLinkedThree);
   const [holeRange, setHoleRange] = useState("all"); // 'all' | 'front' | 'back'
-  const [sourceMode, setSourceMode] = useState(() => initialSourceMode(mode)); // 'round' | 'custom'
+  const [sourceMode, setSourceMode] = useState(source || (mode === "round" ? "round" : "custom"));
   const [cardTheme, setCardTheme] = useState("light"); // 카드(프리셋) 색 테마
   const [exportScale, setExportScale] = useState(mode === "score3" ? 1 : 2);
   const [theme, setTheme] = useState("light");
@@ -187,19 +183,6 @@ function StudioWorkspace({ mode }) {
   useEffect(() => {
     setCurrentUser(loadCurrentUser());
   }, []);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const source = new URLSearchParams(window.location.search).get("source");
-    if (source === "custom") {
-      setSourceMode("custom");
-      return;
-    }
-    if (source === "linked") {
-      setSourceMode("round");
-      return;
-    }
-    setSourceMode(mode === "round" ? "round" : "custom");
-  }, [mode]);
   useEffect(() => {
     if (typeof window === "undefined" || !activeNav) return;
     const currentLink = linksFor(sourceMode).find((link) => link.id === activeNav);

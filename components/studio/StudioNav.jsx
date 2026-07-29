@@ -9,17 +9,17 @@ export const LAST_ROUTE_KEY = {
 };
 
 export const CUSTOM_LINKS = [
-  { href: "/Hole18?source=custom", label: "18홀", id: "score18" },
-  { href: "/Hole9?source=custom", label: "9홀", id: "score9" },
-  { href: "/Hole3?source=custom", label: "3홀", id: "score3" },
-  { href: "/hole?source=custom", label: "1홀", id: "hole" },
+  { href: "/custom/Hole18", label: "18홀", id: "score18" },
+  { href: "/custom/Hole9", label: "9홀", id: "score9" },
+  { href: "/custom/Hole3", label: "3홀", id: "score3" },
+  { href: "/custom/hole", label: "1홀", id: "hole" },
 ];
 
 export const ROUND_LINKS = [
   { href: "/round", label: "18홀", id: "score18" },
-  { href: "/Hole9?source=linked", label: "9홀", id: "score9" },
-  { href: "/Hole3?source=linked", label: "3홀", id: "score3" },
-  { href: "/hole?source=linked", label: "1홀", id: "hole" },
+  { href: "/round/Hole9", label: "9홀", id: "score9" },
+  { href: "/round/Hole3", label: "3홀", id: "score3" },
+  { href: "/round/hole", label: "1홀", id: "hole" },
 ];
 
 export function linksFor(sourceMode = "custom") {

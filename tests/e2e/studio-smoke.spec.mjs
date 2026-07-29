@@ -183,7 +183,7 @@ test("home and Hole18 round entry flow works without console errors", async ({ p
   await expect(page.getByRole("link", { name: "코스 DB" })).toHaveCount(0);
 
   await page.getByRole("link", { name: "시작하기" }).click();
-  await expect(page).toHaveURL(/\/Hole18$/);
+  await expect(page).toHaveURL(/\/custom\/Hole18$/);
 
   await page.getByLabel("선수명").fill("테스트 사용자");
   await page.getByLabel("날짜").fill("2026-07-28");
@@ -210,7 +210,7 @@ test("complete logged-in round journey connects records and every output page", 
   await mockCloudflareApis(page, { records });
   const consoleErrors = collectBrowserErrors(page);
 
-  await page.goto("/Hole18");
+  await page.goto("/round");
   await expect(page.getByRole("button", { name: "기록 저장" })).toBeDisabled();
 
   await page.getByLabel("선수명").fill("테스트 사용자");
@@ -235,7 +235,7 @@ test("complete logged-in round journey connects records and every output page", 
   await expect(page.getByText("테스트 사용자")).toBeVisible();
   await expect(page.getByText("18/18")).toBeVisible();
 
-  await page.goto("/Hole9");
+  await page.goto("/round/Hole9");
   await loadSavedRound(page);
   await expect(page.getByText("테스트CC")).toBeVisible();
   await page.getByRole("button", { name: /후반 IN 9/ }).click();
@@ -243,7 +243,7 @@ test("complete logged-in round journey connects records and every output page", 
   await expectCompactScoreRowAligned(page, 9);
   await expect(page.getByRole("button", { name: "PNG 다운로드" })).toBeEnabled();
 
-  await page.goto("/Hole3");
+  await page.goto("/round/Hole3");
   await loadSavedRound(page);
   await page.getByTitle("4-6번 홀 묶음 선택").click();
   await page.getByLabel("홀 번호 표시").uncheck();
@@ -251,7 +251,7 @@ test("complete logged-in round journey connects records and every output page", 
   await expect(page.locator(".preview-svg svg").first()).toBeVisible();
   await expectCompactScoreRowAligned(page, 3);
 
-  await page.goto("/hole");
+  await page.goto("/round/hole");
   await loadSavedRound(page);
   await page.getByTitle(/^5번 홀/).click();
   await expect(page.getByLabel("홀 번호")).toHaveValue("5");
@@ -270,7 +270,7 @@ test("manual 9-hole and 3-hole scorecards support keyboard relative input", asyn
   await mockCloudflareApis(page);
   const consoleErrors = collectBrowserErrors(page);
 
-  await page.goto("/Hole3?source=custom");
+  await page.goto("/custom/Hole3");
   await expect(page.locator(".preview-svg svg text").filter({ hasText: "-12" })).toHaveCount(0);
   await page.getByLabel("홀 번호 표시").uncheck();
   await page.getByLabel("3홀 직접입력 1번째 홀 파대비").click();
@@ -282,7 +282,7 @@ test("manual 9-hole and 3-hole scorecards support keyboard relative input", asyn
   await expect(page.locator(".preview-svg svg").first()).toBeVisible();
   await expectCompactScoreRowAligned(page, 3);
 
-  await page.goto("/Hole9?source=custom");
+  await page.goto("/custom/Hole9");
   await page.getByLabel("9홀 직접입력 1번째 홀 파대비").click();
   await page.getByLabel("9홀 직접입력 1번째 홀 파대비").press("ArrowRight");
   await expect(page.getByLabel("9홀 직접입력 1번째 홀 파대비")).toHaveValue("1");
@@ -329,7 +329,7 @@ test("hole card club picker handles numbered and category club input", async ({ 
   await mockCloudflareApis(page);
   const consoleErrors = collectBrowserErrors(page);
 
-  await page.goto("/hole");
+  await page.goto("/custom/hole");
   await page.getByLabel("홀 번호").fill("7");
   await page.getByLabel("PAR").fill("4");
   await page.getByLabel("현재 타수").fill("3");
@@ -360,7 +360,7 @@ test("linked score pages can open saved-round chooser state", async ({ page }) =
   await mockCloudflareApis(page);
   const consoleErrors = collectBrowserErrors(page);
 
-  await page.goto("/Hole9");
+  await page.goto("/round/Hole9");
   await expect(page.getByRole("button", { name: "라운드 선택" })).toBeVisible();
   await page.getByRole("button", { name: "라운드 선택" }).click();
   await expect(page.getByText(/로그인이 필요합니다|라운딩 기록 불러오는 중|저장된 라운딩이 없습니다|DB 연결 실패/)).toBeVisible();

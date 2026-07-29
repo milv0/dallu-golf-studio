@@ -15,19 +15,19 @@
 
 ```text
 /
-├─ /rounds (redirect-only)
+├─ /rounds (redirect → /round)
 │  ├─ /round
-│  ├─ /Hole9?source=linked
-│  ├─ /Hole3?source=linked
-│  └─ /hole?source=linked
-└─ /custom (redirect-only)
-   ├─ /Hole18?source=custom
-   ├─ /Hole9?source=custom
-   ├─ /Hole3?source=custom
-   └─ /hole?source=custom
+│  ├─ /round/Hole9
+│  ├─ /round/Hole3
+│  └─ /round/hole
+└─ /custom (redirect → 마지막 직접 만들기 탭)
+   ├─ /custom/Hole18
+   ├─ /custom/Hole9
+   ├─ /custom/Hole3
+   └─ /custom/hole
 ```
 
-`/Hole9`, `/Hole3`, `/hole`처럼 `source` query 없이 직접 진입하면 `직접 만들기` 흐름으로 처리한다. `내 라운드 기록` 흐름은 반드시 `/rounds` 탭 또는 `source=linked` 링크를 통해 진입한다.
+경로 세그먼트로 `round`/`custom` 모드를 구분한다. 쿼리 파라미터를 사용하지 않는다.
 
 ## 홈
 
@@ -36,7 +36,7 @@
 - `내 라운드 기록`: 라운드 입력 기반 연동 작업.
 - `직접 만들기`: 라운드 저장과 분리된 수동 제작 작업.
 - 홈 카드는 `/rounds`, `/custom` 중간 화면을 거치지 않고 마지막 작업 탭으로 바로 이동한다.
-- `/custom`은 마지막 직접 만들기 탭으로 바로 이동한다. 마지막 기록이 없으면 `/Hole18?source=custom`으로 이동한다.
+- `/custom`은 마지막 직접 만들기 탭으로 바로 이동한다. 마지막 기록이 없으면 `/custom/Hole18`으로 이동한다.
 - `/rounds`는 마지막 내 라운드 기록 탭으로 바로 이동한다. 마지막 기록이 없으면 `/round`로 이동한다.
 - `/custom`, `/rounds`는 직접 주소로 들어온 경우를 위한 리다이렉트 전용 경로이며 화면을 렌더링하지 않는다.
 - 로그인, 코스 DB, 내 라운드 저장은 공개 UI에서 비활성화한다.
@@ -57,9 +57,9 @@
 ### 연결 규칙
 
 - `/round`에서 18홀 라운드 정보를 입력한다.
-- `/Hole9?source=linked`는 `round.holes`에서 전반/후반 9홀을 읽는다.
-- `/Hole3?source=linked`는 `round.holes`에서 선택된 연속 3홀을 읽는다.
-- `/hole?source=linked`는 `round.holes`에서 선택 홀의 PAR, 현재 타수, 누적 토탈을 불러온다.
+- `/round/Hole9`는 `round.holes`에서 전반/후반 9홀을 읽는다.
+- `/round/Hole3`는 `round.holes`에서 선택된 연속 3홀을 읽는다.
+- `/round/hole`는 `round.holes`에서 선택 홀의 PAR, 현재 타수, 누적 토탈을 불러온다.
 - 즉, 내 라운드 기록에서는 18홀에 입력한 스코어와 PAR가 9홀, 3홀, 1홀에 반영되어야 한다.
 - 이 트리는 절대 끊으면 안 된다.
 
