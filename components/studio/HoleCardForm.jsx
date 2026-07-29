@@ -1,15 +1,32 @@
 "use client";
 
-import { ClubField, Field } from "./StudioFields";
+import { ClubField } from "./StudioFields";
 import PanelHeader, { ResetButton } from "./PanelHeader";
+
+function CoreInput({ label, value, onChange, placeholder, inputMode = "text" }) {
+  return (
+    <label className="block min-w-0 border-l border-line first:border-l-0">
+      <span className="block bg-panel py-0.5 text-center font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">
+        {label}
+      </span>
+      <input
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        inputMode={inputMode}
+        className="w-full border-t border-line bg-transparent px-1 py-3 text-center font-mono text-xl font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent"
+      />
+    </label>
+  );
+}
 
 export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound, onReset }) {
   return (
-    <div className="rounded-xl border border-line bg-panel p-4">
+    <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
       <PanelHeader title="현재 홀 정보">
         {onReset ? <ResetButton onClick={onReset} /> : null}
       </PanelHeader>
-      <div className="mb-3">
+      <div className="mb-2">
         <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
           홀 선택 (PAR·토탈 자동 연동)
         </span>
@@ -32,13 +49,18 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
             );
           })}
         </div>
-        <div className="mt-1 text-[11px] text-txt-faint">
-          라임 배경 = 선택된 홀
+      </div>
+
+      <div className="overflow-hidden rounded-lg border border-line">
+        <div className="grid grid-cols-4">
+          <CoreInput label="홀" value={holeCard.hole} onChange={(v) => setHC("hole", v)} placeholder="1" inputMode="numeric" />
+          <CoreInput label="P" value={holeCard.par} onChange={(v) => setHC("par", v)} placeholder="4" inputMode="numeric" />
+          <CoreInput label="타" value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="4" inputMode="numeric" />
+          <CoreInput label="±" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="E" />
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="홀 번호" value={holeCard.hole} onChange={(v) => setHC("hole", v)} placeholder="1" />
-        <Field label="PAR" value={holeCard.par} onChange={(v) => setHC("par", v)} placeholder="4" />
+
+      <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
           <div className="mb-1 flex items-center justify-between">
             <span className="font-head text-[11px] uppercase tracking-widest text-txt-faint">거리</span>
@@ -56,8 +78,6 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
             placeholder={holeCard.unit === "yd" ? "212" : "195"}
             className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
         </div>
-        <Field label="토탈 (E, -2...)" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="E" />
-        <Field label="현재 타수" value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="4" />
         <ClubField value={holeCard.club} onChange={(v) => setHC("club", v)} />
       </div>
       <label className="mt-3 flex items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm font-semibold text-txt-soft">

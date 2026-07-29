@@ -15,7 +15,7 @@ import { ManualNineForm, ThreeHoleForm, LinkedThreeHolePanel } from "./ManualSco
 import PlacementPreview from "./PlacementPreview";
 import RoundSourcePanel from "./RoundSourcePanel";
 import HoleGroup from "./RoundScoreGrid";
-import { RelativeScoreHint } from "./ScoreInputs";
+import { RelativeScoreHint, ScoreModeToggle } from "./ScoreInputs";
 import { ClubAutocomplete, Field } from "./StudioFields";
 import StudioShell from "./StudioShell";
 import HoleCardForm from "./HoleCardForm";
@@ -564,15 +564,7 @@ function StudioWorkspace({ mode }) {
                       onChange={(v) => setCustomMeta("player", v)}
                     />
                   )}
-                  <div className="flex overflow-hidden rounded-lg border border-line">
-                    {[["strokes", "타수"], ["relative", "파대비"]].map(([key, label]) => (
-                      <button key={key} type="button" onClick={() => setScoreMode(key)}
-                        className={"px-3 py-1 text-xs font-semibold transition " +
-                          (scoreMode === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                        {label}
-                      </button>
-                    ))}
-                  </div>
+                  <ScoreModeToggle value={scoreMode} onChange={setScoreMode} />
                   <button type="button" disabled
                     className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-faint opacity-70">
                     기록 저장 준비 중

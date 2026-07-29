@@ -1,9 +1,10 @@
 "use client";
 
-import { useRef } from "react";
-import { RelativeScoreHint, RelativeScoreInput, manualScoreClass } from "./ScoreInputs";
+import { useRef, useState } from "react";
+import { RelativeScoreHint, ScoreModeToggle } from "./ScoreInputs";
 import { Field } from "./StudioFields";
 import PanelHeader, { ResetButton } from "./PanelHeader";
+import ScoreEntryGrid from "./ScoreEntryGrid";
 
 function useScoreRefs() {
   const scoreRefs = useRef([]);
@@ -18,56 +19,34 @@ function useScoreRefs() {
 
 export function ThreeHoleForm({ data, setField, setHole, onReset }) {
   const { scoreRefs, handleScoreKey } = useScoreRefs();
+  const [scoreMode, setScoreMode] = useState("strokes");
 
   return (
-    <div className="rounded-xl border border-line bg-panel p-4">
-      <PanelHeader title="3홀 카드 수동 입력">
+    <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
+      <PanelHeader title="3홀 입력">
+        <ScoreModeToggle value={scoreMode} onChange={setScoreMode} />
         {onReset ? <ResetButton onClick={onReset} /> : null}
       </PanelHeader>
-      <label className="mb-3 flex items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm font-semibold text-txt-soft">
+      <label className="mb-2 flex items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-sm font-semibold text-txt-soft">
         <input type="checkbox" checked={data.showHoleNumbers !== false}
           onChange={(e) => setField("showHoleNumbers", e.target.checked)}
           className="h-4 w-4 accent-[var(--color-accent)]" />
         홀 번호 표시
       </label>
 
-      <div className="overflow-hidden rounded-lg border border-line">
-        <div className="grid grid-cols-[54px_repeat(3,minmax(0,1fr))] border-b border-line bg-panel-2 text-center font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint">
-          <div className="py-2">입력</div>
-          {[1, 2, 3].map((n) => <div key={n} className="border-l border-line py-2">Hole {n}</div>)}
-        </div>
-        {[
-          ["hole", "홀", "1"],
-          ["par", "PAR", "4"],
-          ["score", "파대비", "0"],
-        ].map(([key, label, placeholder]) => (
-          <div key={key} className="grid grid-cols-[54px_repeat(3,minmax(0,1fr))] border-b border-line last:border-b-0">
-            <div className="flex items-center justify-center bg-panel-2 font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint">
-              {label}
-            </div>
-            {data.holes.map((hole, i) => (
-              key === "score" ? (
-                <RelativeScoreInput key={i}
-                  idx={i}
-                  par={hole.par}
-                  score={hole.score}
-                  onScore={(value) => setHole(i, "score", value)}
-                  scoreRefs={scoreRefs}
-                  onScoreKey={handleScoreKey}
-                  ariaLabel={`3홀 직접입력 ${i + 1}번째 홀 파대비`} />
-              ) : (
-                <input key={i} value={hole[key] || ""} onChange={(e) => setHole(i, key, e.target.value)}
-                  placeholder={placeholder}
-                  inputMode={key === "hole" ? "text" : "numeric"}
-                  className="border-l border-line bg-transparent px-2 py-2.5 text-center font-mono text-sm font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent" />
-              )
-            ))}
-          </div>
-        ))}
-      </div>
-      <RelativeScoreHint className="mt-2" />
+      <ScoreEntryGrid
+        holes={data.holes}
+        setHole={setHole}
+        scoreRefs={scoreRefs}
+        onScoreKey={handleScoreKey}
+        scoreMode={scoreMode}
+        showSum={false}
+        showHoleNumbers={data.showHoleNumbers !== false}
+        editableHoleNumbers
+      />
+      {scoreMode === "relative" && <RelativeScoreHint className="mt-2" />}
 
-      <div className="mt-3">
+      <div className="mt-2">
         <Field label="TO PAR 직접입력" value={data.toPar} onChange={(v) => setField("toPar", v)} placeholder="자동 계산" />
       </div>
     </div>
@@ -128,47 +107,24 @@ export function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onSelec
 
 export function ManualNineForm({ data, setHole, onReset }) {
   const { scoreRefs, handleScoreKey } = useScoreRefs();
+  const [scoreMode, setScoreMode] = useState("strokes");
 
   return (
-    <div className="rounded-xl border border-line bg-panel p-4">
-      <PanelHeader title="9홀 직접 입력">
+    <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
+      <PanelHeader title="9홀 입력">
+        <ScoreModeToggle value={scoreMode} onChange={setScoreMode} />
         {onReset ? <ResetButton onClick={onReset} /> : null}
       </PanelHeader>
-      <div className="overflow-hidden rounded-lg border border-line">
-        <div className="grid" style={{ gridTemplateColumns: "54px repeat(9, minmax(0,1fr))" }}>
-          <div className="flex items-center justify-center bg-panel-2 py-2 font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint">
-            홀
-          </div>
-          {data.holes.map((hole, i) => (
-            <input key={i} value={hole.hole || ""} onChange={(e) => setHole(i, "hole", e.target.value)}
-              placeholder={String(i + 1)}
-              className="border-l border-line bg-panel-2 px-1 py-2 text-center font-mono text-[12px] font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10" />
-          ))}
-          <div className="flex items-center justify-center border-t border-line bg-panel-2 py-2 font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint">
-            PAR
-          </div>
-          {data.holes.map((hole, i) => (
-            <input key={i} value={hole.par || ""} onChange={(e) => setHole(i, "par", e.target.value)}
-              placeholder="4" inputMode="numeric"
-              className="border-l border-t border-line bg-transparent px-1 py-2 text-center font-mono text-sm font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10" />
-          ))}
-          <div className="flex items-center justify-center border-t border-line bg-panel-2 py-2 font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint">
-            파대비
-          </div>
-          {data.holes.map((hole, i) => (
-            <RelativeScoreInput key={i}
-              idx={i}
-              par={hole.par}
-              score={hole.score}
-              onScore={(value) => setHole(i, "score", value)}
-              scoreRefs={scoreRefs}
-              onScoreKey={handleScoreKey}
-              ariaLabel={`9홀 직접입력 ${i + 1}번째 홀 파대비`}
-              className={`${manualScoreClass} border-t`} />
-          ))}
-        </div>
-      </div>
-      <RelativeScoreHint className="mt-2" />
+      <ScoreEntryGrid
+        holes={data.holes}
+        setHole={setHole}
+        scoreRefs={scoreRefs}
+        onScoreKey={handleScoreKey}
+        scoreMode={scoreMode}
+        showSum
+        editableHoleNumbers
+      />
+      {scoreMode === "relative" && <RelativeScoreHint className="mt-2" />}
     </div>
   );
 }
