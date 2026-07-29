@@ -44,7 +44,7 @@ const emptyHoleCard = () => ({
 });
 
 const emptyThreeHoleCard = () => ({
-  showHoleNumbers: true,
+  showHoleNumbers: false,
   total: "",
   toPar: "",
   holes: [
@@ -59,7 +59,7 @@ const emptyManualNine = () => ({
 });
 
 const emptyLinkedThree = () => ({
-  showHoleNumbers: true,
+  showHoleNumbers: false,
   holes: [0, 1, 2],
 });
 
@@ -199,6 +199,15 @@ function StudioWorkspace({ mode }) {
       ...r,
       holes: r.holes.map((h, idx) => (idx === i ? { ...h, [key]: val } : h)),
     }));
+  const resetRound = () => {
+    if (typeof window !== "undefined" && !window.confirm("18홀 스코어카드를 초기화할까요?")) return;
+    const next = emptyRound();
+    setRound(next);
+    setHoleRange("all");
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("sc-round", JSON.stringify(next));
+    }
+  };
 
   const handleScoreKey = (e, idx) => {
     if (e.key === "Enter") {
@@ -239,7 +248,7 @@ function StudioWorkspace({ mode }) {
     try { const hc = JSON.parse(localStorage.getItem("sc-holecard") || "null"); if (hc && typeof hc === "object") setHoleCard(hc); } catch {}
     try {
       const th = JSON.parse(localStorage.getItem("sc-threehole") || "null");
-      if (th && Array.isArray(th.holes) && th.holes.length === 3) setThreeHole(th);
+      if (th && Array.isArray(th.holes) && th.holes.length === 3) setThreeHole({ ...th, showHoleNumbers: false });
     } catch {}
     try {
       const mn = JSON.parse(localStorage.getItem("sc-manual-nine") || "null");
@@ -247,7 +256,7 @@ function StudioWorkspace({ mode }) {
     } catch {}
     try {
       const lt = JSON.parse(localStorage.getItem("sc-linked-three") || "null");
-      if (lt && Array.isArray(lt.holes)) setLinkedThree(lt);
+      if (lt && Array.isArray(lt.holes)) setLinkedThree({ ...lt, showHoleNumbers: false });
     } catch {}
     loadedRef.current = true;
   }, []);
@@ -456,6 +465,10 @@ function StudioWorkspace({ mode }) {
                     <button type="button" disabled
                       className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-faint opacity-70">
                       기록 저장 준비 중
+                    </button>
+                    <button type="button" onClick={resetRound}
+                      className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-soft transition hover:border-[#ff6b57] hover:text-[#ff6b57]">
+                      초기화
                     </button>
                   </div>
                 </div>

@@ -51,6 +51,10 @@ export default function HomeHub() {
         )}
       </div>
 
+      <div className="mb-4 rounded-xl border border-line bg-panel px-4 py-3 text-sm font-semibold leading-relaxed text-txt-soft">
+        로그인, 코스 DB, 내 라운드 정보 저장 등의 기능은 준비 중입니다.
+      </div>
+
       <div className="grid gap-3 sm:grid-cols-3">
         {cards.map((item) => (
           <a key={item.href} href={item.href}
