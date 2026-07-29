@@ -10,24 +10,12 @@ const FLOW_CONFIG = {
     title: "직접 만들기",
     notice: "라운드 저장과 분리된 직접 입력 작업입니다. 18홀, 9홀, 3홀, 1홀은 같은 커스텀 정보를 공유합니다.",
     source: "custom",
-    cards: [
-      { href: "/score-18?source=custom", title: "18홀", meta: "커스텀" },
-      { href: "/score-9?source=custom", title: "9홀", meta: "커스텀" },
-      { href: "/score-3?source=custom", title: "3홀", meta: "커스텀" },
-      { href: "/hole?source=custom", title: "1홀", meta: "커스텀" },
-    ],
   },
   round: {
     eyebrow: "Round Source",
     title: "내 라운드 기록",
     notice: "18홀 라운드 정보를 기준으로 18홀, 9홀, 3홀, 1홀 출력물을 연동합니다.",
     source: "round",
-    cards: [
-      { href: "/round", title: "18홀", meta: "라운드 입력" },
-      { href: "/score-9?source=linked", title: "9홀", meta: "라운드 연동" },
-      { href: "/score-3?source=linked", title: "3홀", meta: "라운드 연동" },
-      { href: "/hole?source=linked", title: "1홀", meta: "라운드 연동" },
-    ],
   },
 };
 
@@ -69,7 +57,6 @@ export default function FlowHub({ flow = "custom" }) {
           )}
         </div>
         <FlowNotice text={config.notice} />
-        <CardGrid cards={config.cards} desktop />
       </main>
 
       <main className="mobile-home-main mx-auto max-w-[520px] px-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:hidden">
@@ -96,7 +83,6 @@ export default function FlowHub({ flow = "custom" }) {
         </div>
         <MobileTabBar sourceMode={config.source} />
         <FlowNotice text={config.notice} />
-        <CardGrid cards={config.cards} />
       </main>
     </>
   );
@@ -106,24 +92,6 @@ function FlowNotice({ text }) {
   return (
     <div className="mb-4 rounded-xl border border-line bg-panel px-4 py-3 text-sm font-semibold leading-relaxed text-txt-soft">
       {text}
-    </div>
-  );
-}
-
-function CardGrid({ cards, desktop = false }) {
-  return (
-    <div className={desktop ? "grid gap-3 md:grid-cols-4" : "grid gap-3"}>
-      {cards.map((item) => (
-        <a key={item.href} href={item.href}
-          className="rounded-xl border border-line bg-panel p-5 transition hover:border-accent hover:bg-panel-2 active:border-accent active:bg-panel-2">
-          <div className={"font-head font-bold uppercase leading-none text-txt " + (desktop ? "text-[34px]" : "text-[42px]")}>
-            {item.title}
-          </div>
-          <div className="mt-2 font-mono text-[11px] font-bold uppercase tracking-wider text-accent">
-            {item.meta}
-          </div>
-        </a>
-      ))}
     </div>
   );
 }

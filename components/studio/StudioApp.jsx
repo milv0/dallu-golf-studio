@@ -22,10 +22,11 @@ import HoleCardForm from "./HoleCardForm";
 import PanelHeader, { ResetButton } from "./PanelHeader";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
-const PREVIEW_MAX_H = 340;
-const PREVIEW_MOBILE_MAX_H = 430;
+const PREVIEW_MAX_H = 380;
+const PREVIEW_MOBILE_MAX_H = 460;
 const COURSE_DB_ENABLED = false;
 const REELS_SOURCE_SWITCH_ENABLED = false;
+const DEFAULT_CUSTOM_PLAYER = "PLAYER";
 
 const FORMATS = {
   youtube: { Comp: HoleByHoleStrip, sizeFor: ytSizeFor },
@@ -83,6 +84,22 @@ function BasicInfoPanel({ title = "기본 정보", data, setMeta, clubNameList }
   );
 }
 
+function CustomPlayerControl({ value, onChange }) {
+  return (
+    <label className="flex min-w-[160px] items-center gap-2 rounded-lg border border-line bg-panel-2 px-2 py-1">
+      <span className="font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">
+        이름
+      </span>
+      <input
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={DEFAULT_CUSTOM_PLAYER}
+        className="min-w-0 flex-1 bg-transparent text-right font-head text-sm font-bold uppercase text-txt outline-none placeholder:text-txt-faint"
+      />
+    </label>
+  );
+}
+
 export default function StudioApp({ mode = "home" } = {}) {
   return mode === "home" ? <HomeHub /> : <StudioWorkspace mode={mode} />;
 }
@@ -120,7 +137,13 @@ function StudioWorkspace({ mode }) {
   const reelsCustom = isReelsSizedScore && isFullCustom && reelsSource === "custom";
   const isRoundEditor = isScore18;
   const usesRoundSource = !isFullCustom && ((isReelsSizedScore && !reelsCustom) || mode === "hole");
-  const scoreRound = isFullCustom ? customRound : round;
+  const customDisplayRound = useMemo(() => ({
+    ...customRound,
+    player: (customRound.player || "").trim() || DEFAULT_CUSTOM_PLAYER,
+    course: "",
+    date: "",
+  }), [customRound]);
+  const scoreRound = isFullCustom ? customDisplayRound : round;
   const activeHoleCard = isFullCustom ? customHoleCard : holeCard;
   const holeData = { player: scoreRound.player, ...activeHoleCard };
   const activeNav = isScore18 ? "score18" : isScore9 ? "score9" : isScore3 ? "score3" : isHole ? "hole" : "";
@@ -128,8 +151,8 @@ function StudioWorkspace({ mode }) {
   const availableRanges = RANGES.filter(([k]) => k !== "all");
   const effRange = isScore18 ? "all" : isReelsSizedScore && holeRange === "all" ? "front" : holeRange;
   const size = isHole ? holeSizeFor(holeData) : reelsV3 ? SIZE_REELS_THREE : FORMATS[format].sizeFor(effRange);
-  const previewMaxWidth = Math.min(size.w, PREVIEW_MAX_H * (size.w / size.h)) * (reelsV3 ? 0.72 : 1);
-  const previewMobileMaxWidth = Math.min(size.w, PREVIEW_MOBILE_MAX_H * (size.w / size.h)) * (reelsV3 ? 0.9 : 1);
+  const previewMaxWidth = Math.min(size.w, PREVIEW_MAX_H * (size.w / size.h)) * (reelsV3 ? 0.9 : 1);
+  const previewMobileMaxWidth = Math.min(size.w, PREVIEW_MOBILE_MAX_H * (size.w / size.h));
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -164,7 +187,9 @@ function StudioWorkspace({ mode }) {
   const summary = useMemo(() => summarize(round.holes), [round]);
   const customSummary = useMemo(() => summarize(customRound.holes), [customRound]);
   const activeSummary = isFullCustom ? customSummary : summary;
-  const hasRoundMeta = Boolean((scoreRound.player || "").trim() || (scoreRound.course || "").trim() || (scoreRound.date || "").trim());
+  const hasRoundMeta = isFullCustom
+    ? Boolean((customRound.player || "").trim())
+    : Boolean((scoreRound.player || "").trim() || (scoreRound.course || "").trim() || (scoreRound.date || "").trim());
   const hasRoundScores = activeSummary.thru > 0;
   const hasRoundData = hasRoundMeta || hasRoundScores;
   const linkedThreeCount = Array.isArray(linkedThree.holes) ? Math.min(linkedThree.holes.length, 3) : 0;
@@ -183,15 +208,15 @@ function StudioWorkspace({ mode }) {
       ? "현재 홀 정보를 먼저 입력하세요."
       : "";
   const manualNineRound = useMemo(() => ({
-    player: customRound.player,
+    player: (customRound.player || "").trim() || DEFAULT_CUSTOM_PLAYER,
     country: "",
-    course: customRound.course,
-    date: customRound.date,
+    course: "",
+    date: "",
     holes: [
       ...manualNine.holes.map((h) => ({ par: h.par, score: h.score })),
       ...Array.from({ length: 9 }, () => ({ par: 4, score: "" })),
     ],
-  }), [customRound.course, customRound.date, customRound.player, manualNine]);
+  }), [customRound.player, manualNine]);
   const manualNineSummary = useMemo(() => summarize(manualNineRound.holes), [manualNineRound]);
   const linkedThreeData = useMemo(() => {
     const holes = (linkedThree.holes || []).slice(0, 3).map((idx) => {
@@ -277,9 +302,9 @@ function StudioWorkspace({ mode }) {
     setCustomRound((prev) => ({
       ...next,
       player: prev.player,
-      country: prev.country,
-      course: prev.course,
-      date: prev.date,
+      country: "",
+      course: "",
+      date: "",
     }));
     setHoleRange("all");
   };
@@ -343,7 +368,9 @@ function StudioWorkspace({ mode }) {
     try {
       const cs = JSON.parse(localStorage.getItem("sc-custom-session") || "null");
       if (cs && typeof cs === "object") {
-        if (cs.round && Array.isArray(cs.round.holes)) setCustomRound(cs.round);
+        if (cs.round && Array.isArray(cs.round.holes)) {
+          setCustomRound({ ...cs.round, country: "", course: "", date: "" });
+        }
         if (cs.holeCard && typeof cs.holeCard === "object") setCustomHoleCard(cs.holeCard);
         if (cs.threeHole && Array.isArray(cs.threeHole.holes) && cs.threeHole.holes.length === 3) setThreeHole(cs.threeHole);
         if (cs.manualNine && Array.isArray(cs.manualNine.holes) && cs.manualNine.holes.length === 9) setManualNine(cs.manualNine);
@@ -498,15 +525,15 @@ function StudioWorkspace({ mode }) {
                 <ManualNineForm data={manualNine} setHole={setManualNineHole} onReset={resetManualNine} />
               )}
             </div>
-          ) : isRoundEditor ? (
+          ) : isRoundEditor && !isFullCustom ? (
             <div className={"order-[20] lg:order-none " + (!isHole ? "grid items-start gap-4 md:grid-cols-2" : "")}>
               <BasicInfoPanel
-                title={isFullCustom ? "커스텀 정보" : "기본 정보"}
+                title="기본 정보"
                 data={scoreRound}
-                setMeta={isFullCustom ? setCustomMeta : setMeta}
+                setMeta={setMeta}
                 clubNameList={clubNameList}
               />
-              {!isFullCustom && !isHole && (
+              {!isHole && (
                 <CoursePresets builtin={builtinCourses} favorites={favorites}
                                selectedClub={round.course}
                                disabled={!COURSE_DB_ENABLED}
@@ -526,22 +553,17 @@ function StudioWorkspace({ mode }) {
             </div>
           ) : null}
 
-          {isFullCustom && !isRoundEditor && (
-            <div className="order-[20] lg:order-none">
-              <BasicInfoPanel
-                title="커스텀 정보"
-                data={customRound}
-                setMeta={setCustomMeta}
-                clubNameList={clubNameList}
-              />
-            </div>
-          )}
-
           {/* 라운드 스코어카드: 홀별 입력 */}
           {isRoundEditor && !isHole && !reelsCustom && (
             <div className="order-[10] lg:order-none">
-              <div className="rounded-xl border border-line bg-panel p-4">
+              <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
                 <PanelHeader title="스코어 입력">
+                  {isFullCustom && (
+                    <CustomPlayerControl
+                      value={customRound.player}
+                      onChange={(v) => setCustomMeta("player", v)}
+                    />
+                  )}
                   <div className="flex overflow-hidden rounded-lg border border-line">
                     {[["strokes", "타수"], ["relative", "파대비"]].map(([key, label]) => (
                       <button key={key} type="button" onClick={() => setScoreMode(key)}
@@ -564,7 +586,7 @@ function StudioWorkspace({ mode }) {
                            scoreRefs={scoreRefs} onScoreKey={handleScoreKey} scoreMode={scoreMode} />
                 <HoleGroup label="BACK 9" holes={Back} offset={9} setHole={setScoreHole}
                            scoreRefs={scoreRefs} onScoreKey={handleScoreKey} scoreMode={scoreMode} />
-                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line pt-3 text-[12px] text-txt-soft">
+                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line pt-2 text-[11px] text-txt-soft">
                   <span>
                     PAR{" "}
                     <b className={"font-mono " + (activeSummary.totalPar === 72 ? "text-txt" : "text-[#ffb648]")}>
@@ -585,17 +607,19 @@ function StudioWorkspace({ mode }) {
                     </span>
                   )}
                 </div>
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3">
-                  <div className="text-[12px] text-txt-faint">
-                    라운딩 기록 저장은 준비 중입니다.
+                {!isFullCustom && (
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-2">
+                    <div className="text-[11px] text-txt-faint">
+                      라운딩 기록 저장은 준비 중입니다.
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button type="button" disabled
+                        className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-2.5 py-1 text-[11px] font-semibold text-txt-faint opacity-70">
+                        내 라운딩 준비 중
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button type="button" disabled
-                      className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-semibold text-txt-faint opacity-70">
-                      내 라운딩 준비 중
-                    </button>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -613,6 +637,14 @@ function StudioWorkspace({ mode }) {
 
           {isHole && (
             <div className="order-[10] lg:order-none">
+              {isFullCustom && (
+                <div className="mb-3 flex justify-end">
+                  <CustomPlayerControl
+                    value={customRound.player}
+                    onChange={(v) => setCustomMeta("player", v)}
+                  />
+                </div>
+              )}
               <HoleCardForm
                 round={scoreRound}
                 holeCard={activeHoleCard}
@@ -646,61 +678,59 @@ function StudioWorkspace({ mode }) {
             </div>
           )}
 
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-1.5 rounded-lg border border-line bg-panel px-2 py-1.5 md:mb-3 md:gap-2 md:rounded-xl md:px-3 md:py-2">
-            <div className="font-head text-xs font-semibold uppercase tracking-widest text-txt-soft md:text-sm">
-              미리보기 <span className="hidden text-txt-faint sm:inline">(투명 배경)</span>
-            </div>
-            <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-              <div className="flex overflow-hidden rounded-lg border border-line">
-                {[["dark", "다크"], ["light", "라이트"]].map(([key, label]) => (
-                  <button key={key} onClick={() => setCardTheme(key)}
-                    className={"px-2 py-1 text-[11px] font-bold md:px-3 md:py-1.5 md:text-xs " +
-                      (cardTheme === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                    {label}
-                  </button>
-                ))}
+          <div className="rounded-xl border border-line bg-panel p-2 md:p-3">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-1.5 md:gap-2">
+              <div className="font-head text-xs font-semibold uppercase tracking-widest text-txt-soft md:text-sm">
+                미리보기 <span className="hidden text-txt-faint sm:inline">(투명 배경)</span>
               </div>
-              <div className="flex overflow-hidden rounded-lg border border-line">
-                {QUALITY.map((qz) => (
-                  <button key={qz.scale} onClick={() => setExportScale(qz.scale)}
-                    title={`${qz.desc} · ${size.w * qz.scale}×${size.h * qz.scale}px`}
-                    className={"px-2 py-1 text-[11px] font-bold md:px-3 md:py-1.5 md:text-xs " +
-                      (exportScale === qz.scale ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                    {qz.label}
-                  </button>
-                ))}
+              <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
+                <div className="flex overflow-hidden rounded-lg border border-line">
+                  {[["dark", "다크"], ["light", "라이트"]].map(([key, label]) => (
+                    <button key={key} onClick={() => setCardTheme(key)}
+                      className={"px-2 py-1 text-[11px] font-bold md:px-3 md:py-1.5 md:text-xs " +
+                        (cardTheme === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex overflow-hidden rounded-lg border border-line">
+                  {QUALITY.map((qz) => (
+                    <button key={qz.scale} onClick={() => setExportScale(qz.scale)}
+                      title={`${qz.desc} · ${size.w * qz.scale}×${size.h * qz.scale}px`}
+                      className={"px-2 py-1 text-[11px] font-bold md:px-3 md:py-1.5 md:text-xs " +
+                        (exportScale === qz.scale ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
+                      {qz.label}
+                    </button>
+                  ))}
+                </div>
+                <button onClick={handleExport} disabled={busy || !canExport}
+                  title={!canExport ? "필수 입력을 먼저 완료하세요" : "PNG 다운로드"}
+                  className="rounded-lg bg-accent px-2.5 py-1 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:px-4 md:py-1.5 md:text-sm">
+                  {busy ? "생성 중…" : !canExport ? "입력 필요" : "PNG 다운로드"}
+                </button>
               </div>
-              <button onClick={handleExport} disabled={busy || !canExport}
-                title={!canExport ? "필수 입력을 먼저 완료하세요" : "PNG 다운로드"}
-                className="rounded-lg bg-accent px-2.5 py-1 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:px-4 md:py-1.5 md:text-sm">
-                {busy ? "생성 중…" : !canExport ? "입력 필요" : "PNG 다운로드"}
-              </button>
             </div>
-          </div>
 
-          <div className="checker overflow-hidden rounded-xl border border-line p-2 md:p-6">
-            <div ref={captureRef} className="preview-frame preview-svg mx-auto w-full"
-                 style={{ "--preview-max-desktop": `${previewMaxWidth}px`, "--preview-max-mobile": `${previewMobileMaxWidth}px` }}>
-              {isHole
-                ? <HoleCard data={holeData} theme={cardTheme} />
-                : reelsV3
-                ? <ReelsThreeHoleCard data={reelsCustom ? threeHole : linkedThreeData} theme={cardTheme} />
-                : reelsCustom
-                ? <ReelsScorecard round={manualNineRound} summary={manualNineSummary} range="front" theme={cardTheme} />
-                : (() => { const C = FORMATS[format].Comp; return <C round={scoreRound} summary={activeSummary} range={effRange} theme={cardTheme} />; })()}
+            <div className="checker overflow-hidden rounded-lg border border-line p-1 md:rounded-xl md:p-3">
+              <div ref={captureRef} className="preview-frame preview-svg mx-auto w-full"
+                   style={{ "--preview-max-desktop": `${previewMaxWidth}px`, "--preview-max-mobile": `${previewMobileMaxWidth}px` }}>
+                {isHole
+                  ? <HoleCard data={holeData} theme={cardTheme} />
+                  : reelsV3
+                  ? <ReelsThreeHoleCard data={reelsCustom ? threeHole : linkedThreeData} theme={cardTheme} />
+                  : reelsCustom
+                  ? <ReelsScorecard round={manualNineRound} summary={manualNineSummary} range="front" theme={cardTheme} />
+                  : (() => { const C = FORMATS[format].Comp; return <C round={scoreRound} summary={activeSummary} range={effRange} theme={cardTheme} />; })()}
+              </div>
             </div>
-          </div>
 
-          <div className="mt-2 rounded-lg border border-line bg-panel px-2.5 py-2 text-[11px] text-txt-soft md:mt-4 md:rounded-xl md:p-4 md:text-sm">
-            <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 md:gap-x-2">
+            <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] text-txt-soft md:gap-x-2 md:text-sm">
               <b className="text-txt">출력</b>
               <span className="rounded bg-panel-2 px-2 py-0.5 font-mono text-[12px] font-bold text-accent">
                 {(QUALITY.find((x) => x.scale === exportScale) || {}).label}
               </span>
               <span className="font-mono text-[11px] md:text-[13px]">투명 PNG · {size.w * exportScale}×{size.h * exportScale}px</span>
-            </div>
-            <div className="mt-1 hidden text-[12px] text-txt-faint md:block">
-              색상: 버디=빨강 / 이글=골드 / 보기=파랑
+              <span className="hidden text-[12px] text-txt-faint md:inline">버디=빨강 / 이글=골드 / 보기=파랑</span>
             </div>
             {!canExport && exportBlockReason && (
               <div className="mt-2 rounded-md border border-[#ffb648]/40 bg-[#ffb648]/10 px-2.5 py-1.5 text-[12px] font-semibold text-[#ffb648]">
