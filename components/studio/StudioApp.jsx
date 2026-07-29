@@ -64,6 +64,11 @@ function hasAnyScore(holes = []) {
   return holes.some((hole) => hole?.score !== "" && hole?.score != null);
 }
 
+function hasAllScores(holes = [], count = holes.length) {
+  if (!holes.length || count <= 0) return false;
+  return holes.slice(0, count).every((hole) => hole?.score !== "" && hole?.score != null);
+}
+
 function BasicInfoPanel({ title = "기본 정보", data, setMeta, clubNameList }) {
   return (
     <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
@@ -271,11 +276,11 @@ function StudioWorkspace({ mode }) {
   }, [linkedThree, round.holes]);
   const batchProgressCount = isScore18 ? 18 : isScore9 ? 9 : isScore3 ? 3 : 0;
   const hasBatchScores = isScore18
-    ? activeSummary.thru > 0
+    ? activeSummary.thru === 18
     : isScore9
-    ? reelsCustom ? manualNineSummary.thru > 0 : hasRoundScores
+    ? reelsCustom ? manualNineSummary.thru === 9 : activeSummary.thru >= 9
     : isScore3
-    ? reelsCustom ? hasAnyScore(threeHole.holes) : hasAnyScore(linkedThreeData.holes)
+    ? reelsCustom ? hasAllScores(threeHole.holes, 3) : hasAllScores(linkedThreeData.holes, 3)
     : false;
   const canBatchExport = !isHole && batchProgressCount > 0 && hasBatchScores && linkedThreeReady;
   const {
