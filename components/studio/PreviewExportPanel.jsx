@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 import PlacementPreview from "./PlacementPreview";
 
 const QUALITY = [
@@ -36,6 +38,8 @@ export default function PreviewExportPanel({
   format,
   isHole,
 }) {
+  const [collapsed, setCollapsed] = useState(false);
+
   return (
     <>
     <section className="order-1">
@@ -56,9 +60,13 @@ export default function PreviewExportPanel({
 
       <div className="rounded-xl border border-line bg-panel p-2 md:p-3">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-1.5 md:gap-2">
-          <div className="font-head text-xs font-semibold uppercase tracking-widest text-txt-soft md:text-sm">
-            미리보기 <span className="hidden text-txt-faint sm:inline">(투명 배경)</span>
-          </div>
+          <button type="button" onClick={() => setCollapsed(!collapsed)}
+            className="flex items-center gap-1.5 md:pointer-events-none">
+            <span className="font-head text-xs font-semibold uppercase tracking-widest text-txt-soft md:text-sm">
+              미리보기
+            </span>
+            <ChevronDown size={14} className={"text-txt-faint transition md:hidden " + (collapsed ? "-rotate-90" : "")} />
+          </button>
           <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
             <div className="flex overflow-hidden rounded-lg border border-line">
               {[["dark", "다크"], ["light", "라이트"]].map(([key, label]) => (
@@ -69,7 +77,7 @@ export default function PreviewExportPanel({
                 </button>
               ))}
             </div>
-            <div className="flex overflow-hidden rounded-lg border border-line">
+            <div className={"flex overflow-hidden rounded-lg border border-line " + (collapsed ? "hidden md:flex" : "")}>
               {QUALITY.map((qz) => (
                 <button key={qz.scale} onClick={() => setExportScale(qz.scale)}
                   title={`${qz.desc} · ${size.w * qz.scale}x${size.h * qz.scale}px`}
@@ -91,7 +99,7 @@ export default function PreviewExportPanel({
             </button>
             {batchProgressCount > 0 && (
               <button onClick={handleBatchExport} disabled={busy || !canBatchExport}
-                title={!hasBatchScores ? "입력된 스코어가 필요합니다" : "홀별 PNG를 ZIP으로 저장합니다"}
+                title={!hasBatchScores ? "모든 스코어를 입력해야 합니다" : "홀별 PNG를 ZIP으로 저장합니다"}
                 className="hidden rounded-lg border border-line bg-panel-2 px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-txt-soft transition hover:border-accent hover:text-txt disabled:opacity-60 md:inline-block">
                 {busy ? "생성 중..." : `홀별 ${batchProgressCount}장 저장`}
               </button>
@@ -99,20 +107,22 @@ export default function PreviewExportPanel({
           </div>
         </div>
 
-        <div className="checker overflow-hidden rounded-lg border border-line p-1 md:rounded-xl md:p-3">
-          <div ref={captureRef} className="preview-frame preview-svg mx-auto w-full"
-               style={{ "--preview-max-desktop": `${previewMaxWidth}px`, "--preview-max-mobile": `${previewMobileMaxWidth}px` }}>
-            {previewNode}
+        <div className={"transition-all duration-200 " + (collapsed ? "hidden md:block" : "")}>
+          <div className="checker overflow-hidden rounded-lg border border-line p-1 md:rounded-xl md:p-3">
+            <div ref={captureRef} className="preview-frame preview-svg mx-auto w-full"
+                 style={{ "--preview-max-desktop": `${previewMaxWidth}px`, "--preview-max-mobile": `${previewMobileMaxWidth}px` }}>
+              {previewNode}
+            </div>
           </div>
-        </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] text-txt-soft md:gap-x-2 md:text-sm">
-          <b className="text-txt">출력</b>
-          <span className="rounded bg-panel-2 px-2 py-0.5 font-mono text-[12px] font-bold text-accent">
-            {(QUALITY.find((x) => x.scale === exportScale) || {}).label}
-          </span>
-          <span className="font-mono text-[11px] md:text-[13px]">투명 PNG · {size.w * exportScale}x{size.h * exportScale}px</span>
-          <span className="hidden text-[12px] text-txt-faint md:inline">버디=빨강 / 이글=골드 / 보기=파랑</span>
+          <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] text-txt-soft md:gap-x-2 md:text-sm">
+            <b className="text-txt">출력</b>
+            <span className="rounded bg-panel-2 px-2 py-0.5 font-mono text-[12px] font-bold text-accent">
+              {(QUALITY.find((x) => x.scale === exportScale) || {}).label}
+            </span>
+            <span className="font-mono text-[11px] md:text-[13px]">투명 PNG · {size.w * exportScale}x{size.h * exportScale}px</span>
+            <span className="hidden text-[12px] text-txt-faint md:inline">버디=빨강 / 이글=골드 / 보기=파랑</span>
+          </div>
         </div>
         {!canExport && exportBlockReason && (
           <div className="mt-2 rounded-md border border-[#ffb648]/40 bg-[#ffb648]/10 px-2.5 py-1.5 text-[12px] font-semibold text-[#ffb648]">

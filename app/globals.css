@@ -90,12 +90,6 @@ body {
   padding-bottom: calc(2rem + env(safe-area-inset-bottom));
 }
 
-.mobile-tab-bar {
-  padding: 0.75rem;
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-}
-
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-thumb { background: var(--c-line-2); border-radius: 6px; }
 
@@ -113,12 +107,6 @@ body {
   select,
   textarea {
     font-size: 16px !important;
-  }
-
-  .mobile-tab-bar {
-    padding-top: 0;
-    -webkit-backdrop-filter: blur(14px);
-    backdrop-filter: blur(14px);
   }
 
   .preview-frame {

@@ -11,11 +11,11 @@ export function ResetButton({ onClick, label = "초기화" }) {
 
 export default function PanelHeader({ title, children }) {
   return (
-    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
       <span className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
         {title}
       </span>
-      {children ? <div className="flex flex-wrap items-center gap-2">{children}</div> : null}
+      {children ? <div className="flex flex-wrap items-center gap-2.5">{children}</div> : null}
     </div>
   );
 }
