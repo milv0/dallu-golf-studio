@@ -24,7 +24,7 @@ import { ConfirmDialog, Toast } from "./Feedback";
 import PreviewExportPanel from "./PreviewExportPanel";
 import useStudioPersistence from "./useStudioPersistence";
 import useStudioExport from "./useStudioExport";
-import { DEFAULT_CUSTOM_PLAYER, emptyHoleCard, emptyLinkedThree, emptyManualNine, emptyThreeHoleCard } from "./studioDefaults";
+import { DEFAULT_CUSTOM_PLAYER, emptyCustomRound, emptyHoleCard, emptyLinkedThree, emptyManualNine, emptyThreeHoleCard } from "./studioDefaults";
 import { STUDIO_STORAGE_KEYS, writeJsonStorage } from "../../lib/studioStorage";
 import { useLang } from "../../lib/i18n";
 
@@ -96,7 +96,7 @@ export default function StudioApp({ mode = "home", source } = {}) {
 function StudioWorkspace({ mode, source }) {
   const { t } = useLang();
   const [round, setRound] = useState(emptyRound);
-  const [customRound, setCustomRound] = useState(emptyRound);
+  const [customRound, setCustomRound] = useState(emptyCustomRound);
   const [holeCard, setHoleCard] = useState(emptyHoleCard);
   const [customHoleCard, setCustomHoleCard] = useState(emptyHoleCard);
   const [threeHole, setThreeHole] = useState(emptyThreeHoleCard);
@@ -335,13 +335,10 @@ function StudioWorkspace({ mode, source }) {
   };
   const resetCustomRound = () => {
     requestConfirm(t("toast.resetCustom18").replace(".", "?"), () => {
-      const next = emptyRound();
+      const next = emptyCustomRound();
       setCustomRound((prev) => ({
         ...next,
         player: prev.player,
-        country: "",
-        course: "",
-        date: "",
       }));
       setHoleRange("all");
       showToast(t("toast.resetCustom18"));

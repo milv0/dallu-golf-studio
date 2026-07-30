@@ -17,15 +17,23 @@ export const emptyThreeHoleCard = () => ({
   total: "",
   toPar: "",
   holes: [
-    { hole: "1", par: "4", score: "" },
-    { hole: "2", par: "4", score: "" },
-    { hole: "3", par: "4", score: "" },
+    { hole: "1", par: "", score: "" },
+    { hole: "2", par: "", score: "" },
+    { hole: "3", par: "", score: "" },
   ],
 });
 
 export const emptyManualNine = () => ({
   player: "",
-  holes: Array.from({ length: 9 }, (_, i) => ({ hole: String(i + 1), par: "4", score: "" })),
+  holes: Array.from({ length: 9 }, (_, i) => ({ hole: String(i + 1), par: "", score: "" })),
+});
+
+export const emptyCustomRound = () => ({
+  player: "",
+  country: "",
+  course: "",
+  date: "",
+  holes: Array.from({ length: 18 }, (_, i) => ({ par: "", score: "" })),
 });
 
 export const emptyLinkedThree = () => ({
