@@ -12,17 +12,17 @@ export const LAST_ROUTE_KEY = {
 };
 
 export const CUSTOM_LINKS = [
-  { href: "/custom/Hole18", label: "18홀", id: "score18" },
-  { href: "/custom/Hole9", label: "9홀", id: "score9" },
-  { href: "/custom/Hole3", label: "3홀", id: "score3" },
-  { href: "/custom/hole", label: "1홀", id: "hole" },
+  { href: "/custom/Hole18", labelKey: "tab.hole18", id: "score18" },
+  { href: "/custom/Hole9", labelKey: "tab.hole9", id: "score9" },
+  { href: "/custom/Hole3", labelKey: "tab.hole3", id: "score3" },
+  { href: "/custom/hole", labelKey: "tab.hole1", id: "hole" },
 ];
 
 export const ROUND_LINKS = [
-  { href: "/round", label: "18홀", id: "score18" },
-  { href: "/round/Hole9", label: "9홀", id: "score9" },
-  { href: "/round/Hole3", label: "3홀", id: "score3" },
-  { href: "/round/hole", label: "1홀", id: "hole" },
+  { href: "/round", labelKey: "tab.hole18", id: "score18" },
+  { href: "/round/Hole9", labelKey: "tab.hole9", id: "score9" },
+  { href: "/round/Hole3", labelKey: "tab.hole3", id: "score3" },
+  { href: "/round/hole", labelKey: "tab.hole1", id: "hole" },
 ];
 
 export function linksFor(sourceMode = "custom") {
@@ -123,6 +123,7 @@ export function TopActions({ currentUser, onLogout, theme, onToggleTheme }) {
 }
 
 export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLogout, theme, onToggleTheme }) {
+  const { t } = useLang();
   const links = linksFor(sourceMode);
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/95 px-4 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] backdrop-blur">
@@ -143,7 +144,7 @@ export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLog
                 (active === link.id
                   ? "bg-accent text-[#06210f] text-[15px] font-bold"
                   : "text-txt-soft text-[13px] font-semibold hover:bg-panel-2 hover:text-txt active:bg-panel-2")}>
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           ))}
         </nav>
@@ -163,10 +164,10 @@ export default function StudioNav({ active, sourceMode = "custom" }) {
     <nav className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div className="flex flex-wrap items-center gap-2">
         <span className="mr-1 hidden shrink-0 font-head text-[11px] font-semibold uppercase tracking-widest text-txt-faint sm:inline">
-          출력 선택
+          {t("nav.outputSelect")}
         </span>
         {links.map((link) => (
-          <NavLink key={link.href} {...link} active={active === link.id} />
+          <NavLink key={link.href} href={link.href} label={t(link.labelKey)} active={active === link.id} />
         ))}
       </div>
       <div className="hidden flex-wrap items-center gap-2 sm:flex">

@@ -124,8 +124,8 @@ export default function PreviewExportPanel({
             <span className="rounded bg-panel-2 px-2 py-0.5 font-mono text-[12px] font-bold text-accent">
               {(QUALITY.find((x) => x.scale === exportScale) || {}).label}
             </span>
-            <span className="font-mono text-[11px] md:text-[13px]">투명 PNG · {size.w * exportScale}x{size.h * exportScale}px</span>
-            <span className="hidden text-[12px] text-txt-faint md:inline">버디=빨강 / 이글=골드 / 보기=파랑</span>
+            <span className="font-mono text-[11px] md:text-[13px]">{t("preview.pngSpec", { w: size.w * exportScale, h: size.h * exportScale })}</span>
+            <span className="hidden text-[12px] text-txt-faint md:inline">{t("preview.colorHint")}</span>
           </div>
         </div>
         {!canExport && exportBlockReason && (
