@@ -525,10 +525,15 @@ function StudioWorkspace({ mode, source }) {
                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line pt-2 text-[11px] text-txt-soft">
                   <span>
                     PAR{" "}
-                    <b className={"font-mono " + (activeSummary.totalPar === 72 ? "text-txt" : "text-[#ffb648]")}>
+                    <b className={"font-mono " + (activeSummary.outPar === 36 && activeSummary.inPar === 36 ? "text-txt" : "text-[#ffb648]")}>
                       {t("label.parTotal", { out: activeSummary.outPar, in: activeSummary.inPar, total: activeSummary.totalPar })}
                     </b>
-                    {activeSummary.totalPar !== 72 && scoreRound.holes.every((h) => h.par !== "" && h.par != null) && (
+                    {scoreRound.holes.slice(0, 9).every((h) => h.par !== "" && h.par != null) && activeSummary.outPar !== 36 && (
+                      <span className="ml-1.5 font-semibold text-[#ffb648]">
+                        {t("label.parWarning")}
+                      </span>
+                    )}
+                    {scoreRound.holes.slice(9, 18).every((h) => h.par !== "" && h.par != null) && activeSummary.inPar !== 36 && (
                       <span className="ml-1.5 font-semibold text-[#ffb648]">
                         {t("label.parWarning")}
                       </span>
