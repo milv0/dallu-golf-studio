@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { replaceInputTextProps, ScoreInput } from "./ScoreInputs";
 
 const preventMetaCopy = (event) => event.preventDefault();
@@ -9,15 +10,21 @@ const metaLockProps = {
   onContextMenu: preventMetaCopy,
 };
 
-function ParInput({ idx, value, setHole }) {
+function ParInput({ idx, value, setHole, parRefs }) {
   const handleChange = (next) => {
-    if (next === "" || /^[3456]$/.test(next)) setHole(idx, "par", next);
+    if (next === "" || /^[3456]$/.test(next)) {
+      setHole(idx, "par", next);
+      if (next !== "") {
+        setTimeout(() => parRefs?.current[idx + 1]?.focus(), 0);
+      }
+    }
   };
 
   return (
     <input
       {...metaLockProps}
       {...replaceInputTextProps}
+      ref={(el) => { if (parRefs) parRefs.current[idx] = el; }}
       aria-label={`홀 ${idx + 1} PAR`}
       value={value ?? ""}
       inputMode="numeric"
@@ -54,6 +61,7 @@ export default function ScoreEntryGrid({
   editableHoleNumbers = false,
   parLocked = false,
 }) {
+  const parRefs = useRef([]);
   const visibleHoles = holes || [];
   const parSum = visibleHoles.reduce((a, h) => a + (Number(h.par) || 0), 0);
   const scoreSum = visibleHoles.reduce((a, h) => a + (Number(h.score) || 0), 0);
@@ -90,7 +98,7 @@ export default function ScoreEntryGrid({
                   {h.par || "–"}
                 </div>
               ) : (
-                <ParInput idx={idx} value={h.par} setHole={setHole} />
+                <ParInput idx={idx} value={h.par} setHole={setHole} parRefs={parRefs} />
               )}
             </div>
           );
