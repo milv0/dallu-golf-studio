@@ -129,6 +129,9 @@ export function ManualNineForm({ data, setField, setHole, onReset }) {
   const { t } = useLang();
   const { scoreRefs, handleScoreKey } = useScoreRefs();
   const [scoreMode, setScoreMode] = useState("strokes");
+  const holes = data.holes || [];
+  const parSum = holes.reduce((a, h) => a + (Number(h.par) || 0), 0);
+  const allParFilled = holes.length >= 9 && holes.every((h) => h.par !== "" && h.par != null);
 
   return (
     <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
@@ -147,6 +150,11 @@ export function ManualNineForm({ data, setField, setHole, onReset }) {
         editableHoleNumbers
       />
       {scoreMode === "relative" && <RelativeScoreHint className="mt-2" />}
+      {allParFilled && parSum !== 36 && (
+        <div className="mt-2 text-[11px] font-semibold text-[#ffb648]">
+          {t("label.parWarning")}
+        </div>
+      )}
     </div>
   );
 }
