@@ -26,6 +26,7 @@ import useStudioPersistence from "./useStudioPersistence";
 import useStudioExport from "./useStudioExport";
 import { DEFAULT_CUSTOM_PLAYER, emptyHoleCard, emptyLinkedThree, emptyManualNine, emptyThreeHoleCard } from "./studioDefaults";
 import { STUDIO_STORAGE_KEYS, writeJsonStorage } from "../../lib/studioStorage";
+import { useLang } from "../../lib/i18n";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
 const PREVIEW_MAX_H = 440;
@@ -92,6 +93,7 @@ export default function StudioApp({ mode = "home", source } = {}) {
 }
 
 function StudioWorkspace({ mode, source }) {
+  const { t } = useLang();
   const [round, setRound] = useState(emptyRound);
   const [customRound, setCustomRound] = useState(emptyRound);
   const [holeCard, setHoleCard] = useState(emptyHoleCard);
@@ -212,11 +214,11 @@ function StudioWorkspace({ mode, source }) {
     !(mode === "hole" && !hasRoundData && !hasHoleCardData);
   const exportBlockReason =
     isReelsSizedScore && !reelsCustom && !hasRoundScores
-      ? "18홀 스코어에서 홀 스코어를 먼저 입력하세요."
+      ? t("block.needScores")
       : !linkedThreeReady
-      ? "3홀은 정확히 3개 홀을 선택해야 합니다."
+      ? t("block.needThreeHoles")
       : mode === "hole" && !hasRoundData && !hasHoleCardData
-      ? "현재 홀 정보를 먼저 입력하세요."
+      ? t("block.needHoleInfo")
       : "";
   const manualNineRound = useMemo(() => ({
     player: (manualNine.player || "").trim() || DEFAULT_CUSTOM_PLAYER,
@@ -322,16 +324,16 @@ function StudioWorkspace({ mode, source }) {
       holes: r.holes.map((h, idx) => (idx === i ? { ...h, [key]: val } : h)),
     }));
   const resetRound = () => {
-    requestConfirm("18홀 스코어카드를 초기화할까요?", () => {
+    requestConfirm(t("toast.reset18").replace(".", "?"), () => {
       const next = emptyRound();
       setRound(next);
       setHoleRange("all");
       writeJsonStorage(STUDIO_STORAGE_KEYS.round, next);
-      showToast("18홀 스코어카드를 초기화했습니다.");
+      showToast(t("toast.reset18"));
     });
   };
   const resetCustomRound = () => {
-    requestConfirm("커스텀 18홀 스코어카드를 초기화할까요?", () => {
+    requestConfirm(t("toast.resetCustom18").replace(".", "?"), () => {
       const next = emptyRound();
       setCustomRound((prev) => ({
         ...next,
@@ -341,27 +343,27 @@ function StudioWorkspace({ mode, source }) {
         date: "",
       }));
       setHoleRange("all");
-      showToast("커스텀 18홀을 초기화했습니다.");
+      showToast(t("toast.resetCustom18"));
     });
   };
   const resetManualNine = () => {
-    requestConfirm("9홀 스코어카드를 초기화할까요?", () => {
+    requestConfirm(t("toast.reset9").replace(".", "?"), () => {
       setManualNine(emptyManualNine());
-      showToast("9홀 스코어카드를 초기화했습니다.");
+      showToast(t("toast.reset9"));
     });
   };
   const resetThreeHole = () => {
-    requestConfirm("3홀 스코어카드를 초기화할까요?", () => {
+    requestConfirm(t("toast.reset3").replace(".", "?"), () => {
       setThreeHole(emptyThreeHoleCard());
-      showToast("3홀 스코어카드를 초기화했습니다.");
+      showToast(t("toast.reset3"));
     });
   };
   const resetHoleCard = () => {
-    requestConfirm("1홀 정보를 초기화할까요?", () => {
+    requestConfirm(t("toast.reset1").replace(".", "?"), () => {
       const next = emptyHoleCard();
       setHoleCard(next);
       writeJsonStorage(STUDIO_STORAGE_KEYS.holeCard, next);
-      showToast("1홀 정보를 초기화했습니다.");
+      showToast(t("toast.reset1"));
     });
   };
 
@@ -470,7 +472,6 @@ function StudioWorkspace({ mode, source }) {
           ) : isRoundEditor && !isFullCustom ? (
             <div className="order-[5] grid items-start gap-3 grid-cols-1 md:grid-cols-2">
               <BasicInfoPanel
-                title="기본 정보"
                 data={scoreRound}
                 setMeta={setMeta}
                 clubNameList={clubNameList}
@@ -497,7 +498,7 @@ function StudioWorkspace({ mode, source }) {
           {isRoundEditor && !isHole && !reelsCustom && (
             <div className="order-[10]">
               <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
-                <PanelHeader title="스코어 입력">
+                <PanelHeader title={t("label.scoreInput")}>
                   {isFullCustom && (
                     <CustomPlayerControl
                       value={customRound.player}
@@ -507,7 +508,7 @@ function StudioWorkspace({ mode, source }) {
                   {!isFullCustom && parLocked && (
                     <button type="button" onClick={() => setParLocked(false)}
                       className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-soft transition hover:border-accent hover:text-txt">
-                      PAR 수정
+                      {t("label.parEdit")}
                     </button>
                   )}
                   <ScoreModeToggle value={scoreMode} onChange={setScoreMode} />
@@ -528,12 +529,12 @@ function StudioWorkspace({ mode, source }) {
                     </b>
                     {activeSummary.totalPar !== 72 && (
                       <span className="ml-1.5 font-semibold text-[#ffb648]">
-                        ⚠ 표준 파72와 다름 (확인)
+                        {t("label.parWarning")}
                       </span>
                     )}
                   </span>
                   {activeSummary.thru > 0 && activeSummary.thru < 18 && (
-                    <span className="text-accent">{activeSummary.thru}/18홀 입력</span>
+                    <span className="text-accent">{t("label.progress", { n: activeSummary.thru })}</span>
                   )}
                 </div>
               </div>
@@ -568,9 +569,9 @@ function StudioWorkspace({ mode, source }) {
                 loadHoleFromRound={isFullCustom ? loadCustomHoleStandalone : loadHoleFromRound}
                 linked={!isFullCustom}
                 onReset={isFullCustom ? () => {
-                  requestConfirm("커스텀 1홀 정보를 초기화할까요?", () => {
+                  requestConfirm(t("toast.resetCustom1").replace(".", "?"), () => {
                     setCustomHoleCard(emptyHoleCard());
-                    showToast("커스텀 1홀 정보를 초기화했습니다.");
+                    showToast(t("toast.resetCustom1"));
                   });
                 } : resetHoleCard}
               />

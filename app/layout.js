@@ -1,5 +1,6 @@
 import { Barlow_Condensed, Barlow, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import Providers from "../components/studio/Providers";
 
 const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
@@ -67,7 +68,7 @@ export default function RootLayout({ children }) {
       <head>
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4755795516057681" crossOrigin="anonymous" />
       </head>
-      <body>{children}</body>
+      <body><Providers>{children}</Providers></body>
     </html>
   );
 }

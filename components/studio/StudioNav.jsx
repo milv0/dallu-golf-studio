@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { Moon, Sun } from "lucide-react";
 import { STUDIO_STORAGE_KEYS } from "../../lib/studioStorage";
+import { useLang } from "../../lib/i18n";
+import LangToggle from "./LangToggle";
 
 export const LAST_ROUTE_KEY = {
   custom: STUDIO_STORAGE_KEYS.lastCustomRoute,
@@ -72,9 +74,9 @@ export function HomeIcon() {
 }
 
 
-function DisabledNavItem({ label }) {
+function DisabledNavItem({ label, disabledTitle }) {
   return (
-    <span aria-disabled="true" title="준비 중"
+    <span aria-disabled="true" title={disabledTitle}
       className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
       {label}
     </span>
@@ -91,29 +93,31 @@ function ThemeButton({ theme, onToggleTheme }) {
   );
 }
 
-function LoginButton({ currentUser, onLogout }) {
+function LoginButton({ currentUser, onLogout, t }) {
   if (currentUser) {
     return (
       <button type="button" onClick={onLogout}
         className="rounded-full border border-line bg-panel px-2.5 py-1.5 text-xs font-semibold text-txt-soft transition active:border-accent active:text-txt sm:px-3">
-        로그아웃
+        {t("nav.logout")}
       </button>
     );
   }
 
   return (
-    <button type="button" disabled title="로그인 기능 준비 중"
+    <button type="button" disabled title={t("nav.loginDisabled")}
       className="cursor-not-allowed rounded-full border border-line bg-panel px-2.5 py-1.5 text-xs font-semibold text-txt-faint opacity-70 sm:px-3">
-      로그인
+      {t("nav.login")}
     </button>
   );
 }
 
 export function TopActions({ currentUser, onLogout, theme, onToggleTheme }) {
+  const { t } = useLang();
   return (
     <div className="flex shrink-0 items-center gap-1.5">
       <ThemeButton theme={theme} onToggleTheme={onToggleTheme} />
-      <LoginButton currentUser={currentUser} onLogout={onLogout} />
+      <LangToggle />
+      <LoginButton currentUser={currentUser} onLogout={onLogout} t={t} />
     </div>
   );
 }
@@ -149,9 +153,10 @@ export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLog
 }
 
 export default function StudioNav({ active, sourceMode = "custom" }) {
+  const { t } = useLang();
   const links = linksFor(sourceMode);
   const secondaryLinks = [
-    { href: "/records", label: "내 라운딩", id: "records", disabled: true },
+    { href: "/records", label: t("records.title"), id: "records", disabled: true },
   ];
 
   return (
@@ -167,7 +172,7 @@ export default function StudioNav({ active, sourceMode = "custom" }) {
       <div className="hidden flex-wrap items-center gap-2 sm:flex">
         {secondaryLinks.map((link) => (
           link.disabled
-            ? <DisabledNavItem key={link.href} label={link.label} />
+            ? <DisabledNavItem key={link.href} label={link.label} disabledTitle={t("nav.preparing")} />
             : <NavLink key={link.href} {...link} active={active === link.id} />
         ))}
       </div>

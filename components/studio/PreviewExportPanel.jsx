@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronDown, Moon, Sun } from "lucide-react";
 import PlacementPreview from "./PlacementPreview";
+import { useLang } from "../../lib/i18n";
 
 const QUALITY = [
   { scale: 1, label: "Reels", desc: "Instagram / TikTok" },
@@ -39,6 +40,7 @@ export default function PreviewExportPanel({
   format,
   isHole,
 }) {
+  const { t } = useLang();
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -64,7 +66,7 @@ export default function PreviewExportPanel({
           <button type="button" onClick={() => setCollapsed(!collapsed)}
             className="flex items-center gap-1.5 md:pointer-events-none">
             <span className="font-head text-xs font-semibold uppercase tracking-widest text-txt-soft md:text-sm">
-              미리보기
+              {t("preview.title")}
             </span>
             <ChevronDown size={14} className={"text-txt-faint transition md:hidden " + (collapsed ? "-rotate-90" : "")} />
           </button>
@@ -90,20 +92,20 @@ export default function PreviewExportPanel({
               ))}
             </div>
             <button onClick={handleShareExport} disabled={busy || !canExport}
-              title={!canExport ? "필수 항목을 먼저 입력하세요" : "iPhone: 공유 → 이미지 저장 선택"}
+              title={!canExport ? t("preview.inputFirst") : t("preview.iphoneHint")}
               className="rounded-lg bg-accent px-3 py-1 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:hidden">
-              {busy ? "생성 중..." : !canExport ? "입력 필요" : "공유"}
+              {busy ? t("preview.generating") : !canExport ? t("preview.inputRequired") : t("preview.share")}
             </button>
             <button onClick={handleExport} disabled={busy || !canExport}
-              title={!canExport ? "필수 항목을 먼저 입력하세요" : "PNG 다운로드"}
+              title={!canExport ? t("preview.inputFirst") : t("preview.download")}
               className="hidden rounded-lg bg-accent px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:inline-block">
-              {busy ? "생성 중..." : !canExport ? "입력 필요" : "PNG 다운로드"}
+              {busy ? t("preview.generating") : !canExport ? t("preview.inputRequired") : t("preview.download")}
             </button>
             {batchProgressCount > 0 && (
               <button onClick={handleBatchExport} disabled={busy || !canBatchExport}
-                title={!hasBatchScores ? "모든 스코어를 먼저 입력하세요" : "홀별 PNG를 ZIP으로 저장"}
+                title={!hasBatchScores ? t("preview.allScoresRequired") : t("preview.batchToZip")}
                 className="hidden rounded-lg border border-line bg-panel-2 px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-txt-soft transition hover:border-accent hover:text-txt disabled:opacity-60 md:inline-block">
-                {busy ? "생성 중..." : `홀별 ${batchProgressCount}장 저장`}
+                {busy ? t("preview.generating") : t("preview.batchSave", { n: batchProgressCount })}
               </button>
             )}
           </div>
@@ -118,7 +120,7 @@ export default function PreviewExportPanel({
           </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] text-txt-soft md:gap-x-2 md:text-sm">
-            <b className="text-txt">출력</b>
+            <b className="text-txt">{t("preview.output")}</b>
             <span className="rounded bg-panel-2 px-2 py-0.5 font-mono text-[12px] font-bold text-accent">
               {(QUALITY.find((x) => x.scale === exportScale) || {}).label}
             </span>
@@ -136,7 +138,7 @@ export default function PreviewExportPanel({
             <span className="text-[12px] font-semibold text-[#e5484d]">{exportError}</span>
             <button type="button" onClick={handleExport}
               className="rounded-md bg-[#e5484d] px-2 py-0.5 text-[11px] font-bold text-white transition hover:bg-[#c93c3c]">
-              재시도
+              {t("preview.retryBtn")}
             </button>
           </div>
         )}
@@ -145,9 +147,9 @@ export default function PreviewExportPanel({
     </section>
     <section className="order-3 hidden md:block">
       <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-        실제 배치 미리보기
+        {t("preview.placement")}
         <span className="ml-2 normal-case tracking-normal text-txt-faint">
-          {format === "youtube" ? "16:9 영상 기준" : "9:16 영상 기준"}
+          {format === "youtube" ? t("preview.landscape") : t("preview.portrait")}
         </span>
       </div>
       <PlacementPreview format={format} size={size} isHole={isHole}>

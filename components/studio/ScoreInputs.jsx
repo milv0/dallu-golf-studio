@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useLang } from "../../lib/i18n";
 
 const REL_MIN = -3;
 const REL_MAX = 5;
@@ -42,9 +43,10 @@ export const replaceInputTextProps = {
 };
 
 export function RelativeScoreHint({ className = "mb-2" }) {
+  const { t } = useLang();
   return (
     <p className={`${className} text-[11px] text-txt-faint`}>
-      파 기준 입력: 버디 <b className="text-txt-soft">-1</b> · 파 <b className="text-txt-soft">0</b> · 보기 <b className="text-txt-soft">1</b><span className="hidden md:inline"> · ←/→ 키로 조정</span>
+      {t("score.relativeHint")}<b className="text-txt-soft">-1</b>{t("score.par")}<b className="text-txt-soft">0</b>{t("score.bogey")}<b className="text-txt-soft">1</b><span className="hidden md:inline">{t("score.arrowHint")}</span>
     </p>
   );
 }

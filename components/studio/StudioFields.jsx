@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLang } from "../../lib/i18n";
 
 const CLUB_DEFAULTS = ["Driver", "Wood", "Hybrid", "Iron", "Wedge", "Putter"];
 const CLUB_OPTIONS = [
@@ -46,13 +47,14 @@ export function Field({ label, value, onChange, onBlur, placeholder, full, type 
 }
 
 export function ClubAutocomplete({ value, onChange, onPick, options }) {
+  const { t } = useLang();
   const [open, setOpen] = useState(false);
   const q = (value || "").trim();
   const matches = q ? options.filter((o) => o.includes(q)).slice(0, 8) : [];
   return (
     <label className="relative block min-w-0 md:col-span-2">
-      <span className="mb-0.5 block font-head text-[10px] uppercase tracking-widest text-txt-faint md:mb-1 md:text-[11px]">골프장</span>
-      <input value={value} placeholder="골프장 이름 검색"
+      <span className="mb-0.5 block font-head text-[10px] uppercase tracking-widest text-txt-faint md:mb-1 md:text-[11px]">{t("field.course")}</span>
+      <input value={value} placeholder={t("field.coursePlaceholder")}
         onChange={(e) => { onChange(e.target.value); setOpen(true); }}
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}

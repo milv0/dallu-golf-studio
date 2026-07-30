@@ -1,6 +1,7 @@
 "use client";
 
 import { toParLabel } from "../../lib/score";
+import { useLang } from "../../lib/i18n";
 
 export default function RoundSourcePanel({
   round,
@@ -9,6 +10,7 @@ export default function RoundSourcePanel({
   hasRoundData = false,
   hasRoundScores = false,
 }) {
+  const { t } = useLang();
   const toPar = summary.thru > 0 ? toParLabel(summary.toPar) : "";
   const needsInput = !hasRoundData || (requiresScores && !hasRoundScores);
 
@@ -16,7 +18,7 @@ export default function RoundSourcePanel({
     <div className="rounded-xl border border-line bg-panel p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-          선택된 라운드
+          {t("source.selected")}
         </div>
         <div className="text-xs font-semibold text-txt-faint">
           18홀 입력값 연동
@@ -29,26 +31,26 @@ export default function RoundSourcePanel({
             {!hasRoundData ? "18홀 데이터 없음" : "18홀 스코어 없음"}
           </b>
           <span className="ml-2">
-            {!hasRoundData ? "18홀 스코어를 먼저 입력하세요." : "홀별 스코어를 먼저 입력해주세요"}
+            {t("source.needScores")}
           </span>
         </div>
       )}
 
       <div className="space-y-2 text-sm">
         <div className="flex items-center justify-between gap-3 border-b border-line pb-2">
-          <span className="text-txt-faint">선수</span>
+          <span className="text-txt-faint">{t("info.player")}</span>
           <span className="truncate font-semibold text-txt">{round.player || "-"}</span>
         </div>
         <div className="flex items-center justify-between gap-3 border-b border-line pb-2">
-          <span className="text-txt-faint">코스</span>
+          <span className="text-txt-faint">{t("field.course")}</span>
           <span className="truncate font-semibold text-txt">{round.course || "-"}</span>
         </div>
         <div className="flex items-center justify-between gap-3 border-b border-line pb-2">
-          <span className="text-txt-faint">날짜</span>
+          <span className="text-txt-faint">{t("info.date")}</span>
           <span className="font-mono text-[13px] font-semibold text-txt">{round.date || "-"}</span>
         </div>
         <div className="flex items-center justify-between gap-3">
-          <span className="text-txt-faint">스코어</span>
+          <span className="text-txt-faint">Score</span>
           <span className="font-mono text-[13px] font-bold text-txt">
             {summary.thru > 0 ? `${summary.totalScore} · ${toPar} · ${summary.thru}/18` : "-"}
           </span>
@@ -56,7 +58,7 @@ export default function RoundSourcePanel({
       </div>
       <div className="mt-3 border-t border-line pt-3 text-right">
         <a href="/round" className="text-xs font-semibold text-txt-faint transition hover:text-accent">
-          18홀 입력/수정
+          {t("source.editLink")}
         </a>
       </div>
     </div>

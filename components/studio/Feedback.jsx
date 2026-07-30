@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useLang } from "../../lib/i18n";
 
 export function Toast({ message, onClose }) {
   useEffect(() => {
@@ -21,13 +22,14 @@ export function Toast({ message, onClose }) {
 }
 
 export function ConfirmDialog({ request, onCancel, onConfirm }) {
+  const { t } = useLang();
   if (!request) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4 backdrop-blur-sm">
       <div className="w-full max-w-[360px] rounded-2xl border border-line bg-panel p-4 shadow-2xl">
         <div className="font-head text-xl font-bold uppercase text-txt">
-          확인
+          {t("confirm.title")}
         </div>
         <p className="mt-2 text-sm leading-relaxed text-txt-soft">
           {request.message}
@@ -35,11 +37,11 @@ export function ConfirmDialog({ request, onCancel, onConfirm }) {
         <div className="mt-4 grid grid-cols-2 gap-2">
           <button type="button" onClick={onCancel}
             className="rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm font-bold text-txt-soft transition active:scale-[0.98]">
-            취소
+            {t("confirm.cancel")}
           </button>
           <button type="button" onClick={onConfirm}
             className="rounded-lg bg-accent px-3 py-2 text-sm font-bold text-[#06210f] transition active:scale-[0.98]">
-            네
+            {t("confirm.yes")}
           </button>
         </div>
       </div>

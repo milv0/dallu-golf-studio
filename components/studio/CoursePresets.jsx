@@ -1,6 +1,9 @@
 "use client";
 
+import { useLang } from "../../lib/i18n";
+
 export default function CoursePresets({ builtin = [], favorites = [], selectedClub = "", dbStatus, disabled = false, onRefresh, onToggleFav, onLoad }) {
+  const { t } = useLang();
   const clubs = [...new Set(builtin.map((c) => c.club || c.name))];
   const sel = (selectedClub || "").trim();
   const activeClub = clubs.includes(sel) ? sel : "";
@@ -19,7 +22,7 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
   return (
     <div className="rounded-xl border border-line bg-panel p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">코스</div>
+        <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">{t("course.title")}</div>
         {!disabled && onRefresh && (
           <button type="button" onClick={onRefresh} title="코스 목록 새로고침"
             className="flex items-center gap-1.5 rounded-md border border-line bg-panel-2 px-2 py-1 text-[11px] font-semibold text-txt-faint transition hover:text-txt">
@@ -33,7 +36,7 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
 
       {disabled ? (
         <div className="rounded-lg border border-line bg-panel-2 px-3 py-3 text-[12px] leading-relaxed text-txt-soft">
-          코스 불러오기 준비 중 · PAR는 아래에서 직접 입력
+          {t("course.disabled")}
         </div>
       ) : favCourses.length > 0 && (
         <div className="mb-3">
@@ -53,9 +56,9 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
       )}
 
       {!disabled && (!activeClub ? (
-        <p className="text-[12px] text-txt-faint">기본 정보에서 <b className="text-txt-soft">골프장 선택 시</b> 코스 표시</p>
+        <p className="text-[12px] text-txt-faint">{t("course.selectHint")}</p>
       ) : clubCourses.length === 0 ? (
-        <p className="text-[12px] text-txt-faint">{activeClub} · 등록된 코스 없음</p>
+        <p className="text-[12px] text-txt-faint">{activeClub} · {t("course.noCourses")}</p>
       ) : (
         <div>
           <div className="mb-1.5 text-[12px] text-txt-soft">{activeClub} · 코스 선택</div>

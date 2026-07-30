@@ -11,6 +11,7 @@ import {
   progressFileName,
   progressZipFileName,
 } from "../../lib/exportImage";
+import { useLang } from "../../lib/i18n";
 
 function nextFrame() {
   return new Promise((resolve) => {
@@ -29,6 +30,7 @@ export default function useStudioExport({
   isScore9,
   showToast,
 }) {
+  const { t } = useLang();
   const [busy, setBusy] = useState(false);
   const [exportError, setExportError] = useState("");
   const [batchExportStep, setBatchExportStep] = useState(null);
@@ -52,11 +54,11 @@ export default function useStudioExport({
       const image = await createExportImage();
       if (image) {
         downloadDataUrl(image.dataUrl, image.fileName);
-        showToast("PNG 다운로드를 시작했습니다.");
+        showToast(t("toast.downloadStart"));
       }
     } catch (e) {
       setExportError("내보내기 실패: " + e.message);
-      showToast("내보내기 실패 — 다시 시도해주세요.");
+      showToast(t("toast.exportFail"));
     } finally {
       setBusy(false);
     }
@@ -78,9 +80,9 @@ export default function useStudioExport({
       }
       const zip = await createZipBlob(files);
       downloadBlob(zip, progressZipFileName({ isScore3, isScore9 }));
-      showToast(`홀별 이미지 ${batchProgressCount}장을 ZIP으로 저장합니다.`);
+      showToast(t("toast.batchDone", { n: batchProgressCount }));
     } catch (e) {
-      showToast("홀별 저장 실패: " + e.message);
+      showToast(t("toast.batchFail") + e.message);
     } finally {
       setBatchExportStep(null);
       setBusy(false);
@@ -98,11 +100,11 @@ export default function useStudioExport({
         await navigator.share(sharePayload);
       } else {
         downloadDataUrl(image.dataUrl, image.fileName);
-        showToast("공유 저장을 지원하지 않아 PNG 다운로드로 처리했습니다.");
+        showToast(t("toast.shareUnsupported"));
       }
     } catch (e) {
       if (e?.name !== "AbortError") {
-        showToast("공유 실패: " + e.message);
+        showToast(t("toast.shareFail") + e.message);
       }
     } finally {
       setBusy(false);

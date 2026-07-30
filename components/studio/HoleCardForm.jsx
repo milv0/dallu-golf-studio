@@ -3,6 +3,7 @@
 import { ClubField } from "./StudioFields";
 import PanelHeader, { ResetButton } from "./PanelHeader";
 import { replaceInputTextProps } from "./ScoreInputs";
+import { useLang } from "../../lib/i18n";
 
 function CoreInput({ label, value, onChange, placeholder, inputMode = "text" }) {
   return (
@@ -23,15 +24,16 @@ function CoreInput({ label, value, onChange, placeholder, inputMode = "text" }) 
 }
 
 export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound, onReset, linked = true }) {
+  const { t } = useLang();
   return (
     <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
-      <PanelHeader title="현재 홀 정보">
+      <PanelHeader title={t("hole.title")}>
         {onReset ? <ResetButton onClick={onReset} /> : null}
       </PanelHeader>
       {linked && (
         <div className="mb-2">
           <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
-            홀 선택 (PAR·토탈 자동 연동)
+            {t("hole.selector")}
           </span>
           <div className="grid grid-cols-9 gap-1">
             {round.holes.map((h, i) => {
@@ -81,7 +83,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
 
       <div className="mt-4 border-t border-line pt-3">
         <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
-          현재 타수
+          {t("hole.currentShot")}
         </span>
         <div className="flex flex-wrap gap-1.5">
           {Array.from({ length: (Number(holeCard.par) || 4) * 2 }, (_, i) => i + 1).map((n) => (
@@ -95,17 +97,17 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           ))}
           <button type="button" onClick={() => setHC("currentShot", "")}
             className="h-9 rounded-md border border-line bg-panel-2 px-3 text-xs font-semibold text-txt-faint hover:text-txt">
-            없음
+            {t("hole.none")}
           </button>
         </div>
       </div>
       <div className="mt-4 border-t border-line pt-3">
-        <span className="mb-2 block font-head text-[10px] uppercase tracking-widest text-txt-faint">거리 / 클럽</span>
+        <span className="mb-2 block font-head text-[10px] uppercase tracking-widest text-txt-faint">{t("hole.distance")} / Club</span>
       </div>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <span className="font-head text-[11px] uppercase tracking-widest text-txt-faint">거리</span>
+            <span className="font-head text-[11px] uppercase tracking-widest text-txt-faint">{t("hole.distance")}</span>
             <div className="flex overflow-hidden rounded-md border border-line">
               {[["m", "M"], ["yd", "YD"]].map(([u, l]) => (
                 <button key={u} type="button" onClick={() => setHC("unit", u)}
@@ -129,11 +131,11 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           onChange={(e) => setHC("showResultBanner", e.target.checked)}
           className="h-4 w-4 accent-[var(--accent)]"
         />
-        FOR EAGLE/BIRDIE 표시
+        {t("hole.forBanner")}
       </label>
       {linked && (
         <p className="mt-2 text-[12px] text-txt-faint">
-          홀 선택 시 PAR·토탈·타수 자동 반영 · 거리/클럽은 직접 입력
+          {t("hole.linkedHint")}
         </p>
       )}
     </div>
