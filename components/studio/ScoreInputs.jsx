@@ -170,9 +170,11 @@ export function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreK
       return;
     }
     if (!/^\d+$/.test(value)) return;
+    const n = Number(value);
+    if (n > 12) return;
     setBuf(value);
     setHole(idx, "score", value);
-    if (value.length >= 1 && Number(value) >= 1) {
+    if (n >= 1) {
       setTimeout(() => scoreRefs?.current[idx + 1]?.focus(), 0);
     }
   };
