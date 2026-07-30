@@ -532,14 +532,6 @@ function StudioWorkspace({ mode, source }) {
                       </span>
                     )}
                   </span>
-                  {activeSummary.thru > 0 && (
-                    <span>
-                      스코어{" "}
-                      <b className="font-mono text-txt">{activeSummary.totalScore}</b>{" "}
-                      <span className="text-accent">{toParLabel(activeSummary.toPar)}</span>
-                      <span className="text-txt-faint"> · {activeSummary.thru}홀</span>
-                    </span>
-                  )}
                   {activeSummary.thru > 0 && activeSummary.thru < 18 && (
                     <span className="text-accent">{activeSummary.thru}/18홀 입력</span>
                   )}
