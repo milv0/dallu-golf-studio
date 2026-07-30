@@ -83,12 +83,15 @@ export function RelativeScoreInput({
 
   useEffect(() => { setBuf(display); }, [display]);
 
-  const applyRelative = (rel) => {
+  const applyRelative = (rel, autoAdvance = false) => {
     const p = Number(par);
     if (Number.isNaN(p)) return;
     const next = Math.max(REL_MIN, Math.min(REL_MAX, rel));
     setBuf(String(next));
     onScore(String(p + next));
+    if (autoAdvance) {
+      setTimeout(() => scoreRefs?.current[idx + 1]?.focus(), 0);
+    }
   };
 
   const handleChange = (value) => {
@@ -104,7 +107,7 @@ export function RelativeScoreInput({
     if (!/^-?\d*$/.test(value)) return;
     const rel = parseRelativeScore(value);
     if (rel == null) return;
-    applyRelative(rel);
+    applyRelative(rel, true);
   };
 
   const handleKeyDown = (e) => {
@@ -169,6 +172,9 @@ export function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreK
     if (!/^\d+$/.test(value)) return;
     setBuf(value);
     setHole(idx, "score", value);
+    if (value.length >= 1 && Number(value) >= 1) {
+      setTimeout(() => scoreRefs?.current[idx + 1]?.focus(), 0);
+    }
   };
 
   return (

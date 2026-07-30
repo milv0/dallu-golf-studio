@@ -30,6 +30,7 @@ export default function useStudioExport({
   showToast,
 }) {
   const [busy, setBusy] = useState(false);
+  const [exportError, setExportError] = useState("");
   const [batchExportStep, setBatchExportStep] = useState(null);
   const captureRef = useRef(null);
   const batchCaptureRef = useRef(null);
@@ -46,6 +47,7 @@ export default function useStudioExport({
 
   async function handleExport() {
     setBusy(true);
+    setExportError("");
     try {
       const image = await createExportImage();
       if (image) {
@@ -53,7 +55,8 @@ export default function useStudioExport({
         showToast("PNG 다운로드를 시작했습니다.");
       }
     } catch (e) {
-      showToast("내보내기 실패: " + e.message);
+      setExportError("내보내기 실패: " + e.message);
+      showToast("내보내기 실패 — 다시 시도해주세요.");
     } finally {
       setBusy(false);
     }
@@ -108,6 +111,7 @@ export default function useStudioExport({
 
   return {
     busy,
+    exportError,
     captureRef,
     batchCaptureRef,
     batchExportStep,

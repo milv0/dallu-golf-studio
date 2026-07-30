@@ -248,6 +248,7 @@ function StudioWorkspace({ mode, source }) {
   const canBatchExport = !isHole && batchProgressCount > 0 && hasBatchScores && linkedThreeReady;
   const {
     busy,
+    exportError,
     captureRef,
     batchCaptureRef,
     batchExportStep,
@@ -600,6 +601,7 @@ function StudioWorkspace({ mode, source }) {
           hasBatchScores={hasBatchScores}
           batchProgressCount={batchProgressCount}
           exportBlockReason={exportBlockReason}
+          exportError={exportError}
           handleShareExport={handleShareExport}
           handleExport={handleExport}
           handleBatchExport={handleBatchExport}

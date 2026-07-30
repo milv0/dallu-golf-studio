@@ -114,7 +114,25 @@ export default function HomeHub() {
           })}
         </div>
 
-        <p className="mt-8 text-center text-[11px] text-txt-faint">
+        <div className="mt-10 rounded-xl border border-line bg-panel p-4 md:p-6">
+          <div className="mb-3 font-head text-[12px] font-semibold uppercase tracking-widest text-txt-faint">사용 방법</div>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div>
+              <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-accent/10 font-head text-[16px] font-bold text-accent">1</div>
+              <div className="text-[12px] font-semibold text-txt-soft">스코어 입력</div>
+            </div>
+            <div>
+              <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-accent/10 font-head text-[16px] font-bold text-accent">2</div>
+              <div className="text-[12px] font-semibold text-txt-soft">미리보기 확인</div>
+            </div>
+            <div>
+              <div className="mx-auto mb-2 flex h-9 w-9 items-center justify-center rounded-full bg-accent/10 font-head text-[16px] font-bold text-accent">3</div>
+              <div className="text-[12px] font-semibold text-txt-soft">공유 / 다운로드</div>
+            </div>
+          </div>
+        </div>
+
+        <p className="mt-6 text-center text-[11px] text-txt-faint">
           로그인 · 코스 DB · 라운드 저장 기능은 준비 중입니다
         </p>
       </div>

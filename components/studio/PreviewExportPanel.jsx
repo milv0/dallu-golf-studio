@@ -27,6 +27,7 @@ export default function PreviewExportPanel({
   hasBatchScores,
   batchProgressCount,
   exportBlockReason,
+  exportError,
   handleShareExport,
   handleExport,
   handleBatchExport,
@@ -128,6 +129,15 @@ export default function PreviewExportPanel({
         {!canExport && exportBlockReason && (
           <div className="mt-2 rounded-md border border-[#ffb648]/40 bg-[#ffb648]/10 px-2.5 py-1.5 text-[12px] font-semibold text-[#ffb648]">
             {exportBlockReason}
+          </div>
+        )}
+        {exportError && (
+          <div className="mt-2 flex items-center gap-2 rounded-md border border-[#e5484d]/40 bg-[#e5484d]/10 px-2.5 py-1.5">
+            <span className="text-[12px] font-semibold text-[#e5484d]">{exportError}</span>
+            <button type="button" onClick={handleExport}
+              className="rounded-md bg-[#e5484d] px-2 py-0.5 text-[11px] font-bold text-white transition hover:bg-[#c93c3c]">
+              재시도
+            </button>
           </div>
         )}
       </div>
