@@ -81,7 +81,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
 
       <div className="mt-4 border-t border-line pt-3">
         <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
-          현재 타수 (지금 칠 샷)
+          현재 타수
         </span>
         <div className="flex flex-wrap gap-1.5">
           {Array.from({ length: (Number(holeCard.par) || 4) * 2 }, (_, i) => i + 1).map((n) => (
@@ -129,11 +129,11 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           onChange={(e) => setHC("showResultBanner", e.target.checked)}
           className="h-4 w-4 accent-[var(--accent)]"
         />
-        FOR EAGLE/BIRDIE 배너 표시
+        FOR EAGLE/BIRDIE 표시
       </label>
       {linked && (
         <p className="mt-2 text-[12px] text-txt-faint">
-          홀 선택 → PAR·토탈·타수 자동 반영 · 거리/클럽은 직접 입력
+          홀 선택 시 PAR·토탈·타수 자동 반영 · 거리/클럽은 직접 입력
         </p>
       )}
     </div>

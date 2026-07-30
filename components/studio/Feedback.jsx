@@ -39,7 +39,7 @@ export function ConfirmDialog({ request, onCancel, onConfirm }) {
           </button>
           <button type="button" onClick={onConfirm}
             className="rounded-lg bg-accent px-3 py-2 text-sm font-bold text-[#06210f] transition active:scale-[0.98]">
-            진행
+            네
           </button>
         </div>
       </div>

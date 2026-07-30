@@ -13,7 +13,7 @@ export default function RoundRecords() {
           <a href="/" className="mt-1 block font-head text-[34px] font-bold uppercase leading-none tracking-tight text-txt transition hover:text-accent sm:text-[40px]">
             Dallu Golf <span className="text-accent">Studio</span>
           </a>
-          <p className="mt-2 text-sm text-txt-soft">라운딩 기록 저장과 불러오기는 현재 비활성화되어 있습니다.</p>
+          <p className="mt-2 text-sm text-txt-soft">기록 저장·불러오기 기능 준비 중</p>
         </div>
         <a href="/round"
           className="rounded-lg bg-accent px-3 py-1.5 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 sm:px-4 sm:py-2 sm:text-sm">
@@ -26,7 +26,7 @@ export default function RoundRecords() {
       <div className="rounded-xl border border-line bg-panel p-8 text-center">
         <div className="font-head text-2xl font-bold text-txt">내 라운딩</div>
         <p className="mt-2 text-sm text-txt-soft">
-          사용자 인증과 DB 저장 구조를 확정하기 전까지 저장 기록 기능은 비활성화되어 있습니다.
+          저장 기능 준비 중이에요. 조금만 기다려주세요!
         </p>
         <button type="button" disabled
           className="mt-5 inline-flex cursor-not-allowed rounded-lg border border-line bg-panel-2 px-4 py-2 text-sm font-bold text-txt-faint opacity-70">

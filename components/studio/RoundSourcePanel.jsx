@@ -29,7 +29,7 @@ export default function RoundSourcePanel({
             {!hasRoundData ? "18홀 데이터 없음" : "18홀 스코어 없음"}
           </b>
           <span className="ml-2">
-            {!hasRoundData ? "18홀 스코어를 먼저 입력하세요." : "이 라운드에는 입력된 홀 스코어가 필요합니다."}
+            {!hasRoundData ? "18홀 스코어를 먼저 입력하세요." : "홀별 스코어를 먼저 입력해주세요"}
           </span>
         </div>
       )}

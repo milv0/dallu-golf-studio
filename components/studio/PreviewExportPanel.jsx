@@ -90,18 +90,18 @@ export default function PreviewExportPanel({
               ))}
             </div>
             <button onClick={handleShareExport} disabled={busy || !canExport}
-              title={!canExport ? "필수 입력을 먼저 완료하세요" : "iPhone에서는 공유 시트에서 이미지 저장을 선택하세요"}
+              title={!canExport ? "필수 항목을 먼저 입력하세요" : "iPhone: 공유 → 이미지 저장 선택"}
               className="rounded-lg bg-accent px-3 py-1 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:hidden">
               {busy ? "생성 중..." : !canExport ? "입력 필요" : "공유"}
             </button>
             <button onClick={handleExport} disabled={busy || !canExport}
-              title={!canExport ? "필수 입력을 먼저 완료하세요" : "PNG 다운로드"}
+              title={!canExport ? "필수 항목을 먼저 입력하세요" : "PNG 다운로드"}
               className="hidden rounded-lg bg-accent px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:inline-block">
               {busy ? "생성 중..." : !canExport ? "입력 필요" : "PNG 다운로드"}
             </button>
             {batchProgressCount > 0 && (
               <button onClick={handleBatchExport} disabled={busy || !canBatchExport}
-                title={!hasBatchScores ? "모든 스코어를 입력해야 합니다" : "홀별 PNG를 ZIP으로 저장합니다"}
+                title={!hasBatchScores ? "모든 스코어를 먼저 입력하세요" : "홀별 PNG를 ZIP으로 저장"}
                 className="hidden rounded-lg border border-line bg-panel-2 px-4 py-1.5 font-head text-sm font-bold uppercase tracking-wide text-txt-soft transition hover:border-accent hover:text-txt disabled:opacity-60 md:inline-block">
                 {busy ? "생성 중..." : `홀별 ${batchProgressCount}장 저장`}
               </button>

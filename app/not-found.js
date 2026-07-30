@@ -7,7 +7,7 @@ export default function NotFound() {
         404
       </h1>
       <p className="mt-4 font-body text-lg text-txt-soft">
-        페이지를 찾을 수 없습니다
+        페이지를 찾을 수 없어요
       </p>
       <Link
         href="/"

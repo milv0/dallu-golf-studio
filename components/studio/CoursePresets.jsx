@@ -33,7 +33,7 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
 
       {disabled ? (
         <div className="rounded-lg border border-line bg-panel-2 px-3 py-3 text-[12px] leading-relaxed text-txt-soft">
-          코스 자동 불러오기는 현재 비활성화되어 있습니다. 홀별 PAR는 아래 스코어 입력에서 직접 입력해주세요.
+          코스 불러오기 준비 중 · PAR는 아래에서 직접 입력
         </div>
       ) : favCourses.length > 0 && (
         <div className="mb-3">
@@ -53,9 +53,9 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
       )}
 
       {!disabled && (!activeClub ? (
-        <p className="text-[12px] text-txt-faint">기본 정보에서 <b className="text-txt-soft">골프장을 선택</b>하면 코스가 표시됩니다.</p>
+        <p className="text-[12px] text-txt-faint">기본 정보에서 <b className="text-txt-soft">골프장 선택 시</b> 코스 표시</p>
       ) : clubCourses.length === 0 ? (
-        <p className="text-[12px] text-txt-faint">{activeClub} · 등록된 코스가 없습니다.</p>
+        <p className="text-[12px] text-txt-faint">{activeClub} · 등록된 코스 없음</p>
       ) : (
         <div>
           <div className="mb-1.5 text-[12px] text-txt-soft">{activeClub} · 코스 선택</div>

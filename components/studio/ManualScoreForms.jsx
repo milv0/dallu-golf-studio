@@ -47,7 +47,7 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
       {scoreMode === "relative" && <RelativeScoreHint className="mt-2" />}
 
       <div className="mt-2">
-        <Field label="TO PAR 직접입력" value={data.toPar} onChange={(v) => setField("toPar", v)} placeholder="자동 계산" />
+        <Field label="TO PAR 직접 입력" value={data.toPar} onChange={(v) => setField("toPar", v)} placeholder="자동 계산" />
       </div>
     </div>
   );
@@ -115,7 +115,7 @@ export function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onSelec
         })}
       </div>
       <div className="mt-2 text-[11px] text-txt-faint">
-        시작 홀을 누르면 연속된 3홀이 선택됩니다. 예: 2번 선택 → 234.
+        시작 홀을 누르면 연속 3홀 선택. 예: 2번 → 2·3·4
       </div>
     </div>
   );

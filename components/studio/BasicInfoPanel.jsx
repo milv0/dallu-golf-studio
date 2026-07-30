@@ -7,7 +7,7 @@ export default function BasicInfoPanel({ title = "기본 정보", data, setMeta,
         {title}
       </div>
       <div className="flex flex-col gap-2">
-        <Field label="선수명" full value={data.player}
+        <Field label="선수" full value={data.player}
                onChange={(v) => setMeta("player", v)} placeholder="이름" />
         <ClubAutocomplete value={data.course} onChange={(v) => setMeta("course", v)}
           onPick={(v) => setMeta("course", v)} options={clubNameList} />

@@ -74,7 +74,7 @@ export function HomeIcon() {
 
 function DisabledNavItem({ label }) {
   return (
-    <span aria-disabled="true" title="현재 비활성화되어 있습니다"
+    <span aria-disabled="true" title="준비 중"
       className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
       {label}
     </span>
@@ -102,7 +102,7 @@ function LoginButton({ currentUser, onLogout }) {
   }
 
   return (
-    <button type="button" disabled title="로그인 기능은 현재 비활성화되어 있습니다"
+    <button type="button" disabled title="로그인 기능 준비 중"
       className="cursor-not-allowed rounded-full border border-line bg-panel px-2.5 py-1.5 text-xs font-semibold text-txt-faint opacity-70 sm:px-3">
       로그인
     </button>
