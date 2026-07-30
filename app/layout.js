@@ -40,6 +40,21 @@ export const metadata = {
     title: "Dallu Golf",
     statusBarStyle: "default",
   },
+  openGraph: {
+    title: "Dallu Golf Studio — 골프 스코어카드 오버레이 메이커",
+    description: "골프 영상 편집용 스코어카드 오버레이(투명 PNG)를 유튜브·릴스 포맷과 메이저 대회 방송 스타일로 제작.",
+    url: "https://dallugolf.com",
+    siteName: "Dallu Golf Studio",
+    images: [{ url: "https://dallugolf.com/icon-512.png", width: 512, height: 512 }],
+    locale: "ko_KR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Dallu Golf Studio",
+    description: "골프 스코어카드 오버레이 메이커",
+    images: ["https://dallugolf.com/icon-512.png"],
+  },
   formatDetection: {
     telephone: false,
   },

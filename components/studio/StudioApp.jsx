@@ -540,6 +540,9 @@ function StudioWorkspace({ mode, source }) {
                       <span className="text-txt-faint"> · {activeSummary.thru}홀</span>
                     </span>
                   )}
+                  {activeSummary.thru > 0 && activeSummary.thru < 18 && (
+                    <span className="text-accent">{activeSummary.thru}/18홀 입력</span>
+                  )}
                 </div>
               </div>
             </div>
