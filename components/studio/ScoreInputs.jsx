@@ -52,7 +52,7 @@ export function RelativeScoreHint({ className = "mb-2" }) {
 export function ScoreModeToggle({ value, onChange }) {
   return (
     <div className="flex overflow-hidden rounded-lg border border-line">
-      {[["strokes", "타수"], ["relative", "파대비"]].map(([key, label]) => (
+      {[["strokes", "Strokes"], ["relative", "To Par"]].map(([key, label]) => (
         <button
           key={key}
           type="button"
