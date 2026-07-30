@@ -528,7 +528,7 @@ function StudioWorkspace({ mode, source }) {
                     <b className={"font-mono " + (activeSummary.totalPar === 72 ? "text-txt" : "text-[#ffb648]")}>
                       {t("label.parTotal", { out: activeSummary.outPar, in: activeSummary.inPar, total: activeSummary.totalPar })}
                     </b>
-                    {activeSummary.totalPar !== 72 && (
+                    {activeSummary.totalPar !== 72 && scoreRound.holes.every((h) => h.par !== "" && h.par != null) && (
                       <span className="ml-1.5 font-semibold text-[#ffb648]">
                         {t("label.parWarning")}
                       </span>
