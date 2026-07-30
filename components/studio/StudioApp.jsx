@@ -73,10 +73,11 @@ function hasAllScores(holes = [], count = holes.length) {
 
 
 function CustomPlayerControl({ value, onChange }) {
+  const { t } = useLang();
   return (
     <label className="flex w-[128px] shrink-0 items-center gap-2 rounded-lg border border-line bg-panel-2 px-2 py-1">
       <span className="font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">
-        이름
+        {t("label.name")}
       </span>
       <input
         value={value || ""}
@@ -525,7 +526,7 @@ function StudioWorkspace({ mode, source }) {
                   <span>
                     PAR{" "}
                     <b className={"font-mono " + (activeSummary.totalPar === 72 ? "text-txt" : "text-[#ffb648]")}>
-                      OUT {activeSummary.outPar} · IN {activeSummary.inPar} · 합 {activeSummary.totalPar}
+                      {t("label.parTotal", { out: activeSummary.outPar, in: activeSummary.inPar, total: activeSummary.totalPar })}
                     </b>
                     {activeSummary.totalPar !== 72 && (
                       <span className="ml-1.5 font-semibold text-[#ffb648]">

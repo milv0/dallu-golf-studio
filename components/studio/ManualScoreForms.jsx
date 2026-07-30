@@ -56,10 +56,11 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
 }
 
 function InlinePlayerControl({ value, onChange }) {
+  const { t } = useLang();
   return (
     <label className="flex w-[128px] shrink-0 items-center gap-2 rounded-lg border border-line bg-panel-2 px-2 py-1">
       <span className="font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">
-        이름
+        {t("label.name")}
       </span>
       <input
         value={value || ""}
