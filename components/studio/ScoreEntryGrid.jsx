@@ -10,12 +10,12 @@ const metaLockProps = {
   onContextMenu: preventMetaCopy,
 };
 
-function ParInput({ idx, value, setHole, parRefs }) {
+function ParInput({ idx, localIdx, value, setHole, parRefs }) {
   const handleChange = (next) => {
     if (next === "" || /^[3456]$/.test(next)) {
       setHole(idx, "par", next);
       if (next !== "") {
-        setTimeout(() => parRefs?.current[idx + 1]?.focus(), 0);
+        setTimeout(() => parRefs?.current[localIdx + 1]?.focus(), 0);
       }
     }
   };
@@ -24,7 +24,7 @@ function ParInput({ idx, value, setHole, parRefs }) {
     <input
       {...metaLockProps}
       {...replaceInputTextProps}
-      ref={(el) => { if (parRefs) parRefs.current[idx] = el; }}
+      ref={(el) => { if (parRefs) parRefs.current[localIdx] = el; }}
       aria-label={`홀 ${idx + 1} PAR`}
       value={value ?? ""}
       inputMode="numeric"
@@ -98,7 +98,7 @@ export default function ScoreEntryGrid({
                   {h.par || "–"}
                 </div>
               ) : (
-                <ParInput idx={idx} value={h.par} setHole={setHole} parRefs={parRefs} />
+                <ParInput idx={idx} localIdx={i} value={h.par} setHole={setHole} parRefs={parRefs} />
               )}
             </div>
           );
