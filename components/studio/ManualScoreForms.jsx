@@ -49,7 +49,7 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
       {scoreMode === "relative" && <RelativeScoreHint className="mt-2" />}
 
       <div className="mt-2">
-        <Field label={t("manual.toPar")} value={data.toPar} onChange={(v) => setField("toPar", v)} placeholder="자동 계산" />
+        <Field label={t("manual.toPar")} value={data.toPar} onChange={(v) => setField("toPar", v)} placeholder={t("manual.toParPlaceholder")} />
       </div>
     </div>
   );
