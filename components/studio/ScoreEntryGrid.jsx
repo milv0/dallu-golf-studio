@@ -11,12 +11,15 @@ const metaLockProps = {
 };
 
 function ParInput({ idx, localIdx, value, setHole, parRefs }) {
-  const handleChange = (next) => {
-    if (next === "" || /^[3456]$/.test(next)) {
+  const handleChange = (e) => {
+    const next = e.target.value.slice(-1);
+    if (next === "") {
+      setHole(idx, "par", "");
+      return;
+    }
+    if (/^[3456]$/.test(next)) {
       setHole(idx, "par", next);
-      if (next !== "") {
-        setTimeout(() => parRefs?.current[localIdx + 1]?.focus(), 0);
-      }
+      setTimeout(() => parRefs?.current[localIdx + 1]?.focus(), 0);
     }
   };
 
@@ -28,8 +31,7 @@ function ParInput({ idx, localIdx, value, setHole, parRefs }) {
       aria-label={`홀 ${idx + 1} PAR`}
       value={value ?? ""}
       inputMode="numeric"
-      maxLength={1}
-      onChange={(e) => handleChange(e.target.value)}
+      onChange={handleChange}
       className="score-meta-lock w-full bg-transparent py-0.5 text-center font-mono text-[12px] font-semibold text-txt-soft outline-none focus:bg-accent/10 focus:text-txt focus:ring-1 focus:ring-inset focus:ring-accent"
     />
   );
