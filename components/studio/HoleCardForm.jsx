@@ -61,12 +61,12 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
         <div className="grid grid-cols-4">
           {linked ? (
             <label className="block min-w-0 border-l border-line first:border-l-0">
-              <span className="block bg-panel py-0.5 text-center font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">홀</span>
+              <span className="block bg-panel py-0.5 text-center font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">{t("hole.labelHole")}</span>
               <input readOnly value={holeCard.hole || "–"} tabIndex={-1}
                 className="w-full border-t border-line bg-transparent px-1 py-3 text-center font-mono text-xl font-bold text-txt outline-none" />
             </label>
           ) : (
-            <CoreInput label="홀" value={holeCard.hole} onChange={(v) => {
+            <CoreInput label={t("hole.labelHole")} value={holeCard.hole} onChange={(v) => {
               if (v === "") { setHC("hole", ""); return; }
               if (!/^\d{1,2}$/.test(v)) return;
               const n = parseInt(v, 10);
@@ -76,7 +76,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           <CoreInput label="P" value={holeCard.par} onChange={(v) => {
             if (v === "" || /^[3456]$/.test(v)) setHC("par", v);
           }} placeholder="4" inputMode="numeric" />
-          <CoreInput label="타" value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="4" inputMode="numeric" />
+          <CoreInput label={t("hole.labelShot")} value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="4" inputMode="numeric" />
           <CoreInput label="±" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="E" />
         </div>
       </div>
