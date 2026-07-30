@@ -44,7 +44,7 @@ export const replaceInputTextProps = {
 export function RelativeScoreHint({ className = "mb-2" }) {
   return (
     <p className={`${className} text-[11px] text-txt-faint`}>
-      파 기준 입력: 버디 <b className="text-txt-soft">-1</b> · 파 <b className="text-txt-soft">0</b> · 보기 <b className="text-txt-soft">1</b> · ←/→ 조정
+      파 기준 입력: 버디 <b className="text-txt-soft">-1</b> · 파 <b className="text-txt-soft">0</b> · 보기 <b className="text-txt-soft">1</b>
     </p>
   );
 }
