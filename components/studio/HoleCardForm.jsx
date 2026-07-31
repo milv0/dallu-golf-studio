@@ -71,14 +71,14 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
               if (!/^\d{1,2}$/.test(v)) return;
               const n = parseInt(v, 10);
               if (n >= 1 && n <= 18) setHC("hole", v);
-            }} placeholder="1" inputMode="numeric" />
+            }} placeholder="–" inputMode="numeric" />
           )}
           <CoreInput label="P" value={holeCard.par} onChange={(v) => {
             if (v === "" || /^[3456]$/.test(v)) setHC("par", v);
-          }} placeholder="4" inputMode="numeric" />
-          <CoreInput label={t("hole.distance")} value={holeCard.distance} onChange={(v) => setHC("distance", v)} placeholder="195" inputMode="numeric" />
-          <CoreInput label={t("hole.labelShot")} value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="3" inputMode="numeric" />
-          <CoreInput label="±" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="E" />
+          }} placeholder="–" inputMode="numeric" />
+          <CoreInput label={t("hole.distance")} value={holeCard.distance} onChange={(v) => setHC("distance", v)} placeholder="–" inputMode="numeric" />
+          <CoreInput label={t("hole.labelShot")} value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="–" inputMode="numeric" />
+          <CoreInput label="±" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="–" />
         </div>
       </div>
 
