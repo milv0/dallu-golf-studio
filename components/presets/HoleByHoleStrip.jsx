@@ -34,7 +34,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
   const rs = rangeStats(round.holes, range);
   const rangeLabel = range === "front" ? "FRONT 9" : range === "back" ? "BACK 9" : "";
   const playerName = displayPlayerName(round.player);
-  const playerSize = fitFontSize(playerName, { base: 32, min: 18, maxWidth: LP - 28 });
+  const playerSize = fitFontSize(playerName, { base: 32, min: 18, maxWidth: LP - 56 });
   const playerY = rangeLabel ? 63 : 50;
 
   // 컬럼 정의 (범위에 따라)
@@ -78,10 +78,10 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
       </text>
 
       {/* 2) dG 로고 + 선수명 */}
-      <circle cx="28" cy={playerY} r="18" fill="none" stroke={c.accent} strokeWidth="2.2" />
-      <text x="28" y={playerY + 1} textAnchor="middle" dominantBaseline="middle" fill={c.accent}
-            fontFamily={HEAD} fontSize="17" fontWeight="700">dG</text>
-      <text x={LP / 2 + 14} y={playerY} textAnchor="middle" dominantBaseline="middle" fill={c.text}
+      <circle cx="26" cy={playerY} r="14" fill="none" stroke={c.accent} strokeWidth="1.8" />
+      <text x="26" y={playerY + 1} textAnchor="middle" dominantBaseline="middle" fill={c.accent}
+            fontFamily={HEAD} fontSize="13" fontWeight="700">dG</text>
+      <text x="46" y={playerY} dominantBaseline="middle" fill={c.text}
             fontFamily={HEAD} fontSize={playerSize} fontWeight="700" letterSpacing="0.5">
         {playerName}
       </text>
