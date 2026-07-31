@@ -61,7 +61,7 @@ export function CompactHoleCell({ cx, rowY, hole, index, c, showHoleNumbers = tr
       )}
       <text x={cx} y={parY} textAnchor="middle" fill={c.faint}
         fontFamily={MONO} fontSize="26" fontWeight="600" className="score-meta-lock">
-        P{hole?.par || "–"}
+        {hole?.par ? `P${hole.par}` : ""}
       </text>
       <ResultMarker kind={kind} cx={cx} cy={scoreY} size={30} />
       <ScoreNumber x={cx} y={scoreY} value={hole?.score} hasValue={has} empty="·"
