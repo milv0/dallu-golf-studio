@@ -14,7 +14,7 @@ export const emptyHoleCard = () => ({
 
 export const emptyThreeHoleCard = () => ({
   showHoleNumbers: false,
-  metaMode: "holePar",
+  metaMode: "par",
   unit: "m",
   total: "",
   toPar: "",

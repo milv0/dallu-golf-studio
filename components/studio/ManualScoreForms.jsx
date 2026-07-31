@@ -22,7 +22,7 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
   const { t } = useLang();
   const { scoreRefs, handleScoreKey } = useScoreRefs();
   const [scoreMode, setScoreMode] = useState("strokes");
-  const metaMode = data.metaMode || "holePar";
+  const showDist = data.metaMode === "parDist";
 
   return (
     <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
@@ -32,16 +32,13 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
       </PanelHeader>
 
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        <div className="flex overflow-hidden rounded-lg border border-line">
-          {[["parDist", "P+Dist"], ["par", "P"]].map(([key, label]) => (
-            <button key={key} type="button" onClick={() => setField("metaMode", key)}
-              className={"px-2.5 py-1 text-[11px] font-bold transition " +
-                (metaMode === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-              {label}
-            </button>
-          ))}
-        </div>
-        {metaMode === "parDist" && (
+        <label className="flex items-center gap-2 text-sm font-semibold text-txt-soft">
+          <input type="checkbox" checked={showDist}
+            onChange={(e) => setField("metaMode", e.target.checked ? "parDist" : "par")}
+            className="h-4 w-4 accent-[var(--color-accent)]" />
+          Distance
+        </label>
+        {showDist && (
           <div className="flex overflow-hidden rounded-md border border-line">
             {[["m", "M"], ["yd", "YD"]].map(([u, l]) => (
               <button key={u} type="button" onClick={() => setField("unit", u)}
@@ -66,7 +63,7 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
       />
       {scoreMode === "relative" && <RelativeScoreHint className="mt-2" />}
 
-      {metaMode === "parDist" && (
+      {showDist && (
         <div className="mt-2 grid grid-cols-3 gap-2">
           {(data.holes || []).slice(0, 3).map((h, i) => (
             <input key={i} value={h.distance || ""} onChange={(e) => setHole(i, "distance", e.target.value)}
