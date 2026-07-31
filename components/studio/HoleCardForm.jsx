@@ -102,29 +102,17 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           </button>
         </div>
       </div>
-      <div className="mt-4 border-t border-line pt-3">
-        <span className="mb-2 block font-head text-[10px] uppercase tracking-widest text-txt-faint">{t("hole.distance")} / Club</span>
-      </div>
-      <div className="grid max-w-[400px] grid-cols-1 gap-3 md:grid-cols-2">
-        <div>
-          <div className="mb-1 flex items-center justify-between">
-            <span className="font-head text-[11px] uppercase tracking-widest text-txt-faint">{t("hole.distance")}</span>
-            <div className="flex overflow-hidden rounded-md border border-line">
-              {[["m", "M"], ["yd", "YD"]].map(([u, l]) => (
-                <button key={u} type="button" onClick={() => setHC("unit", u)}
-                  className={"px-2 py-0.5 text-[11px] font-bold transition " +
-                    (holeCard.unit === u ? "bg-accent text-[#06210f]" : "bg-panel-2 text-txt-soft hover:text-txt")}>
-                  {l}
-                </button>
-              ))}
-            </div>
-          </div>
-          <input value={holeCard.distance} onChange={(e) => setHC("distance", e.target.value)}
-            {...replaceInputTextProps}
-            placeholder={holeCard.unit === "yd" ? "212" : "195"}
-            className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2.5 text-sm text-txt outline-none focus:border-accent" />
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <div className="flex overflow-hidden rounded-md border border-line">
+          {[["m", "M"], ["yd", "YD"]].map(([u, l]) => (
+            <button key={u} type="button" onClick={() => setHC("unit", u)}
+              className={"px-2.5 py-1 text-[11px] font-bold transition " +
+                (holeCard.unit === u ? "bg-accent text-[#06210f]" : "bg-panel-2 text-txt-soft hover:text-txt")}>
+              {l}
+            </button>
+          ))}
         </div>
-        <div className={cardStyle === "minimal" ? "opacity-40 pointer-events-none" : ""}>
+        <div className={"max-w-[180px] flex-1 " + (cardStyle === "minimal" ? "opacity-40 pointer-events-none" : "")}>
           <ClubField value={holeCard.club} onChange={(v) => setHC("club", v)} />
         </div>
       </div>
