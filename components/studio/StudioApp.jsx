@@ -83,6 +83,7 @@ function CustomPlayerControl({ value, onChange }) {
       <input
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
+        maxLength={12}
         placeholder={DEFAULT_CUSTOM_PLAYER}
         className="min-w-0 flex-1 bg-transparent text-right font-head text-sm font-bold uppercase text-txt outline-none placeholder:text-txt-faint"
       />

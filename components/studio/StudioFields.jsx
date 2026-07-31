@@ -33,14 +33,14 @@ function normalizeClubValue(value) {
   return n >= 3 && n <= 10 ? `${n} Iron` : trimmed;
 }
 
-export function Field({ label, value, onChange, onBlur, placeholder, full, type = "text", list }) {
+export function Field({ label, value, onChange, onBlur, placeholder, full, type = "text", list, maxLength }) {
   return (
     <label className={"block min-w-0 " + (full ? "md:col-span-2" : "")}>
       <span className="mb-0.5 block font-head text-[10px] uppercase tracking-widest text-txt-faint md:mb-1 md:text-[11px]">
         {label}
       </span>
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)}
-        onBlur={onBlur} list={list} placeholder={placeholder}
+        onBlur={onBlur} list={list} placeholder={placeholder} maxLength={maxLength}
         onClick={type === "date" ? (e) => { try { e.currentTarget.showPicker?.(); } catch {} } : undefined}
         className="min-w-0 max-w-full w-full rounded-lg border border-line-2 bg-panel-2 px-2.5 py-1.5 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent md:px-3 md:py-2 [color-scheme:dark]" />
     </label>

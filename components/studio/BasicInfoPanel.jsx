@@ -11,7 +11,7 @@ export default function BasicInfoPanel({ title, data, setMeta, clubNameList }) {
       </div>
       <div className="flex flex-col gap-2">
         <Field label={t("info.player")} full value={data.player}
-               onChange={(v) => setMeta("player", v)} placeholder={t("info.playerPlaceholder")} />
+               onChange={(v) => setMeta("player", v)} placeholder={t("info.playerPlaceholder")} maxLength={12} />
         <ClubAutocomplete value={data.course} onChange={(v) => setMeta("course", v)}
           onPick={(v) => setMeta("course", v)} options={clubNameList} />
         <Field label={t("info.date")} type="date" value={data.date}
