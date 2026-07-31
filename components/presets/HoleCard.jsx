@@ -78,7 +78,7 @@ export default function HoleCard({ data, theme = "dark" }) {
       <text x={segW / 2} y="121" textAnchor="middle" fill={c.accent} fontFamily={HEAD}
             fontSize="26" fontWeight="700" letterSpacing="1" className="score-meta-lock">PAR {data.par || "–"}</text>
       <text x={segW / 2} y="160" textAnchor="middle" fill={c.sub} fontFamily={MONO}
-            fontSize="26" fontWeight="700">{data.distance ? (/[a-zA-Z]/.test(String(data.distance)) ? String(data.distance).toUpperCase() : `${data.distance}${data.unit === "yd" ? "y" : "m"}`) : ""}</text>
+            fontSize="26" fontWeight="700">{data.distance ? (/[a-zA-Z]/.test(String(data.distance)) ? String(data.distance).toUpperCase() : `${data.distance}${data.unit === "yd" ? "y" : "m"}`) : `- ${data.unit === "yd" ? "yd" : "m"}`}</text>
 
       {/* 선수명 (센터 상단) */}
       <circle cx={segW + 32} cy="61" r="22" fill="none" stroke={c.accent} strokeWidth="2.2" />

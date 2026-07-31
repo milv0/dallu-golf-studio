@@ -66,7 +66,7 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
 
       {/* SHOT 번호 */}
       {shotNums.map((n, i) => {
-        const baseX = pad + (holeLabel.length * 11 + 4) + (dist ? dist.length * 9 + 6 : 0);
+        const baseX = pad + (holeLabel.length * 11 + 4) + (dist ? dist.length * 9 + 14 : 0);
         const sx = baseX + i * 22;
         const active = n === displayShots;
         return (
