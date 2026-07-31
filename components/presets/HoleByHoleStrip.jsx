@@ -77,14 +77,26 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
         {rangeLabel}
       </text>
 
-      {/* 2) dG 로고 + 선수명 */}
-      <circle cx="26" cy={playerY} r="14" fill="none" stroke={c.accent} strokeWidth="1.8" />
-      <text x="26" y={playerY + 1} textAnchor="middle" dominantBaseline="middle" fill={c.accent}
-            fontFamily={HEAD} fontSize="13" fontWeight="700">dG</text>
-      <text x="46" y={playerY} dominantBaseline="middle" fill={c.text}
-            fontFamily={HEAD} fontSize={playerSize} fontWeight="700" letterSpacing="0.5">
-        {playerName}
-      </text>
+      {/* 2) dG 로고 + 선수명 (중앙 정렬) */}
+      {(() => {
+        const logoR = 14;
+        const logoD = logoR * 2;
+        const gap = 6;
+        const textW = playerName.length * playerSize * 0.58;
+        const totalW = logoD + gap + textW;
+        const startX = (LP - totalW) / 2 + logoR;
+        return (
+          <>
+            <circle cx={startX} cy={playerY} r={logoR} fill="none" stroke={c.accent} strokeWidth="1.8" />
+            <text x={startX} y={playerY + 1} textAnchor="middle" dominantBaseline="middle" fill={c.accent}
+                  fontFamily={HEAD} fontSize="13" fontWeight="700">dG</text>
+            <text x={startX + logoR + gap} y={playerY} dominantBaseline="middle" fill={c.text}
+                  fontFamily={HEAD} fontSize={playerSize} fontWeight="700" letterSpacing="0.5">
+              {playerName}
+            </text>
+          </>
+        );
+      })()}
 
       {/* 구분선 */}
       <line x1="24" y1="86" x2={LP - 16} y2="86" stroke={c.line} strokeWidth="1.5" />
