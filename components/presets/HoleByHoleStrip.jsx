@@ -77,14 +77,14 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
         {rangeLabel}
       </text>
 
-      {/* 2) 선수명 + dG 로고 */}
-      <text x={LP / 2 - 12} y={playerY} textAnchor="middle" dominantBaseline="middle" fill={c.text}
+      {/* 2) dG 로고 + 선수명 */}
+      <circle cx="24" cy={playerY} r="12" fill="none" stroke={c.accent} strokeWidth="1.5" opacity="0.7" />
+      <text x="24" y={playerY + 1} textAnchor="middle" dominantBaseline="middle" fill={c.accent}
+            fontFamily={HEAD} fontSize="11" fontWeight="700" opacity="0.7">dG</text>
+      <text x={LP / 2 + 10} y={playerY} textAnchor="middle" dominantBaseline="middle" fill={c.text}
             fontFamily={HEAD} fontSize={playerSize} fontWeight="700" letterSpacing="0.5">
         {playerName}
       </text>
-      <circle cx={LP - 20} cy={playerY} r="12" fill="none" stroke={c.accent} strokeWidth="1.5" opacity="0.7" />
-      <text x={LP - 20} y={playerY + 1} textAnchor="middle" dominantBaseline="middle" fill={c.accent}
-            fontFamily={HEAD} fontSize="11" fontWeight="700" opacity="0.7">dG</text>
 
       {/* 구분선 */}
       <line x1="24" y1="86" x2={LP - 16} y2="86" stroke={c.line} strokeWidth="1.5" />
