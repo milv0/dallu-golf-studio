@@ -5,7 +5,7 @@ import { cardColors } from "../../lib/theme";
 import { displayPlayerName } from "./svgText";
 import { HEAD, MONO } from "./scorecardPrimitives";
 
-export const SIZE = { w: 360, h: 88 };
+export const SIZE = { w: 320, h: 88 };
 
 
 export default function HoleCardMinimal({ data, theme = "dark" }) {
