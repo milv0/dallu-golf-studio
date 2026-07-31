@@ -6,16 +6,17 @@ import { Moon, Sun, ClipboardList, Pencil } from "lucide-react";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import { defaultFlowHref, storedFlowHref } from "./StudioNav";
 import { useLang } from "../../lib/i18n";
+import { useTheme } from "../../lib/themeContext";
 import LangToggle from "./LangToggle";
 
 export default function HomeHub() {
   const { t } = useLang();
+  const { theme, toggleTheme } = useTheme();
   const [currentUser, setCurrentUser] = useState(null);
   const [flowHrefs, setFlowHrefs] = useState({
     round: defaultFlowHref("round"),
     custom: defaultFlowHref("custom"),
   });
-  const [theme, setTheme] = useState("light");
 
   useEffect(() => {
     setCurrentUser(loadCurrentUser());
@@ -29,11 +30,6 @@ export default function HomeHub() {
     clearCurrentUser();
     setCurrentUser(null);
   };
-  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
 
   const cards = [
     { href: flowHrefs.round, title: t("home.roundTitle"), desc: t("home.roundDesc"), icon: ClipboardList, accent: "border-t-[3px] border-t-accent", disabled: true },

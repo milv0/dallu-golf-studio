@@ -27,6 +27,7 @@ import useStudioExport from "./useStudioExport";
 import { DEFAULT_CUSTOM_PLAYER, emptyCustomRound, emptyHoleCard, emptyLinkedThree, emptyManualNine, emptyThreeHoleCard } from "./studioDefaults";
 import { STUDIO_STORAGE_KEYS, writeJsonStorage } from "../../lib/studioStorage";
 import { useLang } from "../../lib/i18n";
+import { useTheme } from "../../lib/themeContext";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
 const PREVIEW_MAX_H = 440;
@@ -95,6 +96,7 @@ export default function StudioApp({ mode = "home", source } = {}) {
 
 function StudioWorkspace({ mode, source }) {
   const { t } = useLang();
+  const { theme, toggleTheme } = useTheme();
   const [round, setRound] = useState(emptyRound);
   const [customRound, setCustomRound] = useState(emptyCustomRound);
   const [holeCard, setHoleCard] = useState(emptyHoleCard);
@@ -106,7 +108,6 @@ function StudioWorkspace({ mode, source }) {
   const [sourceMode, setSourceMode] = useState(source || (mode === "round" ? "round" : "custom"));
   const [cardTheme, setCardTheme] = useState("light"); // 카드(프리셋) 색 테마
   const [exportScale, setExportScale] = useState(mode === "score3" ? 1 : 2);
-  const [theme, setTheme] = useState("light");
   const [scoreMode, setScoreMode] = useState("strokes"); // 'strokes' | 'relative' (기본: 타수)
   const [parLocked, setParLocked] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -165,9 +166,6 @@ function StudioWorkspace({ mode, source }) {
   const previewMobileMaxWidth = Math.min(size.w, PREVIEW_MOBILE_MAX_H * (size.w / size.h)) * previewMobileScale;
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
-  useEffect(() => {
     setCurrentUser(loadCurrentUser());
   }, []);
   useEffect(() => {
@@ -178,7 +176,6 @@ function StudioWorkspace({ mode, source }) {
       window.localStorage.setItem(storageKey, currentLink.href);
     }
   }, [activeNav, sourceMode]);
-  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
   const logout = () => {
     clearCurrentUser();
     setCurrentUser(null);

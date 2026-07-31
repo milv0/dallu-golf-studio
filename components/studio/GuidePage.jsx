@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { useLang } from "../../lib/i18n";
+import { useTheme } from "../../lib/themeContext";
 import LangToggle from "./LangToggle";
 
 const USAGE_STEPS_KO = [
@@ -94,8 +94,16 @@ const QA_CUSTOM_KO = [
     a: "직접 만들기에서는 홀 번호를 숫자로 직접 입력합니다 (1~18). 라운드 데이터와 연동되지 않으므로 자유롭게 설정하세요.",
   },
   {
-    q: "FOR EAGLE / FOR BIRDIE 배너는?",
-    a: "1홀 카드에서 현재 타수를 입력하면 자동으로 판단됩니다. 예: PAR 5에서 3번째 샷이면 FOR EAGLE, PAR 4에서 3번째 샷이면 FOR BIRDIE가 표시됩니다.",
+    q: "FOR EAGLE / FOR BIRDIE / FOR BOGEY 배너는?",
+    a: "1홀 카드에서 현재 타수를 입력하면 자동 판단됩니다. PAR 5에서 3번째 샷 = FOR EAGLE, PAR 4에서 3번째 샷 = FOR BIRDIE, PAR+1 = FOR BOGEY, PAR+2 = FOR DOUBLE BOGEY.",
+  },
+  {
+    q: "PAR을 안 넣으면?",
+    a: "커스텀 모드에서는 PAR이 빈 상태로 시작합니다. PAR 없이 스코어만 입력하면 TO PAR이 '–'로 표시됩니다. PAR을 먼저 입력하세요.",
+  },
+  {
+    q: "홀별 저장 버튼이 비활성인데?",
+    a: "모든 홀의 스코어가 채워져야 홀별 저장 버튼이 활성화됩니다. 빈 홀이 있으면 비활성 상태입니다.",
   },
 ];
 
@@ -113,8 +121,16 @@ const QA_CUSTOM_EN = [
     a: "In Custom mode, enter the hole number directly (1-18). It is not linked to round data, so set it freely.",
   },
   {
-    q: "FOR EAGLE / FOR BIRDIE banner?",
-    a: "Automatically determined when you enter current shot in the 1-hole card. E.g.: 3rd shot on PAR 5 = FOR EAGLE, 3rd shot on PAR 4 = FOR BIRDIE.",
+    q: "FOR EAGLE / BIRDIE / BOGEY banner?",
+    a: "Auto-determined by current shot. PAR 5 3rd shot = FOR EAGLE, PAR 4 3rd shot = FOR BIRDIE, PAR+1 = FOR BOGEY, PAR+2 = FOR DOUBLE BOGEY.",
+  },
+  {
+    q: "What if I don't enter PAR?",
+    a: "Custom mode starts with empty PAR. If you enter scores without PAR, TO PAR shows '–'. Enter PAR first.",
+  },
+  {
+    q: "Batch save button is disabled?",
+    a: "All holes must have scores filled before the batch save button activates. Check for empty holes.",
   },
 ];
 
@@ -158,12 +174,7 @@ const QA_ROUND_EN = [
 
 export default function GuidePage() {
   const { lang, t } = useLang();
-  const [theme, setTheme] = useState("light");
-  const toggleTheme = () => setTheme((prev) => (prev === "dark" ? "light" : "dark"));
-
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-  }, [theme]);
+  const { theme, toggleTheme } = useTheme();
 
   const USAGE_STEPS = lang === "en" ? USAGE_STEPS_EN : USAGE_STEPS_KO;
   const QA_GENERAL = lang === "en" ? QA_GENERAL_EN : QA_GENERAL_KO;

@@ -1,7 +1,12 @@
 "use client";
 
 import { LangProvider } from "../../lib/i18n";
+import { ThemeProvider } from "../../lib/themeContext";
 
 export default function Providers({ children }) {
-  return <LangProvider>{children}</LangProvider>;
+  return (
+    <ThemeProvider>
+      <LangProvider>{children}</LangProvider>
+    </ThemeProvider>
+  );
 }
