@@ -67,7 +67,7 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
       {shotNums.map((n, i) => {
         const baseX = pad + (holeLabel.length * 11 + 4) + (dist ? dist.length * 9 + 14 : 0);
         const sx = baseX + i * 22;
-        const active = n === displayShots;
+        const active = n === shots;
         return (
           <g key={n}>
             {active && <circle cx={sx} cy={row2Y} r="10" fill={c.accent} />}
