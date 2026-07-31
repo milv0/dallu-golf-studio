@@ -14,12 +14,14 @@ export const emptyHoleCard = () => ({
 
 export const emptyThreeHoleCard = () => ({
   showHoleNumbers: false,
+  metaMode: "holePar",
+  unit: "m",
   total: "",
   toPar: "",
   holes: [
-    { hole: "1", par: "", score: "" },
-    { hole: "2", par: "", score: "" },
-    { hole: "3", par: "", score: "" },
+    { hole: "1", par: "", score: "", distance: "" },
+    { hole: "2", par: "", score: "", distance: "" },
+    { hole: "3", par: "", score: "", distance: "" },
   ],
 });
 

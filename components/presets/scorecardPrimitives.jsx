@@ -46,23 +46,50 @@ export function ScoreNumber({ x, y, value, hasValue = true, empty = "·", fill, 
   );
 }
 
-export function CompactHoleCell({ cx, rowY, hole, index, c, showHoleNumbers = true }) {
+export function CompactHoleCell({ cx, rowY, hole, index, c, showHoleNumbers = true, metaMode = "holePar", unit = "m" }) {
   const { kind } = classify(hole?.par, hole?.score);
   const has = kind !== "empty";
-  const parY = showHoleNumbers ? rowY + 58 : rowY + 26;
-  const scoreY = showHoleNumbers ? rowY + 108 : rowY + 88;
+  const hasMeta = metaMode === "holePar" ? showHoleNumbers : true;
+  const parY = hasMeta ? rowY + 58 : rowY + 26;
+  const scoreY = hasMeta ? rowY + 108 : rowY + 88;
+
+  const renderMeta = () => {
+    if (metaMode === "parDist") {
+      const dist = hole?.distance ? `${hole.distance}${unit === "yd" ? "y" : "m"}` : "";
+      return (
+        <>
+          <text x={cx} y={rowY + 22} textAnchor="middle" fill={c.faint}
+            fontFamily={MONO} fontSize="26" fontWeight="600" className="score-meta-lock">
+            {hole?.par ? `P${hole.par}` : "P"}
+          </text>
+          <text x={cx} y={rowY + 50} textAnchor="middle" fill={c.sub}
+            fontFamily={MONO} fontSize="18" fontWeight="600" className="score-meta-lock">
+            {dist}
+          </text>
+        </>
+      );
+    }
+    if (metaMode === "par") {
+      return null;
+    }
+    // default: holePar
+    return showHoleNumbers ? (
+      <text x={cx} y={rowY + 22} textAnchor="middle" fill={c.text}
+        fontFamily={HEAD} fontSize="28" fontWeight="600" className="score-meta-lock">
+        {hole?.hole || index + 1}
+      </text>
+    ) : null;
+  };
+
   return (
     <g>
-      {showHoleNumbers && (
-        <text x={cx} y={rowY + 22} textAnchor="middle" fill={c.text}
-          fontFamily={HEAD} fontSize="28" fontWeight="600" className="score-meta-lock">
-          {hole?.hole || index + 1}
+      {renderMeta()}
+      {metaMode !== "parDist" && (
+        <text x={cx} y={parY} textAnchor="middle" fill={c.faint}
+          fontFamily={MONO} fontSize="26" fontWeight="600" className="score-meta-lock">
+          {hole?.par ? `P${hole.par}` : "P"}
         </text>
       )}
-      <text x={cx} y={parY} textAnchor="middle" fill={c.faint}
-        fontFamily={MONO} fontSize="26" fontWeight="600" className="score-meta-lock">
-        {hole?.par ? `P${hole.par}` : "P"}
-      </text>
       <ResultMarker kind={kind} cx={cx} cy={scoreY} size={30} />
       <ScoreNumber x={cx} y={scoreY} value={hole?.score} hasValue={has} empty="·"
         fill={c.text} emptyFill={c.faint} fontSize="50" />
@@ -70,7 +97,7 @@ export function CompactHoleCell({ cx, rowY, hole, index, c, showHoleNumbers = tr
   );
 }
 
-export function CompactScorecard({ w, h, c, holes, startIndex = 0, showHoleNumbers = true, toPar, toParColor, scoreDetail = "" }) {
+export function CompactScorecard({ w, h, c, holes, startIndex = 0, showHoleNumbers = true, metaMode = "holePar", unit = "m", toPar, toParColor, scoreDetail = "" }) {
   const scoreW = 116;
   const gap = 18;
   const sidePad = 18;
@@ -90,7 +117,7 @@ export function CompactScorecard({ w, h, c, holes, startIndex = 0, showHoleNumbe
       xmlns="http://www.w3.org/2000/svg" style={{ display: "block", background: "transparent" }}>
       <rect x="0" y="0" width={w} height={h} fill={c.bg} opacity="0.92" />
       {(holes || []).map((hole, i) => (
-        <CompactHoleCell key={i} cx={cx(i)} rowY={rowY} hole={hole} index={startIndex + i} c={c} showHoleNumbers={showHoleNumbers} />
+        <CompactHoleCell key={i} cx={cx(i)} rowY={rowY} hole={hole} index={startIndex + i} c={c} showHoleNumbers={showHoleNumbers} metaMode={metaMode} unit={unit} />
       ))}
       <line x1={sx - gap / 2} y1={scoreTop} x2={sx - gap / 2} y2={scoreBottom} stroke={c.line} strokeWidth="2" />
       <text x={scx} y={hasDetail ? 86 : 104} textAnchor="middle" dominantBaseline="middle" fill={toParColor}

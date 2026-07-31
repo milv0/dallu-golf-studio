@@ -20,6 +20,8 @@ export default function ReelsThreeHoleCard({ data, theme = "light" }) {
       holes={holes}
       startIndex={0}
       showHoleNumbers={showHoleNumbers}
+      metaMode={data.metaMode || "holePar"}
+      unit={data.unit || "m"}
       toPar={toPar}
       toParColor={toParColor}
     />
