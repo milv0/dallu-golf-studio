@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { ChevronDown, Moon, Sun } from "lucide-react";
-import PlacementPreview from "./PlacementPreview";
 import { useLang } from "../../lib/i18n";
 
 const QUALITY = [
@@ -36,9 +35,6 @@ export default function PreviewExportPanel({
   previewMaxWidth,
   previewMobileMaxWidth,
   previewNode,
-  placementPreviewNode,
-  format,
-  isHole,
 }) {
   const { t } = useLang();
   const [collapsed, setCollapsed] = useState(false);
@@ -144,17 +140,6 @@ export default function PreviewExportPanel({
         )}
       </div>
 
-    </section>
-    <section className="order-3 hidden md:block">
-      <div className="mb-2 font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">
-        {t("preview.placement")}
-        <span className="ml-2 normal-case tracking-normal text-txt-faint">
-          {format === "youtube" ? t("preview.landscape") : t("preview.portrait")}
-        </span>
-      </div>
-      <PlacementPreview format={format} size={size} isHole={isHole}>
-        {placementPreviewNode}
-      </PlacementPreview>
     </section>
     </>
   );

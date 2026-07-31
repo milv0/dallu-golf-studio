@@ -608,9 +608,6 @@ function StudioWorkspace({ mode, source }) {
           previewMaxWidth={previewMaxWidth}
           previewMobileMaxWidth={previewMobileMaxWidth}
           previewNode={renderActiveCard()}
-          placementPreviewNode={renderActiveCard()}
-          format={format}
-          isHole={isHole}
         />
       </div>
       {batchExportStep != null && (
