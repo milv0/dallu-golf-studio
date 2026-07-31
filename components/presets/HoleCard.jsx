@@ -125,6 +125,10 @@ export default function HoleCard({ data, theme = "dark" }) {
                 fontSize="35" fontWeight="700" letterSpacing="1">{banner.text}</text>
         </g>
       )}
+      <text x="12" y={size.h - 10} textAnchor="start" fill={c.faint} opacity="0.5"
+        fontFamily={HEAD} fontSize="11" fontWeight="600" letterSpacing="1">
+        DALLU GOLF
+      </text>
     </svg>
   );
 }
