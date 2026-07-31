@@ -4,7 +4,7 @@ import { cardColors } from "../../lib/theme";
 import { displayPlayerName, fitFontSize } from "./svgText";
 import { HEAD, MONO } from "./scorecardPrimitives";
 
-export const SIZE = { w: 560, h: 292 };
+export const SIZE = { w: 480, h: 292 };
 
 const BAR_H = 212;
 
@@ -120,8 +120,8 @@ export default function HoleCard({ data, theme = "dark" }) {
       {/* FOR X 배너 */}
       {banner && (
         <g>
-          <rect x="224" y="228" width={w - 224} height="58" fill={bannerColor(banner, c)} />
-          <text x={(224 + w) / 2} y="268" textAnchor="middle" fill={banner.type === "good" ? c.ink : "#ffffff"} fontFamily={HEAD}
+          <rect x="184" y="228" width={w - 184} height="58" fill={bannerColor(banner, c)} />
+          <text x={(184 + w) / 2} y="268" textAnchor="middle" fill={banner.type === "good" ? c.ink : "#ffffff"} fontFamily={HEAD}
                 fontSize="35" fontWeight="700" letterSpacing="1">{banner.text}</text>
         </g>
       )}
