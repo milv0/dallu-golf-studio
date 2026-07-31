@@ -78,10 +78,10 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
       </text>
 
       {/* 2) dG 로고 + 선수명 */}
-      <circle cx="24" cy={playerY} r="12" fill="none" stroke={c.accent} strokeWidth="1.5" opacity="0.7" />
-      <text x="24" y={playerY + 1} textAnchor="middle" dominantBaseline="middle" fill={c.accent}
-            fontFamily={HEAD} fontSize="11" fontWeight="700" opacity="0.7">dG</text>
-      <text x={LP / 2 + 10} y={playerY} textAnchor="middle" dominantBaseline="middle" fill={c.text}
+      <circle cx="28" cy={playerY} r="18" fill="none" stroke={c.accent} strokeWidth="2.2" />
+      <text x="28" y={playerY + 1} textAnchor="middle" dominantBaseline="middle" fill={c.accent}
+            fontFamily={HEAD} fontSize="17" fontWeight="700">dG</text>
+      <text x={LP / 2 + 14} y={playerY} textAnchor="middle" dominantBaseline="middle" fill={c.text}
             fontFamily={HEAD} fontSize={playerSize} fontWeight="700" letterSpacing="0.5">
         {playerName}
       </text>
