@@ -1,11 +1,12 @@
 "use client";
 
+import { useRef } from "react";
 import { ClubField } from "./StudioFields";
 import PanelHeader, { ResetButton } from "./PanelHeader";
 import { replaceInputTextProps } from "./ScoreInputs";
 import { useLang } from "../../lib/i18n";
 
-function CoreInput({ label, value, onChange, placeholder, inputMode = "text" }) {
+function CoreInput({ label, value, onChange, placeholder, inputMode = "text", inputRef, onKeyDown }) {
   return (
     <label className="block min-w-0 border-l border-line first:border-l-0">
       <span className="block bg-panel py-0.5 text-center font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">
@@ -13,8 +14,10 @@ function CoreInput({ label, value, onChange, placeholder, inputMode = "text" }) 
       </span>
       <input
         {...replaceInputTextProps}
+        ref={inputRef}
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
         placeholder={placeholder}
         inputMode={inputMode}
         className="w-full border-t border-line bg-transparent px-1 py-2 text-center font-mono text-lg font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent"
@@ -25,6 +28,11 @@ function CoreInput({ label, value, onChange, placeholder, inputMode = "text" }) 
 
 export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound, onReset, linked = true, cardStyle = "classic" }) {
   const { t } = useLang();
+  const coreRefs = useRef([]);
+  const coreNav = (e, idx) => {
+    if (e.key === "ArrowLeft" && idx > 0) { e.preventDefault(); coreRefs.current[idx - 1]?.focus(); }
+    else if (e.key === "ArrowRight" || e.key === "Tab" || e.key === "Enter") { e.preventDefault(); coreRefs.current[idx + 1]?.focus(); }
+  };
   return (
     <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
       <PanelHeader title={t("hole.title")}>
@@ -63,6 +71,8 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
             <label className="block min-w-0 border-l border-line first:border-l-0">
               <span className="block bg-panel py-0.5 text-center font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">{t("hole.labelHole")}</span>
               <input readOnly value={holeCard.hole || "–"} tabIndex={-1}
+                ref={(el) => { coreRefs.current[0] = el; }}
+                onKeyDown={(e) => coreNav(e, 0)}
                 className="w-full border-t border-line bg-transparent px-1 py-2 text-center font-mono text-lg font-bold text-txt outline-none" />
             </label>
           ) : (
@@ -71,21 +81,21 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
               if (!/^\d{1,2}$/.test(v)) return;
               const n = parseInt(v, 10);
               if (n >= 1 && n <= 18) setHC("hole", v);
-            }} placeholder="–" inputMode="numeric" />
+            }} placeholder="–" inputMode="numeric" inputRef={(el) => { coreRefs.current[0] = el; }} onKeyDown={(e) => coreNav(e, 0)} />
           )}
           <CoreInput label="P" value={holeCard.par} onChange={(v) => {
             if (v === "" || /^[3456]$/.test(v)) setHC("par", v);
-          }} placeholder="–" inputMode="numeric" />
+          }} placeholder="–" inputMode="numeric" inputRef={(el) => { coreRefs.current[1] = el; }} onKeyDown={(e) => coreNav(e, 1)} />
           <CoreInput label={t("hole.distance")} value={holeCard.distance} onChange={(v) => {
             if (v === "" || /^\d+$/.test(v)) setHC("distance", v);
-          }} placeholder="–" inputMode="numeric" />
+          }} placeholder="–" inputMode="numeric" inputRef={(el) => { coreRefs.current[2] = el; }} onKeyDown={(e) => coreNav(e, 2)} />
           <CoreInput label={t("hole.labelShot")} value={holeCard.currentShot} onChange={(v) => {
             if (v === "") { setHC("currentShot", ""); return; }
             if (!/^\d+$/.test(v)) return;
             const max = (Number(holeCard.par) || 4) * 2;
             if (Number(v) >= 1 && Number(v) <= max) setHC("currentShot", v);
-          }} placeholder="–" inputMode="numeric" />
-          <CoreInput label="±" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="–" />
+          }} placeholder="–" inputMode="numeric" inputRef={(el) => { coreRefs.current[3] = el; }} onKeyDown={(e) => coreNav(e, 3)} />
+          <CoreInput label="±" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="–" inputRef={(el) => { coreRefs.current[4] = el; }} onKeyDown={(e) => coreNav(e, 4)} />
         </div>
       </div>
 
