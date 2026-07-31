@@ -88,7 +88,7 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
           <g key={n}>
             {active && <circle cx={sx} cy={row2Y} r="10" fill={c.accent} />}
             <text x={sx} y={row2Y} textAnchor="middle" dominantBaseline="middle"
-                  fill={active ? c.ink : c.faint} fontFamily={MONO}
+                  fill={active ? c.ink : c.sub} fontFamily={MONO}
                   fontSize="14" fontWeight="700">{n}</text>
           </g>
         );
