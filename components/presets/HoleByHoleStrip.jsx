@@ -153,6 +153,10 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
           </g>
         );
       })}
+      <text x={w - 12} y={h - 10} textAnchor="end" fill={c.faint} opacity="0.5"
+        fontFamily={HEAD} fontSize="11" fontWeight="600" letterSpacing="1">
+        DALLU GOLF
+      </text>
     </svg>
   );
 }
