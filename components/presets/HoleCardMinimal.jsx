@@ -4,7 +4,7 @@ import { cardColors } from "../../lib/theme";
 import { displayPlayerName } from "./svgText";
 import { HEAD, MONO } from "./scorecardPrimitives";
 
-export const SIZE = { w: 400, h: 110 };
+export const SIZE = { w: 400, h: 88 };
 
 function bannerFor(data) {
   const par = Number(data.par) || null;
@@ -59,18 +59,18 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
         {player}
       </text>
 
-      {/* TO PAR (우측) */}
-      <text x={w - pad} y="26" textAnchor="end" dominantBaseline="middle" fill={toParColor}
-            fontFamily={HEAD} fontSize="38" fontWeight="700">
+      {/* TO PAR (우측, 카드 전체 높이 중앙) */}
+      <text x={w - pad} y={h / 2} textAnchor="end" dominantBaseline="middle" fill={toParColor}
+            fontFamily={HEAD} fontSize="46" fontWeight="700">
         {toPar}
       </text>
 
       {/* 하단: 홀번호 + 거리 + SHOT */}
-      <text x={pad} y="80" dominantBaseline="middle" fill={c.sub}
+      <text x={pad} y="68" dominantBaseline="middle" fill={c.sub}
             fontFamily={HEAD} fontSize="18" fontWeight="600" letterSpacing="1">
         {holeLabel}
       </text>
-      <text x={pad + (holeLabel.length * 12) + 10} y="80" dominantBaseline="middle" fill={c.faint}
+      <text x={pad + (holeLabel.length * 12) + 10} y="68" dominantBaseline="middle" fill={c.faint}
             fontFamily={MONO} fontSize="18" fontWeight="600">
         {dist}
       </text>
@@ -81,8 +81,8 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
         const active = n === shots;
         return (
           <g key={n}>
-            {active && <circle cx={sx} cy="79" r="11" fill={c.accent} />}
-            <text x={sx} y="80" textAnchor="middle" dominantBaseline="middle"
+            {active && <circle cx={sx} cy="67" r="11" fill={c.accent} />}
+            <text x={sx} y="68" textAnchor="middle" dominantBaseline="middle"
                   fill={active ? c.ink : c.faint} fontFamily={MONO}
                   fontSize="16" fontWeight="700">{n}</text>
           </g>
@@ -91,7 +91,7 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
 
       {/* 배너 텍스트 (있으면 우하단) */}
       {banner && (
-        <text x={w - pad} y="80" textAnchor="end" dominantBaseline="middle"
+        <text x={w - pad} y="68" textAnchor="end" dominantBaseline="middle"
               fill={banner.type === "good" ? c.accent : "#e5484d"}
               fontFamily={HEAD} fontSize="12" fontWeight="700" letterSpacing="0.5">
           {banner.text}
