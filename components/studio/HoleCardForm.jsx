@@ -58,7 +58,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
       )}
 
       <div className="overflow-hidden rounded-lg border border-line">
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           {linked ? (
             <label className="block min-w-0 border-l border-line first:border-l-0">
               <span className="block bg-panel py-0.5 text-center font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">{t("hole.labelHole")}</span>
@@ -76,7 +76,8 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           <CoreInput label="P" value={holeCard.par} onChange={(v) => {
             if (v === "" || /^[3456]$/.test(v)) setHC("par", v);
           }} placeholder="4" inputMode="numeric" />
-          <CoreInput label={t("hole.labelShot")} value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="4" inputMode="numeric" />
+          <CoreInput label={t("hole.distance")} value={holeCard.distance} onChange={(v) => setHC("distance", v)} placeholder="195" inputMode="numeric" />
+          <CoreInput label={t("hole.labelShot")} value={holeCard.currentShot} onChange={(v) => setHC("currentShot", v)} placeholder="3" inputMode="numeric" />
           <CoreInput label="±" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="E" />
         </div>
       </div>
