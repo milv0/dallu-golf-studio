@@ -5,7 +5,7 @@ import { cardColors } from "../../lib/theme";
 import { displayPlayerName } from "./svgText";
 import { HEAD, MONO } from "./scorecardPrimitives";
 
-export const SIZE = { w: 320, h: 88 };
+export const SIZE = { w: 380, h: 88 };
 
 
 export default function HoleCardMinimal({ data, theme = "dark" }) {
@@ -20,14 +20,17 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
   const player = displayPlayerName(data.player);
   const par = Number(data.par) || 4;
   const shots = Number(data.currentShot) || 0;
-  const totalShots = Math.max(par, shots);
+  const exampleMode = !data.hole && !data.distance && !shots;
+  const displayShots = shots;
+  const totalShots = exampleMode ? par : Math.max(par, displayShots);
   const shotNums = Array.from({ length: totalShots }, (_, i) => i + 1);
 
   const toPar = data.toPar || "E";
   const toParColor = String(toPar).startsWith("-") ? c.accent : String(toPar).startsWith("+") ? "#e5484d" : c.text;
 
-  const holeLabel = data.hole ? `${data.hole}H` : "";
-  const dist = data.distance ? `${data.distance}${data.unit === "yd" ? "YDS" : "M"}` : "";
+  const hasData = data.hole || data.distance || shots > 0;
+  const holeLabel = data.hole ? `${data.hole}H` : (hasData ? "" : "-H");
+  const dist = data.distance ? `${data.distance}${data.unit === "yd" ? "YDS" : "M"}` : (hasData ? "" : `- ${data.unit === "yd" ? "YDS" : "M"}`);
 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
@@ -55,7 +58,7 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
         {holeLabel}
       </text>
       {dist && (
-        <text x={pad + holeLabel.length * 11 + 8} y={row2Y} dominantBaseline="middle" fill={c.faint}
+        <text x={pad + holeLabel.length * 11 + 4} y={row2Y} dominantBaseline="middle" fill={c.faint}
               fontFamily={MONO} fontSize="15" fontWeight="600">
           {dist}
         </text>
@@ -63,9 +66,9 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
 
       {/* SHOT 번호 */}
       {shotNums.map((n, i) => {
-        const baseX = pad + (holeLabel.length * 11 + 8) + (dist ? dist.length * 9 + 12 : 0);
+        const baseX = pad + (holeLabel.length * 11 + 4) + (dist ? dist.length * 9 + 6 : 0);
         const sx = baseX + i * 22;
-        const active = n === shots;
+        const active = n === displayShots;
         return (
           <g key={n}>
             {active && <circle cx={sx} cy={row2Y} r="10" fill={c.accent} />}
