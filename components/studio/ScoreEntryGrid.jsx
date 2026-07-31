@@ -30,9 +30,10 @@ function ParInput({ idx, localIdx, value, setHole, parRefs }) {
       ref={(el) => { if (parRefs) parRefs.current[localIdx] = el; }}
       aria-label={`홀 ${idx + 1} PAR`}
       value={value ?? ""}
+      placeholder="–"
       inputMode="numeric"
       onChange={handleChange}
-      className="score-meta-lock w-full bg-transparent py-0.5 text-center font-mono text-[12px] font-semibold text-txt-soft outline-none focus:bg-accent/10 focus:text-txt focus:ring-1 focus:ring-inset focus:ring-accent"
+      className="score-meta-lock w-full bg-transparent py-0.5 text-center font-mono text-[12px] font-semibold text-txt-soft outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:text-txt focus:ring-1 focus:ring-inset focus:ring-accent"
     />
   );
 }
