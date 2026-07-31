@@ -20,17 +20,17 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
   const player = displayPlayerName(data.player);
   const par = Number(data.par) || 4;
   const shots = Number(data.currentShot) || 0;
-  const exampleMode = !data.hole && !data.distance && !shots;
+  const hasInfo = data.hole || data.distance || shots > 0;
   const displayShots = shots;
-  const totalShots = exampleMode ? par : Math.max(par, displayShots);
+  const totalShots = hasInfo ? Math.max(par, displayShots) : 0;
   const shotNums = Array.from({ length: totalShots }, (_, i) => i + 1);
 
   const toPar = data.toPar || "E";
   const toParColor = String(toPar).startsWith("-") ? c.accent : String(toPar).startsWith("+") ? "#e5484d" : c.text;
 
   const hasData = data.hole || data.distance || shots > 0;
-  const holeLabel = data.hole ? `${data.hole}H` : (hasData ? "" : "-H");
-  const dist = data.distance ? `${data.distance}${data.unit === "yd" ? "YDS" : "M"}` : (hasData ? "" : `- ${data.unit === "yd" ? "YDS" : "M"}`);
+  const holeLabel = data.hole ? `${data.hole}H` : "";
+  const dist = data.distance ? `${data.distance}${data.unit === "yd" ? "YDS" : "M"}` : "";
 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
