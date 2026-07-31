@@ -75,7 +75,7 @@ export default function HoleCard({ data, theme = "dark" }) {
       {/* 홀 번호 · PAR · 거리 */}
       <text x={segW / 2} y="84" textAnchor="middle" fill={c.text} fontFamily={HEAD}
             fontSize="72" fontWeight="700" className="score-meta-lock">{data.hole || "–"}</text>
-      <text x={segW / 2} y="121" textAnchor="middle" fill={c.accent} fontFamily={HEAD}
+      <text x={segW / 2} y="128" textAnchor="middle" fill={c.accent} fontFamily={HEAD}
             fontSize="26" fontWeight="700" letterSpacing="1" className="score-meta-lock">PAR {data.par || "–"}</text>
       <text x={segW / 2} y="160" textAnchor="middle" fill={c.sub} fontFamily={MONO}
             fontSize="26" fontWeight="700">{data.distance ? (/[a-zA-Z]/.test(String(data.distance)) ? String(data.distance).toUpperCase() : `${data.distance}${data.unit === "yd" ? "y" : "m"}`) : ""}</text>
