@@ -82,8 +82,8 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
             fontFamily={HEAD} fontSize={playerSize} fontWeight="700" letterSpacing="0.5">
         {playerName}
       </text>
-      <circle cx="30" cy={playerY - 10} r="12" fill="none" stroke={c.accent} strokeWidth="1.6" />
-      <text x="30" y={playerY - 9} textAnchor="middle" dominantBaseline="middle" fill={c.accent}
+      <circle cx="30" cy={playerY - 5} r="12" fill="none" stroke={c.accent} strokeWidth="1.6" />
+      <text x="30" y={playerY - 4} textAnchor="middle" dominantBaseline="middle" fill={c.accent}
             fontFamily={HEAD} fontSize="11" fontWeight="700">dG</text>
 
       {/* 구분선 */}
