@@ -59,9 +59,9 @@ export default function HoleCard({ data, theme = "dark" }) {
   const clubSize = club.length > 12 ? 24 : club.length > 8 ? 28 : 32;
   const banner = bannerFor(data);
 
-  // SHOT 번호 렌더 (1..shots, 마지막 동그라미)
-  const shotNums = [];
-  for (let i = 1; i <= Math.min(shots || 0, 9); i++) shotNums.push(i);
+  const par = Number(data.par) || 4;
+  const totalShots = Math.max(par, shots);
+  const shotNums = Array.from({ length: totalShots }, (_, i) => i + 1);
 
   return (
     <svg viewBox={`0 0 ${w} ${size.h}`} width={w} height={size.h}
@@ -100,12 +100,12 @@ export default function HoleCard({ data, theme = "dark" }) {
             fontWeight="700" fontStyle="italic" letterSpacing="1">SHOT</text>
       {shotNums.map((n, i) => {
         const cx = segW + 30 + i * 25;
-        const last = i === shotNums.length - 1;
+        const active = n === shots;
         return (
           <g key={n}>
-            {last && <circle cx={cx} cy={row2Y + 56} r="14" fill="none" stroke={c.accent} strokeWidth="2" />}
+            {active && <circle cx={cx} cy={row2Y + 56} r="14" fill="none" stroke={c.accent} strokeWidth="2" />}
             <text x={cx} y={row2Y + 65} textAnchor="middle"
-                  fill={last ? c.accent : c.faint} fontFamily={MONO}
+                  fill={active ? c.accent : c.faint} fontFamily={MONO}
                   fontSize="23" fontWeight="700">{n}</text>
           </g>
         );

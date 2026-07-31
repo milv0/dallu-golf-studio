@@ -163,8 +163,8 @@ function StudioWorkspace({ mode, source }) {
   const availableRanges = RANGES.filter(([k]) => k !== "all");
   const effRange = isScore18 ? "all" : isReelsSizedScore && holeRange === "all" ? "front" : holeRange;
   const size = isHole ? (holeCardStyle === "minimal" ? SIZE_HOLE_MINIMAL : holeSizeFor(holeData)) : reelsV3 ? SIZE_REELS_THREE : FORMATS[format].sizeFor(effRange);
-  const previewScale = isHole ? 0.38 : reelsV3 ? 0.38 : 1;
-  const previewMobileScale = isHole ? 0.48 : reelsV3 ? 0.48 : 1;
+  const previewScale = isHole ? (holeCardStyle === "minimal" ? 0.7 : 0.38) : reelsV3 ? 0.38 : 1;
+  const previewMobileScale = isHole ? (holeCardStyle === "minimal" ? 0.85 : 0.48) : reelsV3 ? 0.48 : 1;
   const previewMaxWidth = Math.min(size.w, PREVIEW_MAX_H * (size.w / size.h)) * previewScale;
   const previewMobileMaxWidth = Math.min(size.w, PREVIEW_MOBILE_MAX_H * (size.w / size.h)) * previewMobileScale;
 
