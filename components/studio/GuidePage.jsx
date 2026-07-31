@@ -136,7 +136,7 @@ const QA_CUSTOM_EN = [
 const QA_ROUND_KO = [
   {
     q: "내 라운드 기록은 뭔가요?",
-    a: "18홀을 한 번 입력하면 같은 PAR와 스코어로 9홀·3홀·1홀 카드를 만드는 연동 모드입니다. 현재 브라우저 안에서 바로 사용할 수 있습니다.",
+    a: "18홀을 한 번 입력하면 같은 PAR와 스코어로 9홀·3홀·1홀 카드를 만드는 연동 모드입니다. 현재 공개 버전에서는 비활성화되어 있습니다.",
   },
   {
     q: "직접 만들기와 뭐가 다른가요?",
@@ -144,18 +144,18 @@ const QA_ROUND_KO = [
   },
   {
     q: "코스 불러오기란?",
-    a: "등록된 골프장의 PAR 정보를 한 번에 채우는 기능이며 현재 비활성화되어 있습니다. 지금은 18홀 입력 화면에서 PAR를 직접 입력할 수 있습니다.",
+    a: "등록된 골프장의 PAR 정보를 한 번에 채우는 기능이며 현재 비활성화되어 있습니다.",
   },
   {
     q: "현재 사용할 수 없는 기능은?",
-    a: "로그인, 코스 DB 자동 불러오기, 서버 라운드 저장·불러오기는 비활성화되어 있습니다. 18홀 입력과 9홀·3홀·1홀 연동 출력은 사용할 수 있습니다.",
+    a: "내 라운드 기록 전체와 로그인, 코스 DB 자동 불러오기, 서버 라운드 저장·불러오기가 비활성화되어 있습니다. 현재는 직접 만들기를 사용해주세요.",
   },
 ];
 
 const QA_ROUND_EN = [
   {
     q: "What is My Round?",
-    a: "A linked mode that uses one 18-hole PAR and score entry to create 9/3/1-hole cards. Local editing and export are available now.",
+    a: "A linked mode that uses one 18-hole PAR and score entry to create 9/3/1-hole cards. It is disabled in the current public release.",
   },
   {
     q: "How is it different from Custom?",
@@ -163,11 +163,11 @@ const QA_ROUND_EN = [
   },
   {
     q: "What is Load Course?",
-    a: "A feature that fills registered course PAR data at once. It is currently disabled, so enter PAR directly on the 18-hole screen.",
+    a: "A feature that fills registered course PAR data at once. It is currently disabled.",
   },
   {
     q: "Which features are unavailable?",
-    a: "Login, automatic course DB loading, and server-side round save/load are disabled. The linked 18/9/3/1-hole editing and export flow is available.",
+    a: "My Round, login, automatic course DB loading, and server-side round save/load are disabled. Use Custom mode for now.",
   },
 ];
 

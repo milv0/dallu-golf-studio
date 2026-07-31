@@ -6,6 +6,7 @@ import { ClipboardList, Pencil } from "lucide-react";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import { defaultFlowHref, storedFlowHref, TopActions } from "./StudioNav";
 import { useLang } from "../../lib/i18n";
+import { FEATURE_FLAGS } from "../../lib/features.js";
 
 export default function HomeHub() {
   const { t } = useLang();
@@ -29,7 +30,14 @@ export default function HomeHub() {
   };
 
   const cards = [
-    { href: flowHrefs.round, title: t("home.roundTitle"), desc: t("home.roundDesc"), icon: ClipboardList, accent: "border-t-[3px] border-t-accent" },
+    {
+      href: flowHrefs.round,
+      title: t("home.roundTitle"),
+      desc: t("home.roundDesc"),
+      icon: ClipboardList,
+      accent: "border-t-[3px] border-t-accent",
+      disabled: !FEATURE_FLAGS.myRound,
+    },
     { href: flowHrefs.custom, title: t("home.customTitle"), desc: t("home.customDesc"), icon: Pencil, accent: "border-t-[3px] border-t-[#2bb673]" },
   ];
 
@@ -53,6 +61,26 @@ export default function HomeHub() {
         <div className="grid gap-4 md:grid-cols-2">
           {cards.map((item) => {
             const Icon = item.icon;
+            if (item.disabled) {
+              return (
+                <div
+                  key={item.title}
+                  aria-disabled="true"
+                  className={`cursor-not-allowed overflow-hidden rounded-2xl border border-line bg-panel p-6 opacity-50 md:p-8 ${item.accent}`}
+                >
+                  <Icon size={28} strokeWidth={1.8} className="mb-4 text-txt-faint" />
+                  <div className="font-head text-[22px] font-bold leading-tight text-txt md:text-[26px]">
+                    {item.title}
+                  </div>
+                  <div className="mt-2 text-[13px] leading-relaxed text-txt-soft">
+                    {item.desc}
+                  </div>
+                  <div className="mt-4 font-head text-[12px] font-semibold uppercase tracking-wider text-txt-faint">
+                    {t("home.preparing")}
+                  </div>
+                </div>
+              );
+            }
             return (
               <Link key={item.href} href={item.href}
                 className={`group relative overflow-hidden rounded-2xl border border-line bg-panel p-6 transition hover:border-accent/60 hover:shadow-[0_0_30px_-8px_rgba(56,224,139,0.15)] active:scale-[0.98] md:p-8 ${item.accent}`}>

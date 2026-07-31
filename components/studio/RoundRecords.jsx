@@ -18,10 +18,11 @@ export default function RoundRecords() {
           </Link>
           <p className="mt-2 text-sm text-txt-soft">{t("records.disabled")}</p>
         </div>
-        <Link href="/round"
-          className="rounded-lg bg-accent px-3 py-1.5 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 sm:px-4 sm:py-2 sm:text-sm">
+        <span
+          aria-disabled="true"
+          className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 font-head text-xs font-bold uppercase tracking-wide text-txt-faint opacity-70 sm:px-4 sm:py-2 sm:text-sm">
           18홀 입력
-        </Link>
+        </span>
       </div>
 
       <StudioNav active="records" />
