@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useLang } from "../../lib/i18n";
+import { selectInputText } from "./ScoreInputs";
 
 const CLUB_DEFAULTS = ["Driver", "Wood", "Hybrid", "Iron", "Wedge", "Putter"];
 const CLUB_OPTIONS = [
@@ -85,6 +86,8 @@ export function ClubField({ value, onChange }) {
       </span>
       <input value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={selectInputText}
+        onClick={selectInputText}
         onBlur={(e) => onChange(normalizeClubValue(e.target.value))}
         onKeyDown={(e) => {
           if (e.key === "Enter") {
