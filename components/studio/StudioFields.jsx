@@ -76,11 +76,12 @@ export function ClubAutocomplete({ value, onChange, onPick, options }) {
 }
 
 export function ClubField({ value, onChange }) {
+  const { t } = useLang();
   const suggestions = clubSuggestions(value);
   return (
     <label className="block min-w-0 md:col-span-2">
       <span className="mb-0.5 block font-head text-[10px] uppercase tracking-widest text-txt-faint md:mb-1 md:text-[11px]">
-        선택 클럽
+        {t("field.club")}
       </span>
       <input value={value}
         onChange={(e) => onChange(e.target.value)}
