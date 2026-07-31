@@ -51,19 +51,19 @@ export function CompactHoleCell({ cx, rowY, hole, index, c, showHoleNumbers = tr
   const has = kind !== "empty";
   const hasMeta = metaMode === "holePar" ? showHoleNumbers : true;
   const parY = hasMeta ? rowY + 58 : rowY + 26;
-  const scoreY = hasMeta ? rowY + 108 : rowY + 88;
+  const scoreY = metaMode === "parDist" ? rowY + 98 : hasMeta ? rowY + 108 : rowY + 88;
 
   const renderMeta = () => {
     if (metaMode === "parDist") {
       const dist = hole?.distance ? `${hole.distance}${unit === "yd" ? "y" : "m"}` : "";
       return (
         <>
-          <text x={cx} y={rowY + 22} textAnchor="middle" fill={c.faint}
+          <text x={cx} y={rowY + 16} textAnchor="middle" fill={c.faint}
             fontFamily={MONO} fontSize="26" fontWeight="600" className="score-meta-lock">
             {hole?.par ? `P${hole.par}` : "P"}
           </text>
-          <text x={cx} y={rowY + 50} textAnchor="middle" fill={c.sub}
-            fontFamily={MONO} fontSize="18" fontWeight="600" className="score-meta-lock">
+          <text x={cx} y={rowY + 52} textAnchor="middle" fill={c.sub}
+            fontFamily={MONO} fontSize="20" fontWeight="600" className="score-meta-lock">
             {dist}
           </text>
         </>
