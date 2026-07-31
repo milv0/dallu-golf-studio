@@ -20,9 +20,7 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
   const player = displayPlayerName(data.player);
   const par = Number(data.par) || 4;
   const shots = Number(data.currentShot) || 0;
-  const hasInfo = data.hole || data.distance || shots > 0;
-  const displayShots = shots;
-  const totalShots = hasInfo ? Math.max(par, displayShots) : 0;
+  const totalShots = shots > 0 ? Math.max(par, shots) : 0;
   const shotNums = Array.from({ length: totalShots }, (_, i) => i + 1);
 
   const toPar = data.toPar || "E";
