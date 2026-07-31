@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import HoleByHoleStrip, { sizeFor as ytSizeFor } from "../presets/HoleByHoleStrip";
 import ReelsScorecard, { sizeFor as reelsSizeFor } from "../presets/ReelsScorecard";
 import HoleCard, { sizeFor as holeSizeFor } from "../presets/HoleCard";
+import HoleCardMinimal, { SIZE as SIZE_HOLE_MINIMAL } from "../presets/HoleCardMinimal";
 import ReelsThreeHoleCard, { SIZE as SIZE_REELS_THREE } from "../presets/ReelsThreeHoleCard";
 import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../../lib/score";
 import { COURSE_DIRECTORY } from "../../lib/courseDirectory";
@@ -108,6 +109,7 @@ function StudioWorkspace({ mode, source }) {
   const [holeRange, setHoleRange] = useState("all"); // 'all' | 'front' | 'back'
   const [sourceMode, setSourceMode] = useState(source || (mode === "round" ? "round" : "custom"));
   const [cardTheme, setCardTheme] = useState("light"); // 카드(프리셋) 색 테마
+  const [holeCardStyle, setHoleCardStyle] = useState("classic"); // 'classic' | 'minimal'
   const [exportScale, setExportScale] = useState(mode === "score3" ? 1 : 2);
   const [scoreMode, setScoreMode] = useState("strokes"); // 'strokes' | 'relative' (기본: 타수)
   const [parLocked, setParLocked] = useState(false);
@@ -160,7 +162,7 @@ function StudioWorkspace({ mode, source }) {
   // 18홀은 전체 고정, 9홀만 전반/후반을 선택한다.
   const availableRanges = RANGES.filter(([k]) => k !== "all");
   const effRange = isScore18 ? "all" : isReelsSizedScore && holeRange === "all" ? "front" : holeRange;
-  const size = isHole ? holeSizeFor(holeData) : reelsV3 ? SIZE_REELS_THREE : FORMATS[format].sizeFor(effRange);
+  const size = isHole ? (holeCardStyle === "minimal" ? SIZE_HOLE_MINIMAL : holeSizeFor(holeData)) : reelsV3 ? SIZE_REELS_THREE : FORMATS[format].sizeFor(effRange);
   const previewScale = isHole ? 0.38 : reelsV3 ? 0.38 : 1;
   const previewMobileScale = isHole ? 0.48 : reelsV3 ? 0.48 : 1;
   const previewMaxWidth = Math.min(size.w, PREVIEW_MAX_H * (size.w / size.h)) * previewScale;
@@ -437,7 +439,9 @@ function StudioWorkspace({ mode, source }) {
   const setScoreHole = isFullCustom ? setCustomHole : setHole;
   const resetScoreRound = isFullCustom ? resetCustomRound : resetRound;
   const renderActiveCard = () => {
-    if (isHole) return <HoleCard data={holeData} theme={cardTheme} />;
+    if (isHole) return holeCardStyle === "minimal"
+      ? <HoleCardMinimal data={holeData} theme={cardTheme} />
+      : <HoleCard data={holeData} theme={cardTheme} />;
     if (reelsV3) return <ReelsThreeHoleCard data={reelsCustom ? threeHole : linkedThreeData} theme={cardTheme} />;
     if (reelsCustom) return <ReelsScorecard round={manualNineRound} summary={manualNineSummary} range="front" theme={cardTheme} />;
     const C = FORMATS[format].Comp;
@@ -555,15 +559,24 @@ function StudioWorkspace({ mode, source }) {
 
           {isHole && (
             <div className="order-[10]">
-              {isFullCustom && (
-                <div className="mb-3 flex justify-end">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex overflow-hidden rounded-lg border border-line">
+                  {[["classic", "Classic"], ["minimal", "Minimal"]].map(([key, label]) => (
+                    <button key={key} type="button" onClick={() => setHoleCardStyle(key)}
+                      className={"px-3 py-1 text-[11px] font-bold transition " +
+                        (holeCardStyle === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {isFullCustom && (
                   <CustomPlayerControl
                     value={customHoleCard.player}
                     onChange={(v) => setCustomHC("player", v)}
                     maxLength={9}
                   />
-                </div>
-              )}
+                )}
+              </div>
               <HoleCardForm
                 round={isFullCustom ? customHoleSelectorRound : scoreRound}
                 holeCard={activeHoleCard}

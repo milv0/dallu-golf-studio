@@ -121,7 +121,6 @@ export default function PreviewExportPanel({
               {(QUALITY.find((x) => x.scale === exportScale) || {}).label}
             </span>
             <span className="font-mono text-[11px] md:text-[13px]">{t("preview.pngSpec", { w: size.w * exportScale, h: size.h * exportScale })}</span>
-            <span className="hidden text-[12px] text-txt-faint md:inline">{t("preview.colorHint")}</span>
           </div>
         </div>
         {!canExport && exportBlockReason && (
