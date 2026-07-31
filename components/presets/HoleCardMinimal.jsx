@@ -5,7 +5,7 @@ import { cardColors } from "../../lib/theme";
 import { displayPlayerName } from "./svgText";
 import { HEAD, MONO } from "./scorecardPrimitives";
 
-export const SIZE = { w: 400, h: 88 };
+export const SIZE = { w: 360, h: 88 };
 
 function bannerFor(data) {
   const par = Number(data.par) || null;
@@ -31,8 +31,8 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
   const pad = 16;
   const row1Y = h * 0.34;
   const row2Y = h * 0.72;
-  const toParX = w - pad;
-  const leftW = w - 100;
+  const toParX = w - pad - 10;
+  const leftW = w - 90;
 
   const player = displayPlayerName(data.player);
   const par = Number(data.par) || 4;
