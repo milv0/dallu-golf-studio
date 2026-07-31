@@ -70,7 +70,7 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
         <div className="mt-2 grid grid-cols-3 gap-2">
           {(data.holes || []).slice(0, 3).map((h, i) => (
             <input key={i} value={h.distance || ""} onChange={(e) => setHole(i, "distance", e.target.value)}
-              placeholder={`${i + 1}H ${(data.unit || "m") === "yd" ? "yd" : "m"}`}
+              placeholder={`- ${(data.unit || "m") === "yd" ? "yd" : "m"}`}
               inputMode="numeric"
               className="rounded-lg border border-line-2 bg-panel-2 px-2.5 py-1.5 text-center text-sm text-txt outline-none placeholder:text-txt-faint focus:border-accent" />
           ))}
