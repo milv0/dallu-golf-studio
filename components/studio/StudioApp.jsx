@@ -73,7 +73,7 @@ function hasAllScores(holes = [], count = holes.length) {
 }
 
 
-function CustomPlayerControl({ value, onChange }) {
+function CustomPlayerControl({ value, onChange, maxLength = 7 }) {
   const { t } = useLang();
   return (
     <label className="flex w-[128px] shrink-0 items-center gap-2 rounded-lg border border-line bg-panel-2 px-2 py-1">
@@ -83,7 +83,7 @@ function CustomPlayerControl({ value, onChange }) {
       <input
         value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        maxLength={7}
+        maxLength={maxLength}
         placeholder={DEFAULT_CUSTOM_PLAYER}
         className="min-w-0 flex-1 bg-transparent text-right font-head text-sm font-bold uppercase text-txt outline-none placeholder:text-txt-faint"
       />
@@ -560,6 +560,7 @@ function StudioWorkspace({ mode, source }) {
                   <CustomPlayerControl
                     value={customHoleCard.player}
                     onChange={(v) => setCustomHC("player", v)}
+                    maxLength={9}
                   />
                 </div>
               )}
