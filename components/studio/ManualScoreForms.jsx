@@ -33,7 +33,7 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
 
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <div className="flex overflow-hidden rounded-lg border border-line">
-          {[["holePar", "Hole+P"], ["parDist", "P+Dist"], ["par", "P"]].map(([key, label]) => (
+          {[["parDist", "P+Dist"], ["par", "P"]].map(([key, label]) => (
             <button key={key} type="button" onClick={() => setField("metaMode", key)}
               className={"px-2.5 py-1 text-[11px] font-bold transition " +
                 (metaMode === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
@@ -41,14 +41,6 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
             </button>
           ))}
         </div>
-        {metaMode !== "parDist" && (
-          <label className="flex items-center gap-2 text-sm font-semibold text-txt-soft">
-            <input type="checkbox" checked={data.showHoleNumbers !== false}
-              onChange={(e) => setField("showHoleNumbers", e.target.checked)}
-              className="h-4 w-4 accent-[var(--color-accent)]" />
-            {t("manual.showHoleNumbers")}
-          </label>
-        )}
         {metaMode === "parDist" && (
           <div className="flex overflow-hidden rounded-md border border-line">
             {[["m", "M"], ["yd", "YD"]].map(([u, l]) => (
@@ -69,7 +61,7 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
         onScoreKey={handleScoreKey}
         scoreMode={scoreMode}
         showSum={false}
-        showHoleNumbers={metaMode === "holePar" && data.showHoleNumbers !== false}
+        showHoleNumbers={false}
         editableHoleNumbers
       />
       {scoreMode === "relative" && <RelativeScoreHint className="mt-2" />}

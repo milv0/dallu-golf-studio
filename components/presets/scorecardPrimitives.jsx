@@ -49,9 +49,9 @@ export function ScoreNumber({ x, y, value, hasValue = true, empty = "·", fill, 
 export function CompactHoleCell({ cx, rowY, hole, index, c, showHoleNumbers = true, metaMode = "holePar", unit = "m" }) {
   const { kind } = classify(hole?.par, hole?.score);
   const has = kind !== "empty";
-  const hasMeta = metaMode === "holePar" ? showHoleNumbers : true;
-  const parY = hasMeta ? rowY + 58 : rowY + 26;
-  const scoreY = metaMode === "parDist" ? rowY + 98 : hasMeta ? rowY + 108 : rowY + 88;
+  const hasMeta = metaMode === "parDist" || (metaMode === "holePar" && showHoleNumbers);
+  const parY = metaMode === "par" ? rowY + 26 : rowY + 58;
+  const scoreY = metaMode === "parDist" ? rowY + 98 : metaMode === "par" ? rowY + 88 : rowY + 108;
 
   const renderMeta = () => {
     if (metaMode === "parDist") {
