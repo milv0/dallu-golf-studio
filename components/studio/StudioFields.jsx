@@ -97,7 +97,7 @@ export function ClubField({ value, onChange }) {
           }
         }}
         placeholder="3, Driver, Putter"
-        className="min-w-0 max-w-full w-full rounded-lg border border-line-2 bg-panel-2 px-2.5 py-1.5 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent md:px-3 md:py-2" />
+        className="min-w-0 max-w-full w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2.5 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent md:px-3 md:py-2.5" />
       <div className="mt-1.5 flex gap-1.5 overflow-x-auto pb-1">
         {suggestions.map((club) => (
           <button key={club} type="button" onClick={() => onChange(club)}

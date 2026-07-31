@@ -17,7 +17,7 @@ function CoreInput({ label, value, onChange, placeholder, inputMode = "text" }) 
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         inputMode={inputMode}
-        className="w-full border-t border-line bg-transparent px-1 py-3 text-center font-mono text-xl font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent"
+        className="w-full border-t border-line bg-transparent px-1 py-2 text-center font-mono text-lg font-bold text-txt outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:ring-1 focus:ring-inset focus:ring-accent"
       />
     </label>
   );
@@ -63,7 +63,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
             <label className="block min-w-0 border-l border-line first:border-l-0">
               <span className="block bg-panel py-0.5 text-center font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">{t("hole.labelHole")}</span>
               <input readOnly value={holeCard.hole || "–"} tabIndex={-1}
-                className="w-full border-t border-line bg-transparent px-1 py-3 text-center font-mono text-xl font-bold text-txt outline-none" />
+                className="w-full border-t border-line bg-transparent px-1 py-2 text-center font-mono text-lg font-bold text-txt outline-none" />
             </label>
           ) : (
             <CoreInput label={t("hole.labelHole")} value={holeCard.hole} onChange={(v) => {
@@ -121,7 +121,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           <input value={holeCard.distance} onChange={(e) => setHC("distance", e.target.value)}
             {...replaceInputTextProps}
             placeholder={holeCard.unit === "yd" ? "212" : "195"}
-            className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt outline-none focus:border-accent" />
+            className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2.5 text-sm text-txt outline-none focus:border-accent" />
         </div>
         <ClubField value={holeCard.club} onChange={(v) => setHC("club", v)} />
       </div>
