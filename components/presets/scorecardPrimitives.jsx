@@ -130,6 +130,10 @@ export function CompactScorecard({ w, h, c, holes, startIndex = 0, showHoleNumbe
           {scoreDetail}
         </text>
       )}
+      <text x={w - sidePad} y={h - 10} textAnchor="end" fill={c.faint} opacity="0.5"
+        fontFamily={HEAD} fontSize="11" fontWeight="600" letterSpacing="1">
+        DALLU GOLF
+      </text>
     </svg>
   );
 }
