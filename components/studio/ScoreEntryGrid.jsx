@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef } from "react";
 import { replaceInputTextProps, ScoreInput } from "./ScoreInputs";
+import useGridNav from "../../lib/useGridNav";
+import { validatePar } from "../../lib/inputValidators";
 
 const preventMetaCopy = (event) => event.preventDefault();
 const metaLockProps = {
@@ -17,7 +18,7 @@ function ParInput({ idx, localIdx, value, setHole, parRefs, scoreRefs }) {
       setHole(idx, "par", "");
       return;
     }
-    if (/^[3456]$/.test(next)) {
+    if (validatePar(next)) {
       setHole(idx, "par", next);
       setTimeout(() => parRefs?.current[localIdx + 1]?.focus(), 0);
     }
@@ -78,7 +79,7 @@ export default function ScoreEntryGrid({
   editableHoleNumbers = false,
   parLocked = false,
 }) {
-  const parRefs = useRef([]);
+  const { refs: parRefs } = useGridNav();
   const visibleHoles = holes || [];
   const parSum = visibleHoles.reduce((a, h) => a + (Number(h.par) || 0), 0);
   const scoreSum = visibleHoles.reduce((a, h) => a + (Number(h.score) || 0), 0);

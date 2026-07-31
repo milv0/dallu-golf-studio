@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLang } from "../../lib/i18n";
+import { validateScore } from "../../lib/inputValidators";
 
 const REL_MIN = -3;
 const REL_MAX = 5;
@@ -183,12 +184,10 @@ export function ScoreInput({ idx, localIdx, par, score, mode, setHole, scoreRefs
       setHole(idx, "score", "");
       return;
     }
-    if (!/^\d+$/.test(value)) return;
-    const n = Number(value);
-    if (n > 12) return;
+    if (!validateScore(value)) return;
     setBuf(value);
     setHole(idx, "score", value);
-    if (n >= 1) {
+    if (Number(value) >= 1) {
       setTimeout(() => scoreRefs?.current[idx + 1]?.focus(), 0);
     }
   };
