@@ -1,28 +1,27 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { RelativeScoreHint, ScoreModeToggle } from "./ScoreInputs";
-import { Field } from "./StudioFields";
+import { useState } from "react";
+import { RelativeScoreHint, ScoreModeToggle, useScoreInputRefs } from "./ScoreInputs";
+import { Field, PlayerNameControl, UnitToggle } from "./StudioFields";
 import PanelHeader, { ResetButton } from "./PanelHeader";
 import ScoreEntryGrid from "./ScoreEntryGrid";
 import { useLang } from "../../lib/i18n";
-
-function useScoreRefs() {
-  const scoreRefs = useRef([]);
-  const handleScoreKey = (e, idx) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      scoreRefs.current[idx + 1]?.focus();
-    }
-  };
-  return { scoreRefs, handleScoreKey };
-}
+import { hasNumericValue } from "../../lib/score";
 
 export function ThreeHoleForm({ data, setField, setHole, onReset }) {
   const { t } = useLang();
-  const { scoreRefs, handleScoreKey } = useScoreRefs();
+  const { scoreRefs, handleScoreKey } = useScoreInputRefs();
   const [scoreMode, setScoreMode] = useState("strokes");
   const showDist = data.metaMode === "parDist";
+  const showHoleNumbers = data.metaMode === "holePar" && data.showHoleNumbers === true;
+  const toggleHoleNumbers = (checked) => {
+    setField("showHoleNumbers", checked);
+    setField("metaMode", checked ? "holePar" : "par");
+  };
+  const toggleDistance = (checked) => {
+    setField("showHoleNumbers", false);
+    setField("metaMode", checked ? "parDist" : "par");
+  };
 
   return (
     <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
@@ -33,21 +32,19 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
 
       <div className="mb-2 flex flex-wrap items-center gap-2">
         <label className="flex items-center gap-2 text-sm font-semibold text-txt-soft">
+          <input type="checkbox" checked={showHoleNumbers}
+            onChange={(e) => toggleHoleNumbers(e.target.checked)}
+            className="h-4 w-4 accent-[var(--color-accent)]" />
+          {t("manual.showHoleNumbers")}
+        </label>
+        <label className="flex items-center gap-2 text-sm font-semibold text-txt-soft">
           <input type="checkbox" checked={showDist}
-            onChange={(e) => setField("metaMode", e.target.checked ? "parDist" : "par")}
+            onChange={(e) => toggleDistance(e.target.checked)}
             className="h-4 w-4 accent-[var(--color-accent)]" />
           Distance
         </label>
         {showDist && (
-          <div className="flex overflow-hidden rounded-md border border-line">
-            {[["m", "M"], ["yd", "YD"]].map(([u, l]) => (
-              <button key={u} type="button" onClick={() => setField("unit", u)}
-                className={"px-2 py-0.5 text-[11px] font-bold transition " +
-                  ((data.unit || "m") === u ? "bg-accent text-[#06210f]" : "bg-panel-2 text-txt-soft hover:text-txt")}>
-                {l}
-              </button>
-            ))}
-          </div>
+          <UnitToggle value={data.unit || "m"} onChange={(unit) => setField("unit", unit)} />
         )}
       </div>
 
@@ -58,7 +55,7 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
         onScoreKey={handleScoreKey}
         scoreMode={scoreMode}
         showSum={false}
-        showHoleNumbers={false}
+        showHoleNumbers={showHoleNumbers}
         editableHoleNumbers
       />
       {scoreMode === "relative" && <RelativeScoreHint className="mt-2" />}
@@ -78,24 +75,6 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
         <Field label={t("manual.toPar")} value={data.toPar} onChange={(v) => setField("toPar", v)} placeholder={t("manual.toParPlaceholder")} />
       </div>
     </div>
-  );
-}
-
-function InlinePlayerControl({ value, onChange }) {
-  const { t } = useLang();
-  return (
-    <label className="flex w-[128px] shrink-0 items-center gap-2 rounded-lg border border-line bg-panel-2 px-2 py-1">
-      <span className="font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">
-        {t("label.name")}
-      </span>
-      <input
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        maxLength={7}
-        placeholder="PLAYER"
-        className="min-w-0 flex-1 bg-transparent text-right font-head text-sm font-bold uppercase text-txt outline-none placeholder:text-txt-faint"
-      />
-    </label>
   );
 }
 
@@ -130,7 +109,7 @@ export function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onSelec
         {round.holes.map((h, i) => {
           const start = Math.min(i, Math.max(round.holes.length - 3, 0));
           const active = Array.isArray(selected) && selected.includes(i);
-          const has = h.score !== "" && h.score != null;
+          const has = hasNumericValue(h.score);
           return (
             <button key={i} type="button" onClick={() => onSelect(start)}
               title={`${start + 1}-${start + 3}번 홀 묶음 선택`}
@@ -154,7 +133,7 @@ export function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onSelec
 
 export function ManualNineForm({ data, setField, setHole, onReset }) {
   const { t } = useLang();
-  const { scoreRefs, handleScoreKey } = useScoreRefs();
+  const { scoreRefs, handleScoreKey } = useScoreInputRefs();
   const [scoreMode, setScoreMode] = useState("strokes");
   const holes = data.holes || [];
   const parSum = holes.reduce((a, h) => a + (Number(h.par) || 0), 0);
@@ -163,7 +142,7 @@ export function ManualNineForm({ data, setField, setHole, onReset }) {
   return (
     <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
       <PanelHeader title={t("manual.nineTitle")}>
-        <InlinePlayerControl value={data.player} onChange={(v) => setField("player", v)} />
+        <PlayerNameControl value={data.player} onChange={(v) => setField("player", v)} />
         <ScoreModeToggle value={scoreMode} onChange={setScoreMode} />
         {onReset ? <ResetButton onClick={onReset} /> : null}
       </PanelHeader>

@@ -1,11 +1,12 @@
 "use client";
 
-import { ClubField } from "./StudioFields";
+import { ClubField, UnitToggle } from "./StudioFields";
 import PanelHeader, { ResetButton } from "./PanelHeader";
 import { replaceInputTextProps } from "./ScoreInputs";
 import { useLang } from "../../lib/i18n";
 import useGridNav from "../../lib/useGridNav";
 import { validatePar, validateHoleNumber, validateNumericOnly, validateShot } from "../../lib/inputValidators";
+import { hasNumericValue } from "../../lib/score";
 
 function CoreInput({ label, value, onChange, placeholder, inputMode = "text", inputRef, onKeyDown }) {
   return (
@@ -33,6 +34,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
   return (
     <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
       <PanelHeader title={t("hole.title")}>
+        <UnitToggle value={holeCard.unit || "m"} onChange={(unit) => setHC("unit", unit)} />
         {onReset ? <ResetButton onClick={onReset} /> : null}
       </PanelHeader>
       {linked && (
@@ -44,7 +46,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
             {round.holes.map((h, i) => {
               const n = i + 1;
               const active = String(n) === String(holeCard.hole);
-              const has = h.score !== "" && h.score != null;
+              const has = hasNumericValue(h.score);
               return (
                 <button key={i} type="button" onClick={() => loadHoleFromRound(n)}
                   title={`${n}번 홀 · Par ${h.par}${has ? ` · ${h.score}타` : ""}`}
@@ -112,17 +114,8 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           </button>
         </div>
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-3">
-        <div className="flex overflow-hidden rounded-md border border-line">
-          {[["m", "M"], ["yd", "YD"]].map(([u, l]) => (
-            <button key={u} type="button" onClick={() => setHC("unit", u)}
-              className={"px-2.5 py-1 text-[11px] font-bold transition " +
-                (holeCard.unit === u ? "bg-accent text-[#06210f]" : "bg-panel-2 text-txt-soft hover:text-txt")}>
-              {l}
-            </button>
-          ))}
-        </div>
-        <div className={"max-w-[180px] flex-1 " + (cardStyle === "minimal" ? "opacity-40 pointer-events-none" : "")}>
+      <div className="mt-3">
+        <div className={"w-full " + (cardStyle === "minimal" ? "pointer-events-none opacity-40" : "")}>
           <ClubField value={holeCard.club} onChange={(v) => setHC("club", v)} />
         </div>
       </div>
@@ -131,7 +124,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           type="checkbox"
           checked={holeCard.showResultBanner !== false}
           onChange={(e) => setHC("showResultBanner", e.target.checked)}
-          className="h-4 w-4 accent-[var(--accent)]"
+          className="h-4 w-4 accent-[var(--color-accent)]"
         />
         {t("hole.forBanner")}
       </label>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { toParLabel } from "../../lib/score";
 import { useLang } from "../../lib/i18n";
 
@@ -57,9 +58,9 @@ export default function RoundSourcePanel({
         </div>
       </div>
       <div className="mt-3 border-t border-line pt-3 text-right">
-        <a href="/round" className="text-xs font-semibold text-txt-faint transition hover:text-accent">
+        <Link href="/round" className="text-xs font-semibold text-txt-faint transition hover:text-accent">
           {t("source.editLink")}
-        </a>
+        </Link>
       </div>
     </div>
   );

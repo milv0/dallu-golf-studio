@@ -1,5 +1,9 @@
 export const DEFAULT_CUSTOM_PLAYER = "PLAYER";
 
+export function preservePlayer(next, current) {
+  return { ...next, player: current?.player || "" };
+}
+
 export const emptyHoleCard = () => ({
   player: "",
   hole: "",

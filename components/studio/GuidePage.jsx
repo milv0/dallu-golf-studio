@@ -1,10 +1,9 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { useLang } from "../../lib/i18n";
-import { useTheme } from "../../lib/themeContext";
 import LangToggle from "./LangToggle";
+import ThemeToggle from "./ThemeToggle";
 
 const USAGE_STEPS_KO = [
   { step: "1", title: "스코어 입력", desc: "홈에서 '직접 만들기' 선택 → 탭(18홀/9홀/3홀/1홀) 선택 → PAR과 스코어 입력" },
@@ -137,7 +136,7 @@ const QA_CUSTOM_EN = [
 const QA_ROUND_KO = [
   {
     q: "내 라운드 기록은 뭔가요?",
-    a: "18홀을 한 번 입력하면 9홀·3홀·1홀 카드가 자동 생성되는 모드입니다. 현재 준비 중이며, 곧 활성화됩니다.",
+    a: "18홀을 한 번 입력하면 같은 PAR와 스코어로 9홀·3홀·1홀 카드를 만드는 연동 모드입니다. 현재 브라우저 안에서 바로 사용할 수 있습니다.",
   },
   {
     q: "직접 만들기와 뭐가 다른가요?",
@@ -145,18 +144,18 @@ const QA_ROUND_KO = [
   },
   {
     q: "코스 불러오기란?",
-    a: "등록된 골프장의 PAR 정보를 한 번에 불러오는 기능입니다. 코스를 선택하면 18홀 PAR이 자동으로 채워지고 잠금됩니다. PAR 수정이 필요하면 'PAR 수정' 버튼으로 잠금 해제할 수 있습니다.",
+    a: "등록된 골프장의 PAR 정보를 한 번에 채우는 기능이며 현재 비활성화되어 있습니다. 지금은 18홀 입력 화면에서 PAR를 직접 입력할 수 있습니다.",
   },
   {
-    q: "언제 사용할 수 있나요?",
-    a: "로그인, 코스 DB, 라운드 저장 기능이 모두 준비되면 활성화됩니다. 현재는 직접 만들기를 사용해주세요.",
+    q: "현재 사용할 수 없는 기능은?",
+    a: "로그인, 코스 DB 자동 불러오기, 서버 라운드 저장·불러오기는 비활성화되어 있습니다. 18홀 입력과 9홀·3홀·1홀 연동 출력은 사용할 수 있습니다.",
   },
 ];
 
 const QA_ROUND_EN = [
   {
     q: "What is My Round?",
-    a: "A mode where entering 18 holes once auto-generates 9/3/1 hole cards. Currently in preparation, coming soon.",
+    a: "A linked mode that uses one 18-hole PAR and score entry to create 9/3/1-hole cards. Local editing and export are available now.",
   },
   {
     q: "How is it different from Custom?",
@@ -164,17 +163,34 @@ const QA_ROUND_EN = [
   },
   {
     q: "What is Load Course?",
-    a: "A feature to load registered course PAR info at once. Selecting a course auto-fills 18-hole PAR and locks it. Unlock with 'Edit PAR' button if needed.",
+    a: "A feature that fills registered course PAR data at once. It is currently disabled, so enter PAR directly on the 18-hole screen.",
   },
   {
-    q: "When will it be available?",
-    a: "It will be activated when login, course DB, and round save features are all ready. Please use Custom mode for now.",
+    q: "Which features are unavailable?",
+    a: "Login, automatic course DB loading, and server-side round save/load are disabled. The linked 18/9/3/1-hole editing and export flow is available.",
   },
 ];
 
+function FaqSection({ title, items }) {
+  return (
+    <section className="mt-10">
+      <h2 className="mb-4 font-head text-[14px] font-semibold uppercase tracking-widest text-accent">
+        {title}
+      </h2>
+      <div className="flex flex-col gap-3">
+        {items.map((item) => (
+          <div key={item.q} className="rounded-xl border border-line bg-panel p-4">
+            <div className="font-head text-[14px] font-bold text-txt">{item.q}</div>
+            <div className="mt-2 text-[13px] leading-relaxed text-txt-soft">{item.a}</div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export default function GuidePage() {
   const { lang, t } = useLang();
-  const { theme, toggleTheme } = useTheme();
 
   const USAGE_STEPS = lang === "en" ? USAGE_STEPS_EN : USAGE_STEPS_KO;
   const QA_GENERAL = lang === "en" ? QA_GENERAL_EN : QA_GENERAL_KO;
@@ -188,11 +204,10 @@ export default function GuidePage() {
           Dallu Golf
         </Link>
         <div className="flex items-center gap-2">
-          <button type="button" onClick={toggleTheme}
-            aria-label={theme === "dark" ? "라이트 테마로 전환" : "다크 테마로 전환"}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-panel text-txt-soft transition hover:border-accent hover:text-txt active:scale-95">
-            {theme === "dark" ? <Sun size={16} strokeWidth={2.2} /> : <Moon size={16} strokeWidth={2.2} />}
-          </button>
+          <ThemeToggle
+            iconSize={16}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-panel text-txt-soft transition hover:border-accent hover:text-txt active:scale-95"
+          />
           <LangToggle />
         </div>
       </header>
@@ -217,41 +232,9 @@ export default function GuidePage() {
         </div>
       </section>
 
-      <section className="mt-10">
-        <h2 className="mb-4 font-head text-[14px] font-semibold uppercase tracking-widest text-accent">{lang === "en" ? "Q&A — General" : "Q&A — 공통"}</h2>
-        <div className="flex flex-col gap-3">
-          {QA_GENERAL.map((item, i) => (
-            <div key={i} className="rounded-xl border border-line bg-panel p-4">
-              <div className="font-head text-[14px] font-bold text-txt">{item.q}</div>
-              <div className="mt-2 text-[13px] leading-relaxed text-txt-soft">{item.a}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-10">
-        <h2 className="mb-4 font-head text-[14px] font-semibold uppercase tracking-widest text-accent">{lang === "en" ? "Q&A — Custom" : "Q&A — 직접 만들기"}</h2>
-        <div className="flex flex-col gap-3">
-          {QA_CUSTOM.map((item, i) => (
-            <div key={i} className="rounded-xl border border-line bg-panel p-4">
-              <div className="font-head text-[14px] font-bold text-txt">{item.q}</div>
-              <div className="mt-2 text-[13px] leading-relaxed text-txt-soft">{item.a}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="mt-10">
-        <h2 className="mb-4 font-head text-[14px] font-semibold uppercase tracking-widest text-accent">{lang === "en" ? "Q&A — My Round" : "Q&A — 내 라운드 기록"}</h2>
-        <div className="flex flex-col gap-3">
-          {QA_ROUND.map((item, i) => (
-            <div key={i} className="rounded-xl border border-line bg-panel p-4">
-              <div className="font-head text-[14px] font-bold text-txt">{item.q}</div>
-              <div className="mt-2 text-[13px] leading-relaxed text-txt-soft">{item.a}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      <FaqSection title={lang === "en" ? "Q&A — General" : "Q&A — 공통"} items={QA_GENERAL} />
+      <FaqSection title={lang === "en" ? "Q&A — Custom" : "Q&A — 직접 만들기"} items={QA_CUSTOM} />
+      <FaqSection title={lang === "en" ? "Q&A — My Round" : "Q&A — 내 라운드 기록"} items={QA_ROUND} />
 
       <div className="mt-10 text-center">
         <Link href="/" className="inline-block rounded-lg bg-accent px-5 py-2 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2">

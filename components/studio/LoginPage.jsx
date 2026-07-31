@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useLang } from "../../lib/i18n";
 
 export default function LoginPage() {
@@ -10,9 +11,9 @@ export default function LoginPage() {
         <div className="font-head text-[11px] font-semibold uppercase leading-tight tracking-[0.14em] text-accent sm:text-[13px] sm:tracking-[0.28em]">
           Dallu Golf Account
         </div>
-        <a href="/" className="mt-1 block font-head text-[34px] font-bold uppercase leading-none text-txt transition hover:text-accent sm:text-[44px]">
+        <Link href="/" className="mt-1 block font-head text-[34px] font-bold uppercase leading-none text-txt transition hover:text-accent sm:text-[44px]">
           Dallu Golf <span className="text-accent">Studio</span>
-        </a>
+        </Link>
       </div>
 
       <section className="rounded-xl border border-line bg-panel p-5">
@@ -39,7 +40,7 @@ export default function LoginPage() {
         </div>
 
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-          <a href="/" className="text-sm font-semibold text-txt-soft transition hover:text-txt">{t("notfound.home")}</a>
+          <Link href="/" className="text-sm font-semibold text-txt-soft transition hover:text-txt">{t("notfound.home")}</Link>
           <button type="button" disabled
             className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-5 py-2 font-head text-sm font-bold uppercase tracking-wide text-txt-faint opacity-70">
             {t("home.login")}

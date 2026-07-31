@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import StudioNav from "./StudioNav";
 import { useLang } from "../../lib/i18n";
 
@@ -12,15 +13,15 @@ export default function RoundRecords() {
           <div className="font-head text-[11px] font-semibold uppercase leading-tight tracking-[0.14em] text-accent sm:text-[13px] sm:tracking-[0.28em]">
             Round Archive · @dallu_golf
           </div>
-          <a href="/" className="mt-1 block font-head text-[34px] font-bold uppercase leading-none tracking-tight text-txt transition hover:text-accent sm:text-[40px]">
+          <Link href="/" className="mt-1 block font-head text-[34px] font-bold uppercase leading-none tracking-tight text-txt transition hover:text-accent sm:text-[40px]">
             Dallu Golf <span className="text-accent">Studio</span>
-          </a>
+          </Link>
           <p className="mt-2 text-sm text-txt-soft">{t("records.disabled")}</p>
         </div>
-        <a href="/round"
+        <Link href="/round"
           className="rounded-lg bg-accent px-3 py-1.5 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 sm:px-4 sm:py-2 sm:text-sm">
           18홀 입력
-        </a>
+        </Link>
       </div>
 
       <StudioNav active="records" />

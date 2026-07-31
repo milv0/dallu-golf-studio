@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLang } from "../../lib/i18n";
 import { validateScore } from "../../lib/inputValidators";
 
@@ -43,6 +43,16 @@ export const replaceInputTextProps = {
   onMouseUp: (event) => event.preventDefault(),
 };
 
+export function useScoreInputRefs() {
+  const scoreRefs = useRef([]);
+  const handleScoreKey = useCallback((event, idx) => {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    scoreRefs.current[idx + 1]?.focus();
+  }, []);
+  return { scoreRefs, handleScoreKey };
+}
+
 export function RelativeScoreHint({ className = "mb-2" }) {
   const { t } = useLang();
   return (
@@ -53,9 +63,10 @@ export function RelativeScoreHint({ className = "mb-2" }) {
 }
 
 export function ScoreModeToggle({ value, onChange }) {
+  const { t } = useLang();
   return (
     <div className="flex overflow-hidden rounded-lg border border-line">
-      {[["strokes", "Strokes"], ["relative", "To Par"]].map(([key, label]) => (
+      {[["strokes", t("score.strokes")], ["relative", t("score.toPar")]].map(([key, label]) => (
         <button
           key={key}
           type="button"
@@ -187,7 +198,7 @@ export function ScoreInput({ idx, localIdx, par, score, mode, setHole, scoreRefs
     if (!validateScore(value)) return;
     setBuf(value);
     setHole(idx, "score", value);
-    if (Number(value) >= 1) {
+    if (value.length >= 2 || Number(value) >= 2) {
       setTimeout(() => scoreRefs?.current[idx + 1]?.focus(), 0);
     }
   };

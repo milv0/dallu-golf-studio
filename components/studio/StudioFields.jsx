@@ -14,6 +14,44 @@ const CLUB_OPTIONS = [
   "Putter",
 ];
 
+export function PlayerNameControl({ value, onChange, maxLength = 7, placeholder = "PLAYER" }) {
+  const { t } = useLang();
+  return (
+    <label className="flex w-[128px] shrink-0 items-center gap-2 rounded-lg border border-line bg-panel-2 px-2 py-1">
+      <span className="font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">
+        {t("label.name")}
+      </span>
+      <input
+        value={value || ""}
+        onChange={(event) => onChange(event.target.value)}
+        maxLength={maxLength}
+        placeholder={placeholder}
+        className="min-w-0 flex-1 bg-transparent text-right font-head text-sm font-bold uppercase text-txt outline-none placeholder:text-txt-faint"
+      />
+    </label>
+  );
+}
+
+export function UnitToggle({ value = "m", onChange }) {
+  return (
+    <div className="flex overflow-hidden rounded-md border border-line">
+      {[["m", "M"], ["yd", "YD"]].map(([unit, label]) => (
+        <button
+          key={unit}
+          type="button"
+          onClick={() => onChange(unit)}
+          className={"px-2.5 py-1 text-[11px] font-bold transition " +
+            (value === unit
+              ? "bg-accent text-[#06210f]"
+              : "bg-panel-2 text-txt-soft hover:text-txt")}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function clubSuggestions(value) {
   const q = String(value || "").trim().toLowerCase();
   if (!q) return CLUB_DEFAULTS;
@@ -42,7 +80,7 @@ export function Field({ label, value, onChange, onBlur, placeholder, full, type 
       <input type={type} value={value} onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur} list={list} placeholder={placeholder} maxLength={maxLength}
         onClick={type === "date" ? (e) => { try { e.currentTarget.showPicker?.(); } catch {} } : undefined}
-        className="min-w-0 max-w-full w-full rounded-lg border border-line-2 bg-panel-2 px-2.5 py-1.5 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent md:px-3 md:py-2 [color-scheme:dark]" />
+        className="min-w-0 max-w-full w-full rounded-lg border border-line-2 bg-panel-2 px-2.5 py-1.5 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent md:px-3 md:py-2" />
     </label>
   );
 }

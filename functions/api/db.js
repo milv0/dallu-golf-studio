@@ -4,18 +4,12 @@
 // KV 바인딩: COURSE_KV / 쓰기보호: env.ADMIN_TOKEN + x-admin-token 헤더
 import { validateCourseDb } from "../../lib/courseDbValidation.js";
 import { assertAdminAccess } from "../_shared/adminAccess.js";
+import { jsonResponse as json } from "../_shared/http.js";
 
 const DB_KEY = "db";
 const META_KEY = "db-meta";
 const BACKUP_PREFIX = "db-backups/";
 const AUDIT_PREFIX = "db-audit/";
-
-function json(obj, status = 200) {
-  return new Response(JSON.stringify(obj), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
-  });
-}
 
 function isPlainObject(value) {
   return value != null && typeof value === "object" && !Array.isArray(value);

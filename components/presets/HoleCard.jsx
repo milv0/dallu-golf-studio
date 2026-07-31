@@ -1,6 +1,7 @@
 // 프리셋: 홀 카드 (현재 홀 라이브 오버레이) — 방송 로어서드 스타일, 우리 테마(다크+라임)
 // 표시: 홀번호 · PAR · 거리 / 선수명 / 토탈(to-par) / SHOT(현재 타수 표시) / SELECTED CLUB / FOR X 배너
 import { cardColors } from "../../lib/theme";
+import { normalizeToParDisplay } from "../../lib/score";
 import { displayPlayerName, fitFontSize } from "./svgText";
 import { HEAD, MONO } from "./scorecardPrimitives";
 
@@ -58,6 +59,7 @@ export default function HoleCard({ data, theme = "dark" }) {
   const club = (data.club || "").toUpperCase();
   const clubSize = club.length > 12 ? 24 : club.length > 8 ? 28 : 32;
   const banner = bannerFor(data);
+  const toPar = normalizeToParDisplay(data.toPar, "–");
 
   const par = Number(data.par) || 4;
   const totalShots = Math.max(par, shots);
@@ -90,7 +92,7 @@ export default function HoleCard({ data, theme = "dark" }) {
       {/* 토탈(to-par) 우측 블록 */}
       <rect x={w - tpW} y="0" width={tpW} height={row2Y - 2} fill={c.accent} />
       <text x={w - tpW / 2} y="91" textAnchor="middle" fill={c.ink} fontFamily={HEAD}
-            fontSize="64" fontWeight="700">{data.toPar || "E"}</text>
+            fontSize="64" fontWeight="700">{toPar}</text>
 
       {/* 2행 구분선 */}
       <line x1={segW + 18} y1={row2Y} x2={w - 20} y2={row2Y} stroke={c.line} strokeWidth="1.5" />

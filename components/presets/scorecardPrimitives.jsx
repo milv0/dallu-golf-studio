@@ -3,23 +3,6 @@ import { classify, KIND_COLOR } from "../../lib/score";
 export const HEAD = "'Barlow Condensed', 'Pretendard', sans-serif";
 export const MONO = "'JetBrains Mono', monospace";
 
-export function hasNumericValue(value) {
-  return value != null && value !== "" && !Number.isNaN(Number(value));
-}
-
-export function toParForPlayedHoles(holes) {
-  let played = 0;
-  let diff = 0;
-  for (const h of holes || []) {
-    if (!hasNumericValue(h?.par) || !hasNumericValue(h?.score)) continue;
-    played++;
-    diff += Number(h.score) - Number(h.par);
-  }
-  if (!played) return "";
-  if (diff === 0) return "E";
-  return diff > 0 ? `+${diff}` : String(diff);
-}
-
 export function ResultMarker({ kind, cx, cy, size = 30 }) {
   const color = KIND_COLOR[kind];
   const under = kind === "birdie" || kind === "eagle" || kind === "albatross";
@@ -49,12 +32,12 @@ export function ScoreNumber({ x, y, value, hasValue = true, empty = "·", fill, 
 export function CompactHoleCell({ cx, rowY, hole, index, c, showHoleNumbers = true, metaMode = "holePar", unit = "m" }) {
   const { kind } = classify(hole?.par, hole?.score);
   const has = kind !== "empty";
-  const hasMeta = metaMode === "parDist" || (metaMode === "holePar" && showHoleNumbers);
-  const parY = metaMode === "par" ? rowY + 26 : rowY + 58;
-  const scoreY = metaMode === "parDist" ? rowY + 98 : metaMode === "par" ? rowY + 88 : rowY + 108;
+  const effectiveMetaMode = metaMode === "holePar" && !showHoleNumbers ? "par" : metaMode;
+  const parY = effectiveMetaMode === "par" ? rowY + 26 : rowY + 58;
+  const scoreY = effectiveMetaMode === "parDist" ? rowY + 98 : effectiveMetaMode === "par" ? rowY + 88 : rowY + 108;
 
   const renderMeta = () => {
-    if (metaMode === "parDist") {
+    if (effectiveMetaMode === "parDist") {
       const dist = hole?.distance ? `${hole.distance}${unit === "yd" ? "y" : "m"}` : "";
       return (
         <>
@@ -69,7 +52,7 @@ export function CompactHoleCell({ cx, rowY, hole, index, c, showHoleNumbers = tr
         </>
       );
     }
-    if (metaMode === "par") {
+    if (effectiveMetaMode === "par") {
       return null;
     }
     // default: holePar
@@ -84,7 +67,7 @@ export function CompactHoleCell({ cx, rowY, hole, index, c, showHoleNumbers = tr
   return (
     <g>
       {renderMeta()}
-      {metaMode !== "parDist" && (
+      {effectiveMetaMode !== "parDist" && (
         <text x={cx} y={parY} textAnchor="middle" fill={c.faint}
           fontFamily={MONO} fontSize="26" fontWeight="600" className="score-meta-lock">
           {hole?.par ? `P${hole.par}` : "P"}

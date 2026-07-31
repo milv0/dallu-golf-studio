@@ -1,4 +1,5 @@
 import { Barlow_Condensed, Barlow, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import Providers from "../components/studio/Providers";
 
@@ -62,10 +63,15 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko" data-theme="light" suppressHydrationWarning
       className={`${barlowCondensed.variable} ${barlow.variable} ${jetbrainsMono.variable}`}>
-      <head>
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4755795516057681" crossOrigin="anonymous" />
-      </head>
-      <body><Providers>{children}</Providers></body>
+      <body>
+        <Providers>{children}</Providers>
+        <Script
+          id="google-adsense"
+          strategy="afterInteractive"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4755795516057681"
+          crossOrigin="anonymous"
+        />
+      </body>
     </html>
   );
 }

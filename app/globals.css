@@ -3,6 +3,7 @@
 
 /* ── 테마 토큰 (다크 기본) ── */
 :root {
+  color-scheme: dark;
   --c-bg: #0b0e12;
   --c-panel: #141922;
   --c-panel-2: #1b212c;
@@ -18,6 +19,7 @@
 
 /* ── 라이트 테마 오버라이드 (액센트/스코어 색상은 브랜드 유지) ── */
 [data-theme="light"] {
+  color-scheme: light;
   --c-bg: #eef1f5;
   --c-panel: #ffffff;
   --c-panel-2: #f3f6fa;

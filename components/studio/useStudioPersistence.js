@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { readJsonStorage, STUDIO_STORAGE_KEYS, writeJsonStorage } from "../../lib/studioStorage";
 
 export default function useStudioPersistence({
@@ -22,7 +22,7 @@ export default function useStudioPersistence({
   const [builtinCourses, setBuiltinCourses] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [dbStatus, setDbStatus] = useState({ state: "disabled", count: 0, at: null });
-  const loadedRef = useRef(false);
+  const [hydrated, setHydrated] = useState(false);
 
   const loadCourseDb = () => {
     setBuiltinCourses([]);
@@ -50,38 +50,50 @@ export default function useStudioPersistence({
       if (customSession.manualNine && Array.isArray(customSession.manualNine.holes) && customSession.manualNine.holes.length === 9) setManualNine(customSession.manualNine);
     }
 
-    if (typeof window !== "undefined") {
+    try {
       window.localStorage.removeItem(STUDIO_STORAGE_KEYS.legacyThreeHole);
       window.localStorage.removeItem(STUDIO_STORAGE_KEYS.legacyManualNine);
-    }
+    } catch {}
 
     const savedLinkedThree = readJsonStorage(STUDIO_STORAGE_KEYS.linkedThree);
-    if (savedLinkedThree && Array.isArray(savedLinkedThree.holes)) setLinkedThree({ ...savedLinkedThree, showHoleNumbers: false });
+    if (savedLinkedThree && Array.isArray(savedLinkedThree.holes)) {
+      const holes = savedLinkedThree.holes.slice(0, 3).map(Number);
+      const valid = holes.length === 3 && holes.every(
+        (idx, i) => Number.isInteger(idx) && idx >= 0 && idx < 18 && (i === 0 || idx === holes[i - 1] + 1)
+      );
+      if (valid) {
+        setLinkedThree({
+          ...savedLinkedThree,
+          holes,
+          showHoleNumbers: savedLinkedThree.showHoleNumbers === true,
+        });
+      }
+    }
 
-    loadedRef.current = true;
+    setHydrated(true);
   }, [setRound, setHoleCard, setCustomRound, setCustomHoleCard, setThreeHole, setManualNine, setLinkedThree]);
 
   useEffect(() => {
-    if (loadedRef.current) writeJsonStorage(STUDIO_STORAGE_KEYS.round, round);
-  }, [round]);
+    if (hydrated) writeJsonStorage(STUDIO_STORAGE_KEYS.round, round);
+  }, [hydrated, round]);
 
   useEffect(() => {
-    if (loadedRef.current) writeJsonStorage(STUDIO_STORAGE_KEYS.holeCard, holeCard);
-  }, [holeCard]);
+    if (hydrated) writeJsonStorage(STUDIO_STORAGE_KEYS.holeCard, holeCard);
+  }, [hydrated, holeCard]);
 
   useEffect(() => {
-    if (loadedRef.current) writeJsonStorage(STUDIO_STORAGE_KEYS.linkedThree, linkedThree);
-  }, [linkedThree]);
+    if (hydrated) writeJsonStorage(STUDIO_STORAGE_KEYS.linkedThree, linkedThree);
+  }, [hydrated, linkedThree]);
 
   useEffect(() => {
-    if (!loadedRef.current) return;
+    if (!hydrated) return;
     writeJsonStorage(STUDIO_STORAGE_KEYS.customSession, {
       round: customRound,
       manualNine,
       threeHole,
       holeCard: customHoleCard,
     });
-  }, [customRound, customHoleCard, manualNine, threeHole]);
+  }, [hydrated, customRound, customHoleCard, manualNine, threeHole]);
 
   const toggleFav = (name) => {
     setFavorites((prev) => {

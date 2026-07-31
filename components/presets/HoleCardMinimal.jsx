@@ -2,6 +2,7 @@
 // 좌측 2줄: 이름(상) + 홀/거리/SHOT(하)
 // 우측: TO PAR 크게 (전체 높이 중앙)
 import { cardColors } from "../../lib/theme";
+import { normalizeToParDisplay } from "../../lib/score";
 import { displayPlayerName } from "./svgText";
 import { HEAD, MONO } from "./scorecardPrimitives";
 
@@ -24,7 +25,7 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
   const totalShots = hasPar ? Math.max(par, shots) : 0;
   const shotNums = Array.from({ length: totalShots }, (_, i) => i + 1);
 
-  const toPar = data.toPar || "E";
+  const toPar = normalizeToParDisplay(data.toPar, "–");
   const toParColor = String(toPar).startsWith("-") ? c.accent : String(toPar).startsWith("+") ? "#e5484d" : c.text;
 
   const hasData = data.hole || data.distance || shots > 0;
@@ -34,7 +35,7 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
          xmlns="http://www.w3.org/2000/svg" style={{ display: "block", background: "transparent" }}>
-      <rect x="0" y="0" width={w} height={h} rx="14" ry="14" fill={c.bg} opacity="0.94" />
+      <rect x="0" y="0" width={w} height={h} fill={c.bg} opacity="0.94" />
 
       {/* 이름 배경 박스 */}
       <rect x={pad - 2} y={row1Y - 16} width={leftW - pad + 2} height="32" rx="5" ry="5" fill={c.panel} />

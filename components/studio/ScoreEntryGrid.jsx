@@ -3,6 +3,7 @@
 import { replaceInputTextProps, ScoreInput } from "./ScoreInputs";
 import useGridNav from "../../lib/useGridNav";
 import { validatePar } from "../../lib/inputValidators";
+import { hasNumericValue } from "../../lib/score";
 
 const preventMetaCopy = (event) => event.preventDefault();
 const metaLockProps = {
@@ -83,7 +84,7 @@ export default function ScoreEntryGrid({
   const visibleHoles = holes || [];
   const parSum = visibleHoles.reduce((a, h) => a + (Number(h.par) || 0), 0);
   const scoreSum = visibleHoles.reduce((a, h) => a + (Number(h.score) || 0), 0);
-  const hasScore = visibleHoles.some((h) => h.score !== "" && h.score != null);
+  const hasScore = visibleHoles.some((hole) => hasNumericValue(hole.score));
   const template = `repeat(${Math.max(visibleHoles.length, 1)}, minmax(0,1fr))${showSum ? " 34px" : ""}`;
 
   return (

@@ -1,34 +1,53 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import HoleByHoleStrip, { sizeFor as ytSizeFor } from "../presets/HoleByHoleStrip";
 import ReelsScorecard, { sizeFor as reelsSizeFor } from "../presets/ReelsScorecard";
 import HoleCard, { sizeFor as holeSizeFor } from "../presets/HoleCard";
 import HoleCardMinimal, { SIZE as SIZE_HOLE_MINIMAL } from "../presets/HoleCardMinimal";
 import ReelsThreeHoleCard, { SIZE as SIZE_REELS_THREE } from "../presets/ReelsThreeHoleCard";
-import { emptyRound, summarize, toParLabel, cumulativeToPar } from "../../lib/score";
+import {
+  cumulativeToPar,
+  emptyRound,
+  hasAllScores,
+  hasAnyScore,
+  hasNumericValue,
+  holesForRange,
+  roundWithScoresThrough,
+  summarize,
+  threeHoleWithScoresThrough,
+  toParLabel,
+} from "../../lib/score";
 import { COURSE_DIRECTORY } from "../../lib/courseDirectory";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import HomeHub from "./HomeHub";
 import CoursePresets from "./CoursePresets";
 import { ManualNineForm, ThreeHoleForm, LinkedThreeHolePanel } from "./ManualScoreForms";
 import RoundSourcePanel from "./RoundSourcePanel";
-import HoleGroup from "./RoundScoreGrid";
-import { RelativeScoreHint, ScoreModeToggle } from "./ScoreInputs";
-import { ClubAutocomplete, Field } from "./StudioFields";
+import { RelativeScoreHint, ScoreModeToggle, useScoreInputRefs } from "./ScoreInputs";
+import { PlayerNameControl } from "./StudioFields";
 import BasicInfoPanel from "./BasicInfoPanel";
-import { LAST_ROUTE_KEY, linksFor } from "./StudioNav";
+import { LAST_CUSTOM_ROUTE_KEY, linksFor } from "./StudioNav";
 import StudioShell from "./StudioShell";
 import HoleCardForm from "./HoleCardForm";
 import PanelHeader, { ResetButton } from "./PanelHeader";
 import { ConfirmDialog, Toast } from "./Feedback";
 import PreviewExportPanel from "./PreviewExportPanel";
+import ScoreEntryGrid from "./ScoreEntryGrid";
+import PlacementPreview from "./PlacementPreview";
 import useStudioPersistence from "./useStudioPersistence";
 import useStudioExport from "./useStudioExport";
-import { DEFAULT_CUSTOM_PLAYER, emptyCustomRound, emptyHoleCard, emptyLinkedThree, emptyManualNine, emptyThreeHoleCard } from "./studioDefaults";
+import {
+  DEFAULT_CUSTOM_PLAYER,
+  emptyCustomRound,
+  emptyHoleCard,
+  emptyLinkedThree,
+  emptyManualNine,
+  emptyThreeHoleCard,
+  preservePlayer,
+} from "./studioDefaults";
 import { STUDIO_STORAGE_KEYS, writeJsonStorage } from "../../lib/studioStorage";
 import { useLang } from "../../lib/i18n";
-import { useTheme } from "../../lib/themeContext";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
 const PREVIEW_MAX_H = 440;
@@ -41,56 +60,6 @@ const FORMATS = {
 
 const RANGES = [["all", "전체 18홀"], ["front", "전반 OUT 9"], ["back", "후반 IN 9"]];
 
-function roundWithScoresThrough(round, startIndex, count, progress) {
-  const endIndex = startIndex + count;
-  return {
-    ...round,
-    holes: (round.holes || []).map((hole, idx) => ({
-      ...hole,
-      score: idx >= startIndex && idx < endIndex && idx >= startIndex + progress ? "" : hole.score,
-    })),
-  };
-}
-
-function threeHoleWithScoresThrough(data, progress) {
-  return {
-    ...data,
-    total: "",
-    toPar: "",
-    holes: (data.holes || []).slice(0, 3).map((hole, idx) => ({
-      ...hole,
-      score: idx >= progress ? "" : hole.score,
-    })),
-  };
-}
-
-function hasAnyScore(holes = []) {
-  return holes.some((hole) => hole?.score !== "" && hole?.score != null);
-}
-
-function hasAllScores(holes = [], count = holes.length) {
-  if (!holes.length || count <= 0) return false;
-  return holes.slice(0, count).every((hole) => hole?.score !== "" && hole?.score != null);
-}
-
-
-function CustomPlayerControl({ value, onChange, maxLength = 7 }) {
-  const { t } = useLang();
-  return (
-    <label className="flex w-[128px] shrink-0 items-center gap-2 rounded-lg border border-line bg-panel-2 px-2 py-1">
-      <span className="font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">
-        {t("label.name")}
-      </span>
-      <input
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        maxLength={maxLength}
-        placeholder={DEFAULT_CUSTOM_PLAYER}
-        className="min-w-0 flex-1 bg-transparent text-right font-head text-sm font-bold uppercase text-txt outline-none placeholder:text-txt-faint"
-      />
-    </label>
-  );
-}
 
 export default function StudioApp({ mode = "home", source } = {}) {
   return mode === "home" ? <HomeHub /> : <StudioWorkspace mode={mode} source={source} />;
@@ -98,7 +67,6 @@ export default function StudioApp({ mode = "home", source } = {}) {
 
 function StudioWorkspace({ mode, source }) {
   const { t } = useLang();
-  const { theme, toggleTheme } = useTheme();
   const [round, setRound] = useState(emptyRound);
   const [customRound, setCustomRound] = useState(emptyCustomRound);
   const [holeCard, setHoleCard] = useState(emptyHoleCard);
@@ -107,7 +75,7 @@ function StudioWorkspace({ mode, source }) {
   const [manualNine, setManualNine] = useState(emptyManualNine);
   const [linkedThree, setLinkedThree] = useState(emptyLinkedThree);
   const [holeRange, setHoleRange] = useState("all"); // 'all' | 'front' | 'back'
-  const [sourceMode, setSourceMode] = useState(source || (mode === "round" ? "round" : "custom"));
+  const sourceMode = source || (mode === "round" ? "round" : "custom");
   const [cardTheme, setCardTheme] = useState("light"); // 카드(프리셋) 색 테마
   const [holeCardStyle, setHoleCardStyle] = useState("minimal"); // 'classic' | 'minimal'
   const [exportScale, setExportScale] = useState(mode === "score3" ? 1 : 2);
@@ -116,7 +84,7 @@ function StudioWorkspace({ mode, source }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [toast, setToast] = useState("");
   const [confirmRequest, setConfirmRequest] = useState(null);
-  const scoreRefs = useRef([]);
+  const { scoreRefs, handleScoreKey } = useScoreInputRefs();
 
   const isHole = mode === "hole";
   const isScore18 = mode === "score18" || mode === "round";
@@ -142,7 +110,7 @@ function StudioWorkspace({ mode, source }) {
     const idx = n - 1;
     const h = round.holes[idx];
     if (!h) return holeCard;
-    const hasScore = h.score !== "" && h.score != null;
+    const hasScore = hasNumericValue(h.score);
     return {
       ...holeCard,
       par: String(h.par ?? holeCard.par ?? ""),
@@ -172,11 +140,12 @@ function StudioWorkspace({ mode, source }) {
     setCurrentUser(loadCurrentUser());
   }, []);
   useEffect(() => {
-    if (typeof window === "undefined" || !activeNav) return;
+    if (typeof window === "undefined" || !activeNav || sourceMode !== "custom") return;
     const currentLink = linksFor(sourceMode).find((link) => link.id === activeNav);
-    const storageKey = LAST_ROUTE_KEY[sourceMode];
-    if (currentLink && storageKey) {
-      window.localStorage.setItem(storageKey, currentLink.href);
+    if (currentLink) {
+      try {
+        window.localStorage.setItem(LAST_CUSTOM_ROUTE_KEY, currentLink.href);
+      } catch {}
     }
   }, [activeNav, sourceMode]);
   const logout = () => {
@@ -201,26 +170,6 @@ function StudioWorkspace({ mode, source }) {
   const summary = useMemo(() => summarize(round.holes), [round]);
   const customSummary = useMemo(() => summarize(customRound.holes), [customRound]);
   const activeSummary = isFullCustom ? customSummary : summary;
-  const hasRoundMeta = isFullCustom
-    ? Boolean((customRound.player || "").trim())
-    : Boolean((scoreRound.player || "").trim() || (scoreRound.course || "").trim() || (scoreRound.date || "").trim());
-  const hasRoundScores = activeSummary.thru > 0;
-  const hasRoundData = hasRoundMeta || hasRoundScores;
-  const linkedThreeCount = Array.isArray(linkedThree.holes) ? Math.min(linkedThree.holes.length, 3) : 0;
-  const linkedThreeReady = !reelsV3 || reelsCustom || linkedThreeCount === 3;
-  const hasHoleCardData = Boolean(activeHoleCard.hole || activeHoleCard.par || activeHoleCard.distance || activeHoleCard.currentShot || activeHoleCard.club || activeHoleCard.toPar);
-  const canExport =
-    !(isReelsSizedScore && !reelsCustom && !hasRoundScores) &&
-    linkedThreeReady &&
-    !(mode === "hole" && !hasRoundData && !hasHoleCardData);
-  const exportBlockReason =
-    isReelsSizedScore && !reelsCustom && !hasRoundScores
-      ? t("block.needScores")
-      : !linkedThreeReady
-      ? t("block.needThreeHoles")
-      : mode === "hole" && !hasRoundData && !hasHoleCardData
-      ? t("block.needHoleInfo")
-      : "";
   const manualNineRound = useMemo(() => ({
     player: (manualNine.player || "").trim() || DEFAULT_CUSTOM_PLAYER,
     country: "",
@@ -240,11 +189,44 @@ function StudioWorkspace({ mode, source }) {
     while (holes.length < 3) holes.push({ hole: "", par: "", score: "" });
     return { showHoleNumbers: linkedThree.showHoleNumbers !== false, holes };
   }, [linkedThree, round.holes]);
+  const selectedNineHoles = useMemo(
+    () => holesForRange(scoreRound.holes, effRange),
+    [scoreRound.holes, effRange]
+  );
+  const hasRoundMeta = isFullCustom
+    ? Boolean((customRound.player || "").trim())
+    : Boolean((scoreRound.player || "").trim() || (scoreRound.course || "").trim() || (scoreRound.date || "").trim());
+  const hasRoundScores = activeSummary.thru > 0;
+  const hasRoundData = hasRoundMeta || hasRoundScores;
+  const linkedThreeIndices = Array.isArray(linkedThree.holes) ? linkedThree.holes.slice(0, 3) : [];
+  const linkedThreeReady = !reelsV3 || reelsCustom || (
+    linkedThreeIndices.length === 3 &&
+    linkedThreeIndices.every((idx, i) => Number.isInteger(idx) && idx >= 0 && idx < 18 && (i === 0 || idx === linkedThreeIndices[i - 1] + 1))
+  );
+  const hasHoleCardData = Boolean(activeHoleCard.hole || activeHoleCard.par || activeHoleCard.distance || activeHoleCard.currentShot || activeHoleCard.club || activeHoleCard.toPar);
+  const hasLinkedOutputScores = isScore9
+    ? hasAnyScore(selectedNineHoles)
+    : isScore3
+    ? hasAnyScore(linkedThreeData.holes)
+    : hasRoundScores;
+  const missingLinkedScores = isReelsSizedScore && !reelsCustom && !hasLinkedOutputScores;
+  const canExport =
+    !missingLinkedScores &&
+    linkedThreeReady &&
+    !(mode === "hole" && !hasRoundData && !hasHoleCardData);
+  const exportBlockReason =
+    missingLinkedScores
+      ? t("block.needScores")
+      : !linkedThreeReady
+      ? t("block.needThreeHoles")
+      : mode === "hole" && !hasRoundData && !hasHoleCardData
+      ? t("block.needHoleInfo")
+      : "";
   const batchProgressCount = isScore18 ? 18 : isScore9 ? 9 : isScore3 ? 3 : 0;
   const hasBatchScores = isScore18
-    ? activeSummary.thru === 18
+    ? hasAllScores(scoreRound.holes, 18)
     : isScore9
-    ? reelsCustom ? manualNineSummary.thru === 9 : activeSummary.thru >= 9
+    ? reelsCustom ? hasAllScores(manualNine.holes, 9) : hasAllScores(selectedNineHoles, 9)
     : isScore3
     ? reelsCustom ? hasAllScores(threeHole.holes, 3) : hasAllScores(linkedThreeData.holes, 3)
     : false;
@@ -303,8 +285,8 @@ function StudioWorkspace({ mode, source }) {
       ...s,
       hole: String(n),
       par: String(h.par ?? ""),
-      currentShot: h.score !== "" && h.score != null ? String(h.score) : s.currentShot,
-      toPar: toParLabel(cumulativeToPar(round.holes, idx)),
+      currentShot: hasNumericValue(h.score) ? String(h.score) : "",
+      toPar: hasNumericValue(h.score) ? toParLabel(cumulativeToPar(round.holes, idx)) : "",
     }));
   };
   const loadCustomHoleStandalone = (n) => {
@@ -335,18 +317,14 @@ function StudioWorkspace({ mode, source }) {
   };
   const resetCustomRound = () => {
     requestConfirm(t("toast.resetCustom18").replace(".", "?"), () => {
-      const next = emptyCustomRound();
-      setCustomRound((prev) => ({
-        ...next,
-        player: prev.player,
-      }));
+      setCustomRound((prev) => preservePlayer(emptyCustomRound(), prev));
       setHoleRange("all");
       showToast(t("toast.resetCustom18"));
     });
   };
   const resetManualNine = () => {
     requestConfirm(t("toast.reset9").replace(".", "?"), () => {
-      setManualNine(emptyManualNine());
+      setManualNine((prev) => preservePlayer(emptyManualNine(), prev));
       showToast(t("toast.reset9"));
     });
   };
@@ -364,12 +342,11 @@ function StudioWorkspace({ mode, source }) {
       showToast(t("toast.reset1"));
     });
   };
-
-  const handleScoreKey = (e, idx) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      scoreRefs.current[idx + 1]?.focus();
-    }
+  const resetCustomHoleCard = () => {
+    requestConfirm(t("toast.resetCustom1").replace(".", "?"), () => {
+      setCustomHoleCard((prev) => preservePlayer(emptyHoleCard(), prev));
+      showToast(t("toast.resetCustom1"));
+    });
   };
 
   // 코스(18홀 조합/단일 9홀) 선택 → par 채움. 단일 9홀은 OUT/IN에 같은 par를 적용한다.
@@ -454,8 +431,6 @@ function StudioWorkspace({ mode, source }) {
       sourceMode={sourceMode}
       currentUser={currentUser}
       onLogout={logout}
-      theme={theme}
-      onToggleTheme={toggleTheme}
     >
       <div className="mx-auto grid w-full max-w-[980px] grid-cols-1 gap-5">
         {/* ── 입력 패널 ── */}
@@ -500,9 +475,10 @@ function StudioWorkspace({ mode, source }) {
               <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
                 <PanelHeader title={t("label.scoreInput")}>
                   {isFullCustom && (
-                    <CustomPlayerControl
+                    <PlayerNameControl
                       value={customRound.player}
                       onChange={(v) => setCustomMeta("player", v)}
+                      placeholder={DEFAULT_CUSTOM_PLAYER}
                     />
                   )}
                   {!isFullCustom && parLocked && (
@@ -517,10 +493,12 @@ function StudioWorkspace({ mode, source }) {
                 {scoreMode === "relative" && (
                   <RelativeScoreHint />
                 )}
-                <HoleGroup label="FRONT 9" holes={Front} offset={0} setHole={setScoreHole}
-                           scoreRefs={scoreRefs} onScoreKey={handleScoreKey} scoreMode={scoreMode} parLocked={!isFullCustom && parLocked} />
-                <HoleGroup label="BACK 9" holes={Back} offset={9} setHole={setScoreHole}
-                           scoreRefs={scoreRefs} onScoreKey={handleScoreKey} scoreMode={scoreMode} parLocked={!isFullCustom && parLocked} />
+                <ScoreEntryGrid holes={Front} offset={0} setHole={setScoreHole}
+                  scoreRefs={scoreRefs} onScoreKey={handleScoreKey} scoreMode={scoreMode}
+                  parLocked={!isFullCustom && parLocked} showSum />
+                <ScoreEntryGrid holes={Back} offset={9} setHole={setScoreHole}
+                  scoreRefs={scoreRefs} onScoreKey={handleScoreKey} scoreMode={scoreMode}
+                  parLocked={!isFullCustom && parLocked} showSum />
                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line pt-2 text-[11px] text-txt-soft">
                   <span>
                     PAR{" "}
@@ -570,10 +548,11 @@ function StudioWorkspace({ mode, source }) {
                   ))}
                 </div>
                 {isFullCustom && (
-                  <CustomPlayerControl
+                  <PlayerNameControl
                     value={customHoleCard.player}
                     onChange={(v) => setCustomHC("player", v)}
                     maxLength={9}
+                    placeholder={DEFAULT_CUSTOM_PLAYER}
                   />
                 )}
               </div>
@@ -584,12 +563,7 @@ function StudioWorkspace({ mode, source }) {
                 loadHoleFromRound={isFullCustom ? loadCustomHoleStandalone : loadHoleFromRound}
                 linked={!isFullCustom}
                 cardStyle={holeCardStyle}
-                onReset={isFullCustom ? () => {
-                  requestConfirm(t("toast.resetCustom1").replace(".", "?"), () => {
-                    setCustomHoleCard(emptyHoleCard());
-                    showToast(t("toast.resetCustom1"));
-                  });
-                } : resetHoleCard}
+                onReset={isFullCustom ? resetCustomHoleCard : resetHoleCard}
               />
             </div>
           )}
@@ -622,6 +596,11 @@ function StudioWorkspace({ mode, source }) {
           previewMobileMaxWidth={previewMobileMaxWidth}
           previewNode={renderActiveCard()}
         />
+        <div className="order-3 hidden md:block">
+          <PlacementPreview format={format} size={size} isHole={isHole}>
+            {renderActiveCard()}
+          </PlacementPreview>
+        </div>
       </div>
       {batchExportStep != null && (
         <div className="pointer-events-none fixed left-[-10000px] top-0 z-[-1]" aria-hidden="true">

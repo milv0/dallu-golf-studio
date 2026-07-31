@@ -1,15 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Moon, Sun } from "lucide-react";
 import { STUDIO_STORAGE_KEYS } from "../../lib/studioStorage";
 import { useLang } from "../../lib/i18n";
 import LangToggle from "./LangToggle";
+import ThemeToggle from "./ThemeToggle";
 
-export const LAST_ROUTE_KEY = {
-  custom: STUDIO_STORAGE_KEYS.lastCustomRoute,
-  round: STUDIO_STORAGE_KEYS.lastRoundRoute,
-};
+export const LAST_CUSTOM_ROUTE_KEY = STUDIO_STORAGE_KEYS.lastCustomRoute;
 
 export const CUSTOM_LINKS = [
   { href: "/custom/Hole18", labelKey: "tab.hole18", id: "score18" },
@@ -40,16 +37,11 @@ export function storedFlowHref(sourceMode = "custom") {
   if (typeof window === "undefined") return fallback;
 
   try {
-    const storageKey = LAST_ROUTE_KEY[sourceMode];
-    const savedHref = storageKey ? window.localStorage.getItem(storageKey) : "";
+    const savedHref = window.localStorage.getItem(LAST_CUSTOM_ROUTE_KEY) || "";
     return links.some((link) => link.href === savedHref) ? savedHref : fallback;
   } catch {
     return fallback;
   }
-}
-
-export function getActiveLabel(active) {
-  return CUSTOM_LINKS.find((link) => link.id === active)?.label || (active === "records" ? "내 라운딩" : "작업");
 }
 
 function NavLink({ href, label, active }) {
@@ -64,32 +56,12 @@ function NavLink({ href, label, active }) {
   );
 }
 
-export function HomeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
-      <path d="M3.5 11.5 12 4l8.5 7.5" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M6.5 10.5V20h11v-9.5" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-
 function DisabledNavItem({ label, disabledTitle }) {
   return (
     <span aria-disabled="true" title={disabledTitle}
       className="cursor-not-allowed rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-txt-faint opacity-70">
       {label}
     </span>
-  );
-}
-
-function ThemeButton({ theme, onToggleTheme }) {
-  const nextThemeLabel = theme === "dark" ? "라이트 테마로 전환" : "다크 테마로 전환";
-  return (
-    <button type="button" onClick={onToggleTheme} aria-label={nextThemeLabel} title={nextThemeLabel}
-      className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-panel text-txt-soft transition active:border-accent active:text-txt">
-      {theme === "dark" ? <Sun aria-hidden="true" size={18} strokeWidth={2.2} /> : <Moon aria-hidden="true" size={18} strokeWidth={2.2} />}
-    </button>
   );
 }
 
@@ -111,18 +83,18 @@ function LoginButton({ currentUser, onLogout, t }) {
   );
 }
 
-export function TopActions({ currentUser, onLogout, theme, onToggleTheme }) {
+export function TopActions({ currentUser, onLogout }) {
   const { t } = useLang();
   return (
     <div className="flex shrink-0 items-center gap-1.5">
-      <ThemeButton theme={theme} onToggleTheme={onToggleTheme} />
+      <ThemeToggle />
       <LangToggle />
       <LoginButton currentUser={currentUser} onLogout={onLogout} t={t} />
     </div>
   );
 }
 
-export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLogout, theme, onToggleTheme }) {
+export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLogout }) {
   const { t } = useLang();
   const links = linksFor(sourceMode);
   return (
@@ -134,7 +106,7 @@ export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLog
               Dallu Golf
             </span>
           </Link>
-          <TopActions currentUser={currentUser} onLogout={onLogout} theme={theme} onToggleTheme={onToggleTheme} />
+          <TopActions currentUser={currentUser} onLogout={onLogout} />
         </div>
         <nav className="mt-2 flex gap-1.5">
           {links.map((link) => (
