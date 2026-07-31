@@ -583,6 +583,7 @@ function StudioWorkspace({ mode, source }) {
                 setHC={isFullCustom ? setCustomHC : setHC}
                 loadHoleFromRound={isFullCustom ? loadCustomHoleStandalone : loadHoleFromRound}
                 linked={!isFullCustom}
+                cardStyle={holeCardStyle}
                 onReset={isFullCustom ? () => {
                   requestConfirm(t("toast.resetCustom1").replace(".", "?"), () => {
                     setCustomHoleCard(emptyHoleCard());

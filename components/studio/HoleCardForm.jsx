@@ -23,7 +23,7 @@ function CoreInput({ label, value, onChange, placeholder, inputMode = "text" }) 
   );
 }
 
-export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound, onReset, linked = true }) {
+export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound, onReset, linked = true, cardStyle = "classic" }) {
   const { t } = useLang();
   return (
     <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
@@ -104,7 +104,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
       <div className="mt-4 border-t border-line pt-3">
         <span className="mb-2 block font-head text-[10px] uppercase tracking-widest text-txt-faint">{t("hole.distance")} / Club</span>
       </div>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div className="grid max-w-[400px] grid-cols-1 gap-3 md:grid-cols-2">
         <div>
           <div className="mb-1 flex items-center justify-between">
             <span className="font-head text-[11px] uppercase tracking-widest text-txt-faint">{t("hole.distance")}</span>
@@ -123,7 +123,9 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
             placeholder={holeCard.unit === "yd" ? "212" : "195"}
             className="w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2.5 text-sm text-txt outline-none focus:border-accent" />
         </div>
-        <ClubField value={holeCard.club} onChange={(v) => setHC("club", v)} />
+        <div className={cardStyle === "minimal" ? "opacity-40 pointer-events-none" : ""}>
+          <ClubField value={holeCard.club} onChange={(v) => setHC("club", v)} />
+        </div>
       </div>
       <label className="mt-3 flex items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm font-semibold text-txt-soft">
         <input
