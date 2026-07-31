@@ -7,23 +7,6 @@ import { HEAD, MONO } from "./scorecardPrimitives";
 
 export const SIZE = { w: 360, h: 88 };
 
-function bannerFor(data) {
-  const par = Number(data.par) || null;
-  const shots = Number(data.currentShot) || 0;
-  if (data.showResultBanner === false || !par || shots <= 0) return null;
-  const diff = shots - par;
-  if (par >= 5) {
-    if (diff === -2) return { text: "FOR EAGLE", type: "good" };
-    if (diff === -1) return { text: "FOR BIRDIE", type: "good" };
-  } else if (par === 4) {
-    if (diff === -1) return { text: "FOR BIRDIE", type: "good" };
-  } else if (par === 3) {
-    if (diff === -1) return { text: "FOR BIRDIE", type: "good" };
-  }
-  if (diff === 1) return { text: "FOR BOGEY", type: "bad" };
-  if (diff === 2) return { text: "FOR DOUBLE BOGEY", type: "worse" };
-  return null;
-}
 
 export default function HoleCardMinimal({ data, theme = "dark" }) {
   const c = cardColors(theme);
@@ -45,7 +28,6 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
 
   const holeLabel = data.hole ? `${data.hole}H` : "";
   const dist = data.distance ? `${data.distance}${data.unit === "yd" ? "YDS" : "M"}` : "";
-  const banner = bannerFor(data);
 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
@@ -94,14 +76,6 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
         );
       })}
 
-      {/* 배너 (하단 행 우측) */}
-      {banner && !dist && (
-        <text x={leftW} y={row2Y} textAnchor="end" dominantBaseline="middle"
-              fill={banner.type === "good" ? c.accent : "#e5484d"}
-              fontFamily={HEAD} fontSize="11" fontWeight="700" letterSpacing="0.5">
-          {banner.text}
-        </text>
-      )}
 
       {/* 워터마크 */}
       <text x={w - pad} y={h - 4} textAnchor="end" fill={c.faint} opacity="0.4"
