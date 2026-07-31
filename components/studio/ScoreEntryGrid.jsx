@@ -10,7 +10,7 @@ const metaLockProps = {
   onContextMenu: preventMetaCopy,
 };
 
-function ParInput({ idx, localIdx, value, setHole, parRefs }) {
+function ParInput({ idx, localIdx, value, setHole, parRefs, scoreRefs }) {
   const handleChange = (e) => {
     const next = e.target.value.slice(-1);
     if (next === "") {
@@ -20,6 +20,19 @@ function ParInput({ idx, localIdx, value, setHole, parRefs }) {
     if (/^[3456]$/.test(next)) {
       setHole(idx, "par", next);
       setTimeout(() => parRefs?.current[localIdx + 1]?.focus(), 0);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      scoreRefs?.current[idx]?.focus();
+    } else if (e.key === "ArrowLeft" && localIdx > 0) {
+      e.preventDefault();
+      parRefs?.current[localIdx - 1]?.focus();
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      parRefs?.current[localIdx + 1]?.focus();
     }
   };
 
@@ -33,6 +46,7 @@ function ParInput({ idx, localIdx, value, setHole, parRefs }) {
       placeholder="–"
       inputMode="numeric"
       onChange={handleChange}
+      onKeyDown={handleKeyDown}
       className="score-meta-lock w-full bg-transparent py-0.5 text-center font-mono text-[12px] font-semibold text-txt-soft outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:text-txt focus:ring-1 focus:ring-inset focus:ring-accent"
     />
   );
@@ -101,7 +115,7 @@ export default function ScoreEntryGrid({
                   {h.par || "–"}
                 </div>
               ) : (
-                <ParInput idx={idx} localIdx={i} value={h.par} setHole={setHole} parRefs={parRefs} />
+                <ParInput idx={idx} localIdx={i} value={h.par} setHole={setHole} parRefs={parRefs} scoreRefs={scoreRefs} />
               )}
             </div>
           );
@@ -118,11 +132,13 @@ export default function ScoreEntryGrid({
             <div key={"s" + i} className="border-l border-t border-line first:border-l-0">
               <ScoreInput
                 idx={idx}
+                localIdx={i}
                 par={h.par}
                 score={h.score}
                 mode={scoreMode}
                 setHole={setHole}
                 scoreRefs={scoreRefs}
+                parRefs={parLocked ? null : parRefs}
                 onScoreKey={onScoreKey}
               />
             </div>

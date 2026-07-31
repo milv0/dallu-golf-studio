@@ -71,10 +71,12 @@ export function ScoreModeToggle({ value, onChange }) {
 
 export function RelativeScoreInput({
   idx,
+  localIdx,
   par,
   score,
   onScore,
   scoreRefs,
+  parRefs,
   onScoreKey,
   ariaLabel,
   className = manualScoreClass,
@@ -113,6 +115,14 @@ export function RelativeScoreInput({
   };
 
   const handleKeyDown = (e) => {
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      parRefs?.current[localIdx]?.focus();
+      return;
+    }
+    if (e.key === "ArrowDown") {
+      return;
+    }
     if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
       e.preventDefault();
       const current = parseRelativeScore(buf);
@@ -143,7 +153,7 @@ export function RelativeScoreInput({
 }
 
 // 타수/파대비 겸용 스코어 입력. 내부 저장은 항상 절대 타수.
-export function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreKey }) {
+export function ScoreInput({ idx, localIdx, par, score, mode, setHole, scoreRefs, parRefs, onScoreKey }) {
   const display = mode === "relative" ? relativeScoreDisplay(score, par) : (score ?? "");
   const [buf, setBuf] = useState(display);
 
@@ -153,10 +163,12 @@ export function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreK
     return (
       <RelativeScoreInput
         idx={idx}
+        localIdx={localIdx}
         par={par}
         score={score}
         onScore={(value) => setHole(idx, "score", value)}
         scoreRefs={scoreRefs}
+        parRefs={parRefs}
         onScoreKey={onScoreKey}
         ariaLabel={`홀 ${idx + 1} 파대비`}
         className={roundScoreClass}
@@ -181,6 +193,20 @@ export function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreK
     }
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      parRefs?.current[localIdx]?.focus();
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      scoreRefs?.current[idx - 1]?.focus();
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      scoreRefs?.current[idx + 1]?.focus();
+    }
+    onScoreKey?.(e, idx);
+  };
+
   return (
     <input
       aria-label={`홀 ${idx + 1} 스코어`}
@@ -188,7 +214,7 @@ export function ScoreInput({ idx, par, score, mode, setHole, scoreRefs, onScoreK
       value={buf}
       inputMode="numeric"
       ref={(el) => { if (scoreRefs) scoreRefs.current[idx] = el; }}
-      onKeyDown={(e) => onScoreKey?.(e, idx)}
+      onKeyDown={handleKeyDown}
       onChange={(e) => handleChange(e.target.value)}
       placeholder="–"
       className={roundScoreClass}
