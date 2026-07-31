@@ -4,7 +4,7 @@ import { cardColors } from "../../lib/theme";
 import { displayPlayerName } from "./svgText";
 import { HEAD, MONO } from "./scorecardPrimitives";
 
-export const SIZE = { w: 480, h: 120 };
+export const SIZE = { w: 400, h: 110 };
 
 function bannerFor(data) {
   const par = Number(data.par) || null;
@@ -27,9 +27,9 @@ function bannerFor(data) {
 export default function HoleCardMinimal({ data, theme = "dark" }) {
   const c = cardColors(theme);
   const { w, h } = SIZE;
-  const r = 16;
-  const pad = 20;
-  const topH = 62;
+  const r = 14;
+  const pad = 16;
+  const topH = 56;
   const player = displayPlayerName(data.player);
   const par = Number(data.par) || 4;
   const shots = Number(data.currentShot) || 0;
@@ -51,55 +51,55 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
       <rect x="0" y="0" width={w} height={h} rx={r} ry={r} fill={c.bg} opacity="0.94" />
 
       {/* 상단: 이름 영역 배경 */}
-      <rect x={pad - 4} y="10" width={w - pad * 2 - 80} height={topH - 20} rx="6" ry="6" fill={c.panel} />
+      <rect x={pad - 4} y="8" width={w - pad * 2 - 60} height={topH - 20} rx="6" ry="6" fill={c.panel} />
 
       {/* 이름 */}
-      <text x={pad + 8} y="40" dominantBaseline="middle" fill={c.text}
-            fontFamily={HEAD} fontSize="32" fontWeight="700" letterSpacing="0.5">
+      <text x={pad + 6} y="26" dominantBaseline="middle" fill={c.text}
+            fontFamily={HEAD} fontSize="28" fontWeight="700" letterSpacing="0.5">
         {player}
       </text>
 
       {/* TO PAR (우측) */}
-      <text x={w - pad} y="40" textAnchor="end" dominantBaseline="middle" fill={toParColor}
-            fontFamily={HEAD} fontSize="44" fontWeight="700">
+      <text x={w - pad} y="26" textAnchor="end" dominantBaseline="middle" fill={toParColor}
+            fontFamily={HEAD} fontSize="38" fontWeight="700">
         {toPar}
       </text>
 
       {/* 하단: 홀번호 + 거리 + SHOT */}
-      <text x={pad} y="90" dominantBaseline="middle" fill={c.sub}
-            fontFamily={HEAD} fontSize="20" fontWeight="600" letterSpacing="1">
+      <text x={pad} y="80" dominantBaseline="middle" fill={c.sub}
+            fontFamily={HEAD} fontSize="18" fontWeight="600" letterSpacing="1">
         {holeLabel}
       </text>
-      <text x={pad + (holeLabel.length * 13) + 12} y="90" dominantBaseline="middle" fill={c.faint}
-            fontFamily={MONO} fontSize="20" fontWeight="600">
+      <text x={pad + (holeLabel.length * 12) + 10} y="80" dominantBaseline="middle" fill={c.faint}
+            fontFamily={MONO} fontSize="18" fontWeight="600">
         {dist}
       </text>
 
       {/* SHOT 번호 */}
       {shotNums.map((n, i) => {
-        const sx = pad + (holeLabel.length * 13) + 12 + (dist.length * 11) + 20 + i * 28;
+        const sx = pad + (holeLabel.length * 12) + 10 + (dist.length * 10) + 16 + i * 24;
         const active = n === shots;
         return (
           <g key={n}>
-            {active && <circle cx={sx} cy="89" r="13" fill={c.accent} />}
-            <text x={sx} y="90" textAnchor="middle" dominantBaseline="middle"
+            {active && <circle cx={sx} cy="79" r="11" fill={c.accent} />}
+            <text x={sx} y="80" textAnchor="middle" dominantBaseline="middle"
                   fill={active ? c.ink : c.faint} fontFamily={MONO}
-                  fontSize="18" fontWeight="700">{n}</text>
+                  fontSize="16" fontWeight="700">{n}</text>
           </g>
         );
       })}
 
       {/* 배너 텍스트 (있으면 우하단) */}
       {banner && (
-        <text x={w - pad} y="90" textAnchor="end" dominantBaseline="middle"
+        <text x={w - pad} y="80" textAnchor="end" dominantBaseline="middle"
               fill={banner.type === "good" ? c.accent : "#e5484d"}
-              fontFamily={HEAD} fontSize="14" fontWeight="700" letterSpacing="0.5">
+              fontFamily={HEAD} fontSize="12" fontWeight="700" letterSpacing="0.5">
           {banner.text}
         </text>
       )}
 
       {/* 워터마크 */}
-      <text x={w - pad} y={h - 6} textAnchor="end" fill={c.faint} opacity="0.4"
+      <text x={w - pad} y={h - 5} textAnchor="end" fill={c.faint} opacity="0.4"
         fontFamily={HEAD} fontSize="8" fontWeight="600" letterSpacing="1">
         DALLU GOLF
       </text>
