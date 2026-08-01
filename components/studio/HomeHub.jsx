@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ClipboardList, Pencil } from "lucide-react";
+import { ClipboardList, Pencil, Share2 } from "lucide-react";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import { defaultFlowHref, storedFlowHref, TopActions } from "./StudioNav";
 import { useLang } from "../../lib/i18n";
@@ -100,6 +100,15 @@ export default function HomeHub() {
               </Link>
             );
           })}
+        </div>
+
+        <div className="mx-auto mt-5 flex w-full max-w-[420px] items-start justify-center gap-2.5 border-y border-line py-3 md:hidden">
+          <Share2 aria-hidden="true" size={16} className="mt-0.5 shrink-0 text-accent" />
+          <div className="text-[11px] leading-relaxed text-txt-soft">
+            <div className="font-semibold text-txt">{t("home.addToHome")}</div>
+            <div>Chrome → “Share” → “Add to Home Screen”</div>
+            <div>Safari → “Share” → “Add to Home Screen”</div>
+          </div>
         </div>
 
         <div className="mt-8 text-center">
