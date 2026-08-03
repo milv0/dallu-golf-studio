@@ -4,6 +4,7 @@ import { replaceInputTextProps, ScoreInput } from "./ScoreInputs";
 import useGridNav from "../../lib/useGridNav";
 import { validatePar } from "../../lib/inputValidators";
 import { hasNumericValue } from "../../lib/score";
+import { useLang } from "../../lib/i18n";
 
 const preventMetaCopy = (event) => event.preventDefault();
 const metaLockProps = {
@@ -12,7 +13,8 @@ const metaLockProps = {
   onContextMenu: preventMetaCopy,
 };
 
-function ParInput({ idx, localIdx, value, setHole, parRefs, scoreRefs }) {
+function ParInput({ idx, localIdx, value, setHole, parRefs, nav }) {
+  const { t } = useLang();
   const handleChange = (e) => {
     const next = e.target.value.slice(-1);
     if (next === "") {
@@ -25,41 +27,29 @@ function ParInput({ idx, localIdx, value, setHole, parRefs, scoreRefs }) {
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      scoreRefs?.current[idx]?.focus();
-    } else if (e.key === "ArrowLeft" && localIdx > 0) {
-      e.preventDefault();
-      parRefs?.current[localIdx - 1]?.focus();
-    } else if (e.key === "ArrowRight") {
-      e.preventDefault();
-      parRefs?.current[localIdx + 1]?.focus();
-    }
-  };
-
   return (
     <input
       {...metaLockProps}
       {...replaceInputTextProps}
-      ref={(el) => { if (parRefs) parRefs.current[localIdx] = el; }}
-      aria-label={`홀 ${idx + 1} PAR`}
+      ref={nav.inputRef}
+      aria-label={t("a11y.holePar", { n: idx + 1 })}
       value={value ?? ""}
       placeholder="–"
       inputMode="numeric"
       onChange={handleChange}
-      onKeyDown={handleKeyDown}
+      onKeyDown={nav.onKeyDown}
       className="score-meta-lock w-full bg-transparent py-0.5 text-center font-mono text-[12px] font-semibold text-txt-soft outline-none placeholder:text-txt-faint focus:bg-accent/10 focus:text-txt focus:ring-1 focus:ring-inset focus:ring-accent"
     />
   );
 }
 
 function HoleNumberInput({ idx, value, setHole, placeholder }) {
+  const { t } = useLang();
   return (
     <input
       {...metaLockProps}
       {...replaceInputTextProps}
-      aria-label={`${idx + 1}번째 홀 번호`}
+      aria-label={t("a11y.holeNumber", { n: idx + 1 })}
       value={value ?? ""}
       onChange={(e) => setHole(idx, "hole", e.target.value)}
       placeholder={placeholder}
@@ -80,7 +70,11 @@ export default function ScoreEntryGrid({
   editableHoleNumbers = false,
   parLocked = false,
 }) {
-  const { refs: parRefs } = useGridNav();
+  const { t } = useLang();
+  // PAR 행은 좌우/Enter/Tab 이동을 useGridNav에 위임하고, ↓만 스코어 행으로 넘긴다.
+  const { refs: parRefs, navProps: parNavProps } = useGridNav({
+    onDown: (i) => scoreRefs?.current[offset + i]?.focus(),
+  });
   const visibleHoles = holes || [];
   const parSum = visibleHoles.reduce((a, h) => a + (Number(h.par) || 0), 0);
   const scoreSum = visibleHoles.reduce((a, h) => a + (Number(h.score) || 0), 0);
@@ -104,7 +98,7 @@ export default function ScoreEntryGrid({
         })}
         {showHoleNumbers && showSum && (
           <div {...metaLockProps} className="score-meta-lock flex items-center justify-center border-l border-line bg-panel py-0.5 font-mono text-[9px] font-bold uppercase tracking-wide text-txt-faint">
-            합
+            {t("label.sum")}
           </div>
         )}
 
@@ -117,7 +111,7 @@ export default function ScoreEntryGrid({
                   {h.par || "–"}
                 </div>
               ) : (
-                <ParInput idx={idx} localIdx={i} value={h.par} setHole={setHole} parRefs={parRefs} scoreRefs={scoreRefs} />
+                <ParInput idx={idx} localIdx={i} value={h.par} setHole={setHole} parRefs={parRefs} nav={parNavProps(i)} />
               )}
             </div>
           );

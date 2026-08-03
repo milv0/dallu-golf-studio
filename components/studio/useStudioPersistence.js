@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { readJsonStorage, STUDIO_STORAGE_KEYS, writeJsonStorage } from "../../lib/studioStorage";
+import {
+  flushJsonStorage,
+  readJsonStorage,
+  scheduleJsonStorage,
+  STUDIO_STORAGE_KEYS,
+  writeJsonStorage,
+} from "../../lib/studioStorage";
 
 export default function useStudioPersistence({
   round,
@@ -18,6 +24,8 @@ export default function useStudioPersistence({
   setManualNine,
   threeHole,
   setThreeHole,
+  parLocked,
+  setParLocked,
 }) {
   const [builtinCourses, setBuiltinCourses] = useState([]);
   const [favorites, setFavorites] = useState([]);
@@ -70,24 +78,43 @@ export default function useStudioPersistence({
       }
     }
 
+    const savedParLocked = readJsonStorage(STUDIO_STORAGE_KEYS.parLocked);
+    if (typeof savedParLocked === "boolean") setParLocked?.(savedParLocked);
+
     setHydrated(true);
-  }, [setRound, setHoleCard, setCustomRound, setCustomHoleCard, setThreeHole, setManualNine, setLinkedThree]);
+  }, [setRound, setHoleCard, setCustomRound, setCustomHoleCard, setThreeHole, setManualNine, setLinkedThree, setParLocked]);
+
+  // 탭 이탈/언마운트 시 대기 중인 저장을 확실히 반영한다.
+  useEffect(() => {
+    const flush = () => flushJsonStorage();
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", flush);
+    return () => {
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", flush);
+      flush();
+    };
+  }, []);
 
   useEffect(() => {
-    if (hydrated) writeJsonStorage(STUDIO_STORAGE_KEYS.round, round);
+    if (hydrated) scheduleJsonStorage(STUDIO_STORAGE_KEYS.round, round);
   }, [hydrated, round]);
 
   useEffect(() => {
-    if (hydrated) writeJsonStorage(STUDIO_STORAGE_KEYS.holeCard, holeCard);
+    if (hydrated) scheduleJsonStorage(STUDIO_STORAGE_KEYS.holeCard, holeCard);
   }, [hydrated, holeCard]);
 
   useEffect(() => {
-    if (hydrated) writeJsonStorage(STUDIO_STORAGE_KEYS.linkedThree, linkedThree);
+    if (hydrated) scheduleJsonStorage(STUDIO_STORAGE_KEYS.linkedThree, linkedThree);
   }, [hydrated, linkedThree]);
 
   useEffect(() => {
+    if (hydrated) scheduleJsonStorage(STUDIO_STORAGE_KEYS.parLocked, parLocked === true);
+  }, [hydrated, parLocked]);
+
+  useEffect(() => {
     if (!hydrated) return;
-    writeJsonStorage(STUDIO_STORAGE_KEYS.customSession, {
+    scheduleJsonStorage(STUDIO_STORAGE_KEYS.customSession, {
       round: customRound,
       manualNine,
       threeHole,

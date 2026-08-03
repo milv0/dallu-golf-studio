@@ -44,13 +44,13 @@ export default function PreviewExportPanel({
     <section className="order-1">
       {isScore9 && !reelsCustom && (
         <div className="mb-3 flex flex-wrap items-center gap-3">
-          <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">범위</div>
+          <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">{t("preview.range")}</div>
           <div className="flex overflow-hidden rounded-lg border border-line">
-            {availableRanges.map(([key, label]) => (
+            {availableRanges.map(([key, labelKey]) => (
               <button key={key} onClick={() => setHoleRange(key)}
                 className={"px-4 py-1.5 text-sm font-semibold transition " +
                   (effRange === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
-                {label}
+                {t(labelKey)}
               </button>
             ))}
           </div>
@@ -68,10 +68,10 @@ export default function PreviewExportPanel({
             <ChevronDown size={14} className={"text-txt-faint transition md:hidden " + (collapsed ? "-rotate-90" : "")} />
           </button>
           <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-            <div className="flex overflow-hidden rounded-lg border border-line" role="group" aria-label="카드 테마">
+            <div className="flex overflow-hidden rounded-lg border border-line" role="group" aria-label={t("a11y.cardTheme")}>
               {[["dark", Moon], ["light", Sun]].map(([key, Icon]) => (
                 <button key={key} onClick={() => setCardTheme(key)}
-                  aria-label={key === "dark" ? "다크 카드" : "라이트 카드"} aria-pressed={cardTheme === key}
+                  aria-label={key === "dark" ? t("a11y.cardDark") : t("a11y.cardLight")} aria-pressed={cardTheme === key}
                   className={"flex items-center justify-center px-2 py-1 md:px-2.5 md:py-1.5 " +
                     (cardTheme === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
                   <Icon size={14} strokeWidth={2.2} />
@@ -79,7 +79,7 @@ export default function PreviewExportPanel({
               ))}
             </div>
             <div className={"flex overflow-hidden rounded-lg border border-line " + (collapsed ? "hidden md:flex" : "")}
-              role="group" aria-label="출력 품질">
+              role="group" aria-label={t("a11y.outputQuality")}>
               {QUALITY.map((qz) => (
                 <button key={qz.scale} onClick={() => setExportScale(qz.scale)}
                   title={`${qz.desc} · ${size.w * qz.scale}x${size.h * qz.scale}px`} aria-pressed={exportScale === qz.scale}

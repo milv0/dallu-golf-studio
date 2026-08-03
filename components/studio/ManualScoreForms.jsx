@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { RelativeScoreHint, ScoreModeToggle, useScoreInputRefs } from "./ScoreInputs";
+import { RelativeScoreHint, ScoreModeToggle, replaceInputTextProps, useScoreInputRefs } from "./ScoreInputs";
+import { validateNumericOnly } from "../../lib/inputValidators";
 import { Field, PlayerNameControl, UnitToggle } from "./StudioFields";
 import PanelHeader, { ResetButton } from "./PanelHeader";
 import ScoreEntryGrid from "./ScoreEntryGrid";
@@ -41,7 +42,7 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
           <input type="checkbox" checked={showDist}
             onChange={(e) => toggleDistance(e.target.checked)}
             className="h-4 w-4 accent-[var(--color-accent)]" />
-          Distance
+          {t("hole.distance")}
         </label>
         {showDist && (
           <UnitToggle value={data.unit || "m"} onChange={(unit) => setField("unit", unit)} />
@@ -63,7 +64,12 @@ export function ThreeHoleForm({ data, setField, setHole, onReset }) {
       {showDist && (
         <div className="mt-2 grid grid-cols-3 gap-2">
           {(data.holes || []).slice(0, 3).map((h, i) => (
-            <input key={i} value={h.distance || ""} onChange={(e) => setHole(i, "distance", e.target.value)}
+            <input key={i} value={h.distance || ""}
+              {...replaceInputTextProps}
+              onChange={(e) => {
+                if (validateNumericOnly(e.target.value)) setHole(i, "distance", e.target.value);
+              }}
+              aria-label={t("a11y.holeDistance", { n: i + 1 })}
               placeholder={`- ${(data.unit || "m") === "yd" ? "yd" : "m"}`}
               inputMode="numeric"
               className="rounded-lg border border-line-2 bg-panel-2 px-2.5 py-1.5 text-center text-sm text-txt outline-none placeholder:text-txt-faint focus:border-accent" />
@@ -112,7 +118,7 @@ export function LinkedThreeHolePanel({ round, selected, showHoleNumbers, onSelec
           const has = hasNumericValue(h.score);
           return (
             <button key={i} type="button" onClick={() => onSelect(start)}
-              title={`${start + 1}-${start + 3}번 홀 묶음 선택`}
+              title={t("a11y.threeGroup", { a: start + 1, b: start + 3 })}
               className={"rounded-md py-1.5 text-center font-mono text-[13px] font-bold transition " +
                 (active
                   ? "bg-accent text-[#06210f]"

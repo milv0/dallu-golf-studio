@@ -26,7 +26,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata = {
   title: "Dallu Golf Studio",
-  description: "",
+  description: "골프 스코어카드를 투명 배경 PNG로 만들어 영상·릴스에 바로 올리세요.",
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },
@@ -63,7 +63,20 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko" data-theme="light" suppressHydrationWarning
       className={`${barlowCondensed.variable} ${barlow.variable} ${jetbrainsMono.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+        />
+      </head>
       <body>
+        {/* 저장된 테마/언어를 페인트 전에 적용해 다크모드 흰 화면 깜빡임(FOUC)을 막는다. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("sc-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t);var l=localStorage.getItem("sc-lang");if(l==="en"||l==="ko")document.documentElement.lang=l;}catch(e){}})();`,
+          }}
+        />
         <Providers>{children}</Providers>
         <Script
           id="google-adsense"

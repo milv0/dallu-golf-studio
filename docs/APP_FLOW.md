@@ -20,12 +20,12 @@
 │  ├─ /round (비활성 시 redirect → /)
 │  ├─ /round/Hole9 (비활성 시 redirect → /)
 │  ├─ /round/Hole3 (비활성 시 redirect → /)
-│  └─ /round/hole (비활성 시 redirect → /)
+│  └─ /round/Hole1 (비활성 시 redirect → /)
 └─ /custom (redirect → 마지막 직접 만들기 탭)
    ├─ /custom/Hole18
    ├─ /custom/Hole9
    ├─ /custom/Hole3
-   └─ /custom/hole
+   └─ /custom/Hole1
 ```
 
 경로 세그먼트로 `round`/`custom` 모드를 구분한다. 쿼리 파라미터를 사용하지 않는다.
@@ -59,7 +59,7 @@
 - `/round`에서 18홀 라운드 정보를 입력한다.
 - `/round/Hole9`는 `round.holes`에서 전반/후반 9홀을 읽는다.
 - `/round/Hole3`는 `round.holes`에서 선택된 연속 3홀을 읽는다.
-- `/round/hole`는 `round.holes`에서 선택 홀의 PAR, 현재 타수, 누적 토탈을 불러온다.
+- `/round/Hole1`는 `round.holes`에서 선택 홀의 PAR, 현재 타수, 누적 토탈을 불러온다.
 - 즉, 내 라운드 기록에서는 18홀에 입력한 스코어와 PAR가 9홀, 3홀, 1홀에 반영되어야 한다.
 - 이 트리는 절대 끊으면 안 된다.
 
@@ -131,7 +131,6 @@
 - 모바일 화면을 기준 UI로 삼고, 데스크탑은 같은 컴포넌트와 순서를 넓게 펼쳐서 보여준다.
 - 모바일/데스크탑에서 서로 다른 작업 컴포넌트 트리를 만들지 않는다.
 - 작업 화면 순서는 `미리보기/출력` 다음 `입력`이다.
-- `실제 배치 미리보기`는 데스크탑에서만 보이며 작업 화면 최하단에 둔다.
 - 18홀, 9홀, 3홀 스코어 입력은 `ScoreEntryGrid`를 공유한다.
 - 표는 라벨 컬럼 없이 `홀 칸 + 합` 중심으로 구성한다.
 - 3홀은 합계를 표시하지 않는다.
@@ -175,7 +174,6 @@
 - `BasicInfoPanel`: 기본 정보(선수명/골프장/날짜) 입력 패널 (별도 파일).
 - `FlowHub`: `/custom` 리다이렉트 전용 (localStorage에서 마지막 탭 복원).
 - `PreviewExportPanel`: 카드 미리보기(접기 토글 포함), 공유/다운로드/홀별 ZIP 버튼.
-- `PlacementPreview`: 데스크탑 전용 실제 영상 배치 미리보기.
 - `useStudioPersistence`: 작업 중 입력값 복원과 localStorage 자동 저장.
 - `useStudioExport`: 단일 PNG, 모바일 공유, 데스크탑 홀별 ZIP 생성. `html-to-image`는 동적 import.
 - `ScoreEntryGrid`: 18/9/3 공통 스코어 입력 표. `parLocked` prop으로 PAR 잠금 지원.
@@ -185,19 +183,49 @@
 - `ManualScoreForms`: 9홀/3홀 직접 입력 폼.
 - `HoleCardForm`: 1홀 입력 폼. `linked` prop으로 홀 선택 버튼 표시/숨김 결정.
 - `RoundSourcePanel`: 라운드 연동 데이터 안내.
+- `CoursePresets`: 코스 프리셋 목록/즐겨찾기. 공개 배포에서는 `disabled` 상태로만 표시한다.
+- `Providers`: `LangProvider`(i18n) + `ThemeProvider`(사이트 테마)를 한 번에 감싼다.
+- `useStudioResets`: 6개 초기화 액션(18/커스텀18/9/3/1/커스텀1)을 `확인 → 초기화 → 토스트` 형태로 통일한다.
+- `lib/studioModes.js`: 라우트(mode)+출처(source) 조합에서 화면 플래그를 계산하는 순수 함수와 setter 팩토리.
 
 ### 분리 원칙
 
 - `StudioApp`에는 화면 전체를 조립하는 상태와 분기만 둔다.
 - localStorage 복원/자동 저장은 `useStudioPersistence`에서만 처리한다.
 - 단일 PNG, 모바일 공유, 홀별 ZIP 생성은 `useStudioExport`에서만 처리한다.
-- 미리보기 카드와 출력 버튼은 `PreviewExportPanel`, 데스크탑 배치 예시는 `PlacementPreview`에 둔다.
+- 미리보기 카드와 출력 버튼은 `PreviewExportPanel`에 둔다. `실제 배치 미리보기(PlacementPreview)`는 제거했으므로 다시 추가하지 않는다.
 - 기본 입력 데이터 모양은 `studioDefaults`에서 관리한다.
 - 스코어 유효성, 범위 선택, TO PAR 계산, 홀별 진행 이미지 데이터 생성은 `lib/score.js`의 순수 함수를 사용한다.
 - 스코어 입력 UI를 수정할 때는 `ScoreEntryGrid`, `ScoreInputs`, `ManualScoreForms`, `HoleCardForm` 중 기존 책임에 맞는 파일을 먼저 수정한다.
 - 새 기능을 추가할 때 `StudioApp`이 700줄을 다시 넘기면 훅 또는 패널 컴포넌트로 분리할 후보로 본다.
 - 내보내기 저장 파일명이나 ZIP 구조를 바꿀 때는 `lib/exportImage.js`를 우선 수정한다.
 - 저장 키나 localStorage 정책을 바꿀 때는 `lib/studioStorage.js`와 `useStudioPersistence`를 함께 확인한다.
+
+## 다국어(i18n)와 테마
+
+- 번역 사전은 `lib/i18nDictionary.js`(순수 데이터), Provider와 `t()`는 `lib/i18n.js`에 둔다.
+- 사전을 데이터 모듈로 분리한 이유는 `tests/i18n.test.mjs`에서 ko/en 키 대칭성을 직접 검증하기 위함이다.
+- 지원 언어는 `ko`, `en` 두 개다. 한쪽에만 키를 추가하면 테스트가 실패한다.
+- 치환은 `${n}` 형태를 쓰고, 같은 키의 치환 변수 이름은 두 언어가 동일해야 한다.
+- 화면에 보이는 문자열, `aria-label`, `title`은 모두 `t()`를 거친다. 한글 리터럴을 컴포넌트에 직접 쓰지 않는다.
+- 언어는 `sc-lang`, 사이트 테마는 `sc-theme`에 저장한다.
+- `app/layout.js`의 인라인 스크립트가 첫 페인트 전에 `sc-theme`/`sc-lang`을 읽어 `data-theme`과 `<html lang>`을 적용한다 (FOUC 방지).
+- `LangProvider`는 언어 변경 시 `<html lang>`도 함께 갱신한다.
+
+## 입력 이동 규칙
+
+- 표 형태 입력의 좌우/Tab/Enter 이동은 `lib/useGridNav.js`가 담당한다.
+- 어떤 키가 어떤 이동을 하는지는 순수 함수 `lib/gridNavAction.js`가 결정하고, 훅은 결과대로 포커스만 옮긴다.
+- 마지막 칸에서는 `preventDefault`를 하지 않는다. Tab이 표를 빠져나가지 못하면 키보드 사용자가 갇힌다.
+- 입력값 허용 범위는 `lib/inputValidators.js`에 모은다 (PAR 3~6, 스코어 1~12, 홀 1~18, 거리 숫자만, 타수 최대 PAR×2).
+
+## 1홀 카드 스타일
+
+- `Classic`(`HoleCard`)과 `Minimal`(`HoleCardMinimal`) 두 스타일을 토글로 고른다. 기본값은 `Minimal`이다.
+- `Minimal`은 380×88 로어서드다. 클럽 필드를 쓰지 않으므로 입력 폼에서 해당 칸을 `disabled` 처리한다.
+- `Minimal` 하단 행은 `홀 → 거리 → SHOT` 순서이며, SHOT 영역은 `svgText.textWidth()`로 TO PAR 폭을 미리 비워 두고 남은 폭에 맞춰 간격/반지름/글자 크기를 줄인다. 자릿수가 커져도 겹치지 않게 하기 위한 계산이므로 고정 픽셀로 되돌리지 않는다.
+- 3홀 메타 표시 모드는 `metaMode`로 관리한다: `par`(PAR만) / `holePar`(홀 번호 + PAR) / `parDist`(PAR + 거리). 홀 번호와 거리는 같은 영역을 쓰므로 동시에 켜지지 않는다.
+- 모든 출력 카드 우하단에는 `DALLU GOLF` 워터마크를 넣는다.
 
 ## 저장소와 DB 상태
 
@@ -210,8 +238,14 @@
 | `sc-linked-three` | 라운드 기록 트리의 3홀 선택 |
 | `sc-custom-session` | 직접 만들기 전체 입력 묶음 |
 | `sc-favorites` | 코스 즐겨찾기 |
+| `sc-par-locked` | 코스 프리셋 적용에 따른 PAR 잠금 상태 |
+| `sc-lang` | 화면 언어 (`ko`/`en`) |
+| `sc-theme` | 사이트 테마 (`dark`/`light`) |
+| `sc-last-custom-route` | `/custom` 진입 시 복원할 마지막 탭 |
 
 직접 만들기 데이터는 `sc-custom-session` 하나로만 저장한다. 이전에 쓰던 개별 custom 키는 더 이상 사용하지 않는다.
+
+자동 저장은 `scheduleJsonStorage()`로 300ms 디바운스한다. 타이핑 한 글자마다 직렬화하지 않기 위한 것이며, 탭 이탈(`pagehide`/`visibilitychange`)과 언마운트 시 `flushJsonStorage()`로 대기 중인 값을 즉시 기록한다. 초기화처럼 즉시 반영이 필요한 경로만 `writeJsonStorage()`를 직접 쓴다.
 
 `useStudioPersistence`는 localStorage 복원을 마친 뒤에만 자동 저장을 시작한다. 초기 기본값이 기존 입력을 덮지 않도록 이 순서를 유지한다. 라운드 연동 3홀 선택은 0~17 범위의 연속된 세 인덱스만 복원하며, `홀 번호 표시` 설정도 함께 보존한다.
 
@@ -231,3 +265,8 @@
 - `lib/roundHistory.js` 같은 별도 localStorage 기록 저장소를 다시 만들지 않는다. 향후 사용자 기록은 인증 후 `/api/round-records`와 D1을 단일 기준으로 사용한다.
 - 공개 배포 전까지 내 라운드 기록/로그인/DB 저장/코스 자동 불러오기는 비활성 상태를 유지한다.
 - 내 라운드 기록을 공개할 때는 `lib/features.js`의 `myRound`만 활성화하고 전체 연동 테스트 후 배포한다.
+- 기능 플래그가 꺼진 라우트(`/round/*`, `/records`, `/login`, `/rounds`)는 모두 서버에서 `redirect("/")` 한다. 새 비활성 라우트를 추가할 때도 같은 가드를 넣는다.
+- CSP는 `public/_headers`에서만 관리한다. `'unsafe-eval'`은 쓰지 않고, AdSense용으로 Google 도메인 와일드카드를 `script-src`/`img-src`/`frame-src`/`connect-src`에 둔다.
+- `/admin`은 `X-Robots-Tag: noindex`와 `app/robots.js`의 `Disallow`로 색인에서 제외한다.
+- 관리자 IP 제한(`ADMIN_ALLOWED_IPS`)은 값이 비면 검사를 건너뛰는 의도적 fail-open이다. 쓰기는 항상 `ADMIN_TOKEN`으로 막히며, 운영에서 IP까지 제한하려면 Cloudflare 환경변수를 반드시 설정한다.
+- 배포 전 `npx next build`와 `npm test`를 모두 통과시킨다.

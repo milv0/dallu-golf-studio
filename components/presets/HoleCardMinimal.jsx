@@ -4,7 +4,7 @@
 import { memo } from "react";
 import { cardColors } from "../../lib/theme";
 import { normalizeToParDisplay, toParColor } from "../../lib/score";
-import { displayPlayerName } from "./svgText";
+import { displayPlayerName, textWidth } from "./svgText";
 import { HEAD, MONO } from "./scorecardPrimitives";
 
 export const SIZE = { w: 380, h: 88 };
@@ -29,9 +29,27 @@ function HoleCardMinimal({ data, theme = "dark" }) {
   const toPar = normalizeToParDisplay(data.toPar, "–");
   const toParFill = toParColor(toPar, c);
 
-  const hasData = data.hole || data.distance || shots > 0;
   const holeLabel = data.hole ? `${data.hole}H` : "";
   const dist = data.distance ? `${data.distance}${data.unit === "yd" ? "YDS" : "M"}` : "";
+
+  // 하단 행 레이아웃: 홀 → 거리 → SHOT. SHOT 영역은 TO PAR 폭을 미리 비워 둔다.
+  const HOLE_FS = 16;
+  const DIST_FS = 15;
+  const SHOT_R_MAX = 10;
+  const SHOT_STEP_MAX = 22;
+  const holeW = holeLabel ? textWidth(holeLabel, HOLE_FS, "head") : 0;
+  const distW = dist ? textWidth(dist, DIST_FS, "mono") : 0;
+  const distX = pad + holeW + (holeLabel ? 6 : 0);
+  // 최소 3글자("+00") 폭은 항상 확보해 자릿수가 늘어도 겹치지 않게 한다.
+  const toParW = Math.max(textWidth(toPar, 48, "head"), textWidth("+00", 48, "head"));
+  const shotZoneRight = toParX - toParW - 10;
+  const shotBaseX = distX + (dist ? distW + 14 : 0) + SHOT_R_MAX;
+  const shotAvail = Math.max(shotZoneRight - shotBaseX - SHOT_R_MAX, 0);
+  const shotStep = shotNums.length > 1
+    ? Math.min(SHOT_STEP_MAX, Math.max(13, shotAvail / (shotNums.length - 1)))
+    : SHOT_STEP_MAX;
+  const shotR = Math.min(SHOT_R_MAX, shotStep * 0.45);
+  const shotFs = Math.min(14, shotStep * 0.64);
 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
@@ -55,27 +73,26 @@ function HoleCardMinimal({ data, theme = "dark" }) {
 
       {/* 하단 행: 홀 + 거리 + SHOT */}
       <text x={pad} y={row2Y} dominantBaseline="middle" fill={c.sub}
-            fontFamily={HEAD} fontSize="16" fontWeight="700" letterSpacing="0.5">
+            fontFamily={HEAD} fontSize={HOLE_FS} fontWeight="700" letterSpacing="0.5">
         {holeLabel}
       </text>
       {dist && (
-        <text x={pad + holeLabel.length * 11 + 4} y={row2Y} dominantBaseline="middle" fill={c.faint}
-              fontFamily={MONO} fontSize="15" fontWeight="600">
+        <text x={distX} y={row2Y} dominantBaseline="middle" fill={c.faint}
+              fontFamily={MONO} fontSize={DIST_FS} fontWeight="600">
           {dist}
         </text>
       )}
 
       {/* SHOT 번호 */}
       {shotNums.map((n, i) => {
-        const baseX = pad + (holeLabel.length * 11 + 4) + (dist ? dist.length * 9 + 14 : 0);
-        const sx = baseX + i * 22;
+        const sx = shotBaseX + i * shotStep;
         const active = n === shots;
         return (
           <g key={n}>
-            {active && <circle cx={sx} cy={row2Y} r="10" fill={c.accent} />}
+            {active && <circle cx={sx} cy={row2Y} r={shotR} fill={c.accent} />}
             <text x={sx} y={row2Y} textAnchor="middle" dominantBaseline="middle"
                   fill={active ? c.ink : c.sub} fontFamily={MONO}
-                  fontSize="14" fontWeight="700">{n}</text>
+                  fontSize={shotFs} fontWeight="700">{n}</text>
           </g>
         );
       })}

@@ -49,7 +49,9 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
               const has = hasNumericValue(h.score);
               return (
                 <button key={i} type="button" onClick={() => loadHoleFromRound(n)}
-                  title={`${n}번 홀 · Par ${h.par}${has ? ` · ${h.score}타` : ""}`}
+                  title={has
+                    ? t("a11y.holeButtonScore", { n, par: h.par, score: h.score })
+                    : t("a11y.holeButton", { n, par: h.par })}
                   className={"rounded-md py-1.5 text-center font-mono text-[13px] font-bold transition " +
                     (active
                       ? "bg-accent text-[#06210f]"
@@ -115,8 +117,9 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
         </div>
       </div>
       <div className="mt-3">
-        <div className={"w-full " + (cardStyle === "minimal" ? "pointer-events-none opacity-40" : "")}>
-          <ClubField value={holeCard.club} onChange={(v) => setHC("club", v)} />
+        <div className={"w-full " + (cardStyle === "minimal" ? "opacity-40" : "")}>
+          <ClubField value={holeCard.club} onChange={(v) => setHC("club", v)}
+            disabled={cardStyle === "minimal"} />
         </div>
       </div>
       <label className="mt-3 flex items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm font-semibold text-txt-soft">

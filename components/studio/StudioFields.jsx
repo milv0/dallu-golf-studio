@@ -114,7 +114,7 @@ export function ClubAutocomplete({ value, onChange, onPick, options }) {
   );
 }
 
-export function ClubField({ value, onChange }) {
+export function ClubField({ value, onChange, disabled = false }) {
   const { t } = useLang();
   const suggestions = clubSuggestions(value);
   return (
@@ -122,7 +122,7 @@ export function ClubField({ value, onChange }) {
       <span className="mb-0.5 block font-head text-[10px] uppercase tracking-widest text-txt-faint md:mb-1 md:text-[11px]">
         {t("field.club")}
       </span>
-      <input value={value}
+      <input value={value} disabled={disabled}
         onChange={(e) => onChange(e.target.value)}
         onFocus={selectInputText}
         onClick={selectInputText}
@@ -138,7 +138,7 @@ export function ClubField({ value, onChange }) {
         className="min-w-0 max-w-full w-full rounded-lg border border-line-2 bg-panel-2 px-3 py-2.5 text-sm text-txt outline-none transition placeholder:text-txt-faint focus:border-accent md:px-3 md:py-2.5" />
       <div className="mt-1.5 flex gap-1.5 overflow-x-auto pb-1">
         {suggestions.map((club) => (
-          <button key={club} type="button" onClick={() => onChange(club)}
+          <button key={club} type="button" onClick={() => onChange(club)} disabled={disabled}
             className={"shrink-0 rounded-md border px-2.5 py-1 text-[11px] font-semibold transition " +
               (String(value).toLowerCase() === club.toLowerCase()
                 ? "border-accent bg-accent text-[#06210f]"

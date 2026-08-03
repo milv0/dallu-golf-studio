@@ -9,14 +9,16 @@ export default function sitemap() {
     "/custom/Hole18",
     "/custom/Hole9",
     "/custom/Hole3",
-    "/custom/hole",
+    "/custom/Hole1",
     "/guide",
   ];
-  const roundRoutes = ["/round", "/round/Hole9", "/round/Hole3", "/round/hole"];
+  const roundRoutes = ["/round", "/round/Hole9", "/round/Hole3", "/round/Hole1"];
   const routes = FEATURE_FLAGS.myRound ? [...publicRoutes, ...roundRoutes] : publicRoutes;
+  // 정적 export이므로 빌드 시점이 곧 실제 최종 수정 시각이다.
+  const lastModified = new Date();
   return routes.map((route) => ({
     url: `${base}${route}`,
-    lastModified: new Date("2026-07-30"),
+    lastModified,
     changeFrequency: "weekly",
     priority: route === "" ? 1 : 0.8,
   }));

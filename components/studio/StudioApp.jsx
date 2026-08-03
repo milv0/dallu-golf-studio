@@ -34,9 +34,9 @@ import PanelHeader, { ResetButton } from "./PanelHeader";
 import { ConfirmDialog, Toast } from "./Feedback";
 import PreviewExportPanel from "./PreviewExportPanel";
 import ScoreEntryGrid from "./ScoreEntryGrid";
-import PlacementPreview from "./PlacementPreview";
 import useStudioPersistence from "./useStudioPersistence";
 import useStudioExport from "./useStudioExport";
+import useStudioResets from "./useStudioResets";
 import {
   DEFAULT_CUSTOM_PLAYER,
   emptyCustomRound,
@@ -44,9 +44,8 @@ import {
   emptyLinkedThree,
   emptyManualNine,
   emptyThreeHoleCard,
-  preservePlayer,
 } from "./studioDefaults";
-import { STUDIO_STORAGE_KEYS, writeJsonStorage } from "../../lib/studioStorage";
+import { makeFieldSetter, makeHoleSetter, studioModeFlags } from "../../lib/studioModes";
 import { useLang } from "../../lib/i18n";
 
 // 미리보기 표시 높이 상한 — 세로 포맷(릴스)이 과도하게 커 보이지 않도록 균형
@@ -58,7 +57,7 @@ const FORMATS = {
   reels: { Comp: ReelsScorecard, sizeFor: reelsSizeFor },
 };
 
-const RANGES = [["all", "전체 18홀"], ["front", "전반 OUT 9"], ["back", "후반 IN 9"]];
+const RANGES = [["all", "range.all"], ["front", "range.front"], ["back", "range.back"]];
 
 
 export default function StudioApp({ mode = "home", source } = {}) {
@@ -75,7 +74,6 @@ function StudioWorkspace({ mode, source }) {
   const [manualNine, setManualNine] = useState(emptyManualNine);
   const [linkedThree, setLinkedThree] = useState(emptyLinkedThree);
   const [holeRange, setHoleRange] = useState("all"); // 'all' | 'front' | 'back'
-  const sourceMode = source || (mode === "round" ? "round" : "custom");
   const [cardTheme, setCardTheme] = useState("light"); // 카드(프리셋) 색 테마
   const [holeCardStyle, setHoleCardStyle] = useState("minimal"); // 'classic' | 'minimal'
   const [exportScale, setExportScale] = useState(mode === "score3" ? 1 : 2);
@@ -86,17 +84,21 @@ function StudioWorkspace({ mode, source }) {
   const [confirmRequest, setConfirmRequest] = useState(null);
   const { scoreRefs, handleScoreKey } = useScoreInputRefs();
 
-  const isHole = mode === "hole";
-  const isScore18 = mode === "score18" || mode === "round";
-  const isScore3 = mode === "score3";
-  const isScore9 = mode === "score9";
-  const isReelsSizedScore = isScore9 || isScore3;
-  const isFullCustom = sourceMode === "custom";
-  const format = isReelsSizedScore ? "reels" : "youtube";
-  const reelsV3 = isScore3;
-  const reelsCustom = isReelsSizedScore && isFullCustom;
-  const isRoundEditor = isScore18;
-  const usesRoundSource = !isFullCustom && ((isReelsSizedScore && !reelsCustom) || mode === "hole");
+  const {
+    sourceMode,
+    isHole,
+    isScore18,
+    isScore3,
+    isScore9,
+    isReelsSizedScore,
+    isFullCustom,
+    format,
+    reelsV3,
+    reelsCustom,
+    isRoundEditor,
+    usesRoundSource,
+    activeNav,
+  } = useMemo(() => studioModeFlags({ mode, source }), [mode, source]);
   const customDisplayRound = useMemo(() => ({
     ...customRound,
     player: (customRound.player || "").trim() || DEFAULT_CUSTOM_PLAYER,
@@ -126,7 +128,6 @@ function StudioWorkspace({ mode, source }) {
   const customHoleSelectorRound = useMemo(() => ({
     holes: Array.from({ length: 18 }, () => ({ par: "4", score: "" })),
   }), []);
-  const activeNav = isScore18 ? "score18" : isScore9 ? "score9" : isScore3 ? "score3" : isHole ? "hole" : "";
   // 18홀은 전체 고정, 9홀만 전반/후반을 선택한다.
   const availableRanges = RANGES.filter(([k]) => k !== "all");
   const effRange = isScore18 ? "all" : isReelsSizedScore && holeRange === "all" ? "front" : holeRange;
@@ -252,23 +253,17 @@ function StudioWorkspace({ mode, source }) {
     showToast,
   });
 
-  const setMeta = (key, val) => setRound((r) => ({ ...r, [key]: val }));
-  const setCustomMeta = (key, val) => setCustomRound((r) => ({ ...r, [key]: val }));
-  const setHC = (key, val) => setHoleCard((s) => ({ ...s, [key]: val }));
-  const setCustomHC = (key, val) => setCustomHoleCard((s) => ({ ...s, [key]: val }));
-  const setTH = (key, val) => setThreeHole((s) => ({ ...s, [key]: val }));
-  const setManualNineField = (key, val) => setManualNine((s) => ({ ...s, [key]: val }));
-  const setTHHole = (idx, key, val) =>
-    setThreeHole((s) => ({
-      ...s,
-      holes: s.holes.map((h, i) => (i === idx ? { ...h, [key]: val } : h)),
-    }));
-  const setManualNineHole = (idx, key, val) =>
-    setManualNine((s) => ({
-      ...s,
-      holes: s.holes.map((h, i) => (i === idx ? { ...h, [key]: val } : h)),
-    }));
-  const setLinkedThreeField = (key, val) => setLinkedThree((s) => ({ ...s, [key]: val }));
+  const setMeta = makeFieldSetter(setRound);
+  const setCustomMeta = makeFieldSetter(setCustomRound);
+  const setHC = makeFieldSetter(setHoleCard);
+  const setCustomHC = makeFieldSetter(setCustomHoleCard);
+  const setTH = makeFieldSetter(setThreeHole);
+  const setManualNineField = makeFieldSetter(setManualNine);
+  const setLinkedThreeField = makeFieldSetter(setLinkedThree);
+  const setTHHole = makeHoleSetter(setThreeHole);
+  const setManualNineHole = makeHoleSetter(setManualNine);
+  const setHole = makeHoleSetter(setRound);
+  const setCustomHole = makeHoleSetter(setCustomRound);
   const selectLinkedThreeGroup = (startIdx) =>
     setLinkedThree((s) => ({
       ...s,
@@ -296,58 +291,25 @@ function StudioWorkspace({ mode, source }) {
       hole: String(n),
     }));
   };
-  const setHole = (i, key, val) =>
-    setRound((r) => ({
-      ...r,
-      holes: r.holes.map((h, idx) => (idx === i ? { ...h, [key]: val } : h)),
-    }));
-  const setCustomHole = (i, key, val) =>
-    setCustomRound((r) => ({
-      ...r,
-      holes: r.holes.map((h, idx) => (idx === i ? { ...h, [key]: val } : h)),
-    }));
-  const resetRound = () => {
-    requestConfirm(t("toast.reset18").replace(".", "?"), () => {
-      const next = emptyRound();
-      setRound(next);
-      setHoleRange("all");
-      writeJsonStorage(STUDIO_STORAGE_KEYS.round, next);
-      showToast(t("toast.reset18"));
-    });
-  };
-  const resetCustomRound = () => {
-    requestConfirm(t("toast.resetCustom18").replace(".", "?"), () => {
-      setCustomRound((prev) => preservePlayer(emptyCustomRound(), prev));
-      setHoleRange("all");
-      showToast(t("toast.resetCustom18"));
-    });
-  };
-  const resetManualNine = () => {
-    requestConfirm(t("toast.reset9").replace(".", "?"), () => {
-      setManualNine((prev) => preservePlayer(emptyManualNine(), prev));
-      showToast(t("toast.reset9"));
-    });
-  };
-  const resetThreeHole = () => {
-    requestConfirm(t("toast.reset3").replace(".", "?"), () => {
-      setThreeHole(emptyThreeHoleCard());
-      showToast(t("toast.reset3"));
-    });
-  };
-  const resetHoleCard = () => {
-    requestConfirm(t("toast.reset1").replace(".", "?"), () => {
-      const next = emptyHoleCard();
-      setHoleCard(next);
-      writeJsonStorage(STUDIO_STORAGE_KEYS.holeCard, next);
-      showToast(t("toast.reset1"));
-    });
-  };
-  const resetCustomHoleCard = () => {
-    requestConfirm(t("toast.resetCustom1").replace(".", "?"), () => {
-      setCustomHoleCard((prev) => preservePlayer(emptyHoleCard(), prev));
-      showToast(t("toast.resetCustom1"));
-    });
-  };
+  const {
+    resetRound,
+    resetCustomRound,
+    resetManualNine,
+    resetThreeHole,
+    resetHoleCard,
+    resetCustomHoleCard,
+  } = useStudioResets({
+    t,
+    requestConfirm,
+    showToast,
+    setRound,
+    setCustomRound,
+    setManualNine,
+    setThreeHole,
+    setHoleCard,
+    setCustomHoleCard,
+    setHoleRange,
+  });
 
   // 코스(18홀 조합/단일 9홀) 선택 → par 채움. 단일 9홀은 OUT/IN에 같은 par를 적용한다.
   const applyPreset = (c) => {
@@ -377,6 +339,8 @@ function StudioWorkspace({ mode, source }) {
     setManualNine,
     threeHole,
     setThreeHole,
+    parLocked,
+    setParLocked,
   });
 
   // 골프장(클럽) 이름 자동완성 목록 — 디렉토리 541곳 + DB 클럽 (조합명 제외)
@@ -597,11 +561,6 @@ function StudioWorkspace({ mode, source }) {
           previewMobileMaxWidth={previewMobileMaxWidth}
           previewNode={activeCard}
         />
-        <div className="order-3 hidden md:block">
-          <PlacementPreview format={format} size={size} isHole={isHole}>
-            {activeCard}
-          </PlacementPreview>
-        </div>
       </div>
       {batchExportStep != null && (
         <div className="pointer-events-none fixed left-[-10000px] top-0 z-[-1]" aria-hidden="true">

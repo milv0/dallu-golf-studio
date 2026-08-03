@@ -12,14 +12,14 @@ export const CUSTOM_LINKS = [
   { href: "/custom/Hole18", labelKey: "tab.hole18", id: "score18" },
   { href: "/custom/Hole9", labelKey: "tab.hole9", id: "score9" },
   { href: "/custom/Hole3", labelKey: "tab.hole3", id: "score3" },
-  { href: "/custom/hole", labelKey: "tab.hole1", id: "hole" },
+  { href: "/custom/Hole1", labelKey: "tab.hole1", id: "hole" },
 ];
 
 export const ROUND_LINKS = [
   { href: "/round", labelKey: "tab.hole18", id: "score18" },
   { href: "/round/Hole9", labelKey: "tab.hole9", id: "score9" },
   { href: "/round/Hole3", labelKey: "tab.hole3", id: "score3" },
-  { href: "/round/hole", labelKey: "tab.hole1", id: "hole" },
+  { href: "/round/Hole1", labelKey: "tab.hole1", id: "hole" },
 ];
 
 export function linksFor(sourceMode = "custom") {

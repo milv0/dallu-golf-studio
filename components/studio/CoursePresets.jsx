@@ -10,13 +10,13 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
   const clubCourses = builtin.filter((c) => (c.club || c.name) === activeClub);
   const favCourses = builtin.filter((c) => favorites.includes(c.name));
   const courseLabel = (c) => (c.out && c.in ? `${c.out}+${c.in}` : c.out || c.name);
-  const courseMeta = (c) => c.holes === 9 ? "9H · OUT/IN 반복" : "18H";
+  const courseMeta = (c) => c.holes === 9 ? t("course.nineRepeat") : "18H";
 
   const Star = ({ name }) => (
     <button type="button" onClick={(e) => { e.stopPropagation(); onToggleFav(name); }}
       className="px-1 text-sm"
       style={{ color: favorites.includes(name) ? "#ffb648" : "var(--color-txt-faint)" }}
-      title="즐겨찾기">★</button>
+      title={t("course.favorite")}>★</button>
   );
 
   return (
@@ -24,11 +24,11 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="font-head text-sm font-semibold uppercase tracking-widest text-txt-soft">{t("course.title")}</div>
         {!disabled && onRefresh && (
-          <button type="button" onClick={onRefresh} title="코스 목록 새로고침"
+          <button type="button" onClick={onRefresh} title={t("course.refresh")}
             className="flex items-center gap-1.5 rounded-md border border-line bg-panel-2 px-2 py-1 text-[11px] font-semibold text-txt-faint transition hover:text-txt">
             <span className={"inline-block h-1.5 w-1.5 rounded-full " +
               (dbStatus?.state === "online" ? "bg-accent" : dbStatus?.state === "offline" ? "bg-[#ffb648]" : "bg-txt-faint animate-pulse")} />
-            {dbStatus?.state === "online" ? dbStatus.count : dbStatus?.state === "offline" ? "캐시" : "동기화"}
+            {dbStatus?.state === "online" ? dbStatus.count : dbStatus?.state === "offline" ? t("course.cache") : t("course.sync")}
             <span>↻</span>
           </button>
         )}
@@ -40,7 +40,7 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
         </div>
       ) : favCourses.length > 0 && (
         <div className="mb-3">
-          <div className="mb-1 text-[11px] uppercase tracking-widest text-[#ffb648]">★ 즐겨찾기</div>
+          <div className="mb-1 text-[11px] uppercase tracking-widest text-[#ffb648]">★ {t("course.favorites")}</div>
           <div className="flex flex-wrap gap-2">
             {favCourses.map((c) => (
               <span key={c.name} className="flex items-center gap-0.5 rounded-full border border-line-2 bg-panel-2 py-1 pl-3 pr-1 text-sm">
@@ -61,7 +61,7 @@ export default function CoursePresets({ builtin = [], favorites = [], selectedCl
         <p className="text-[12px] text-txt-faint">{activeClub} · {t("course.noCourses")}</p>
       ) : (
         <div>
-          <div className="mb-1.5 text-[12px] text-txt-soft">{activeClub} · 코스 선택</div>
+          <div className="mb-1.5 text-[12px] text-txt-soft">{activeClub} · {t("course.pick")}</div>
           <div className="flex flex-col gap-1.5">
             {clubCourses.map((c) => (
               <div key={c.name} className="flex items-center justify-between gap-2 rounded-lg border border-line-2 bg-panel-2 py-1.5 pl-3 pr-1.5 text-sm">

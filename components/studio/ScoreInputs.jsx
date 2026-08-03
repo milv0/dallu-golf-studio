@@ -166,6 +166,7 @@ export function RelativeScoreInput({
 
 // 타수/파대비 겸용 스코어 입력. 내부 저장은 항상 절대 타수.
 export function ScoreInput({ idx, localIdx, par, score, mode, setHole, scoreRefs, parRefs, onScoreKey }) {
+  const { t } = useLang();
   const display = mode === "relative" ? relativeScoreDisplay(score, par) : (score ?? "");
   const [buf, setBuf] = useState(display);
 
@@ -182,7 +183,7 @@ export function ScoreInput({ idx, localIdx, par, score, mode, setHole, scoreRefs
         scoreRefs={scoreRefs}
         parRefs={parRefs}
         onScoreKey={onScoreKey}
-        ariaLabel={`홀 ${idx + 1} 파대비`}
+        ariaLabel={t("a11y.holeToPar", { n: idx + 1 })}
         className={roundScoreClass}
         placeholder="–"
       />
@@ -219,7 +220,7 @@ export function ScoreInput({ idx, localIdx, par, score, mode, setHole, scoreRefs
 
   return (
     <input
-      aria-label={`홀 ${idx + 1} 스코어`}
+      aria-label={t("a11y.holeScore", { n: idx + 1 })}
       {...replaceInputTextProps}
       value={buf}
       inputMode="numeric"
