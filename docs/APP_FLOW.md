@@ -268,5 +268,7 @@
 - 기능 플래그가 꺼진 라우트(`/round/*`, `/records`, `/login`, `/rounds`)는 모두 서버에서 `redirect("/")` 한다. 새 비활성 라우트를 추가할 때도 같은 가드를 넣는다.
 - CSP는 `public/_headers`에서만 관리한다. `'unsafe-eval'`은 쓰지 않고, AdSense용으로 Google 도메인 와일드카드를 `script-src`/`img-src`/`frame-src`/`connect-src`에 둔다.
 - `/admin`은 `X-Robots-Tag: noindex`와 `app/robots.js`의 `Disallow`로 색인에서 제외한다.
-- 관리자 IP 제한(`ADMIN_ALLOWED_IPS`)은 값이 비면 검사를 건너뛰는 의도적 fail-open이다. 쓰기는 항상 `ADMIN_TOKEN`으로 막히며, 운영에서 IP까지 제한하려면 Cloudflare 환경변수를 반드시 설정한다.
+- 관리자 IP 제한(`ADMIN_ALLOWED_IPS`)은 **fail-closed**다. 값이 비면 `/admin`과 모든 관리자 API가 403이며, 에러 메시지에 변수명이 그대로 나온다. IP 제한을 쓰지 않으려면 `ADMIN_ALLOWED_IPS=*`를 명시적으로 설정해야 한다 — 설정을 잊어 보호가 조용히 사라지는 상태를 만들지 않기 위함이다.
+- `*`로 해제한 상태는 `/api/admin/session`이 `ipGate: "open"`으로 알려주고, 관리자 화면 상단에 경고 배너로 노출된다.
+- 관리자 토큰은 SHA-256 다이제스트로 상수 시간 비교하고, IP당 실패 8회를 넘기면 10분간 429로 차단한다(카운터는 `COURSE_KV`의 `admin-auth-fail/<ip>`, 성공 시 삭제). KV가 없으면 스로틀만 비활성화되고 인증 자체는 그대로 동작한다.
 - 배포 전 `npx next build`와 `npm test`를 모두 통과시킨다.

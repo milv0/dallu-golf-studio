@@ -76,6 +76,7 @@ export default function Admin() {
   const [dbBackups, setDbBackups] = useState([]);
   const [dbAudit, setDbAudit] = useState([]);
   const [adminReady, setAdminReady] = useState(false);
+  const [ipGate, setIpGate] = useState("");
   const [authChecking, setAuthChecking] = useState(true);
   const [authToken, setAuthToken] = useState("");
   const [authError, setAuthError] = useState("");
@@ -100,7 +101,8 @@ export default function Admin() {
     setAuthChecking(true);
     setAuthError("");
     try {
-      await verifyAdminToken(nextToken);
+      const session = await verifyAdminToken(nextToken);
+      setIpGate(session?.ipGate || "");
       localStorage.removeItem("sc-admin-token");
       sessionStorage.setItem("sc-admin-token", nextToken);
       sessionStorage.setItem("sc-admin-ok", "1");
@@ -377,6 +379,12 @@ export default function Admin() {
 
   return (
     <main className="mx-auto max-w-[1200px] px-6 pb-16">
+      {/* IP 제한을 '*'로 해제한 상태를 숨기지 않는다 — 토큰만이 유일한 방어선이라는 경고. */}
+      {ipGate === "open" && (
+        <div className="-mx-6 border-b border-[#ffb648]/40 bg-[#ffb648]/10 px-6 py-2 font-mono text-[11px] text-[#ffb648]">
+          IP 제한 해제됨 (ADMIN_ALLOWED_IPS=*) · 관리자 접근은 ADMIN_TOKEN만으로 보호됩니다
+        </div>
+      )}
       <div className="sticky top-0 z-40 -mx-6 mb-6 border-b border-line bg-bg/85 px-6 py-4 backdrop-blur-md">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>

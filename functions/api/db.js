@@ -176,7 +176,7 @@ export async function onRequestGet({ request, env }) {
     return json({ error: "코스 DB 공개 조회는 현재 비활성화되어 있습니다" }, 503);
   }
 
-  const authError = assertAdminAccess(request, env);
+  const authError = await assertAdminAccess(request, env);
   if (authError) return authError;
   const raw = await env.COURSE_KV.get(DB_KEY);
   const db = parseJson(raw, {});
@@ -188,7 +188,7 @@ export async function onRequestGet({ request, env }) {
 
 export async function onRequestPost({ request, env }) {
   if (!env.COURSE_KV) return json({ error: "KV(COURSE_KV) 미바인딩" }, 500);
-  const authError = assertAdminAccess(request, env);
+  const authError = await assertAdminAccess(request, env);
   if (authError) return authError;
   let body;
   try { body = await request.json(); } catch { return json({ error: "JSON 파싱 실패" }, 400); }

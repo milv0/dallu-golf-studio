@@ -44,7 +44,10 @@ npx wrangler pages dev out
 로컬 Pages Function 저장 테스트에는 `.dev.vars` 파일에 관리자 토큰을 둡니다.
 ```bash
 ADMIN_TOKEN=local-admin-token
+ADMIN_ALLOWED_IPS=*
 ```
+
+`ADMIN_ALLOWED_IPS`는 fail-closed입니다. 비어 있으면 `/admin`과 관리자 API가 403이 되므로, 로컬/프리뷰에서는 `*`(제한 해제)로 두고 운영에서는 허용 IP를 쉼표로 나열합니다.
 
 ## 테스트
 ```bash
@@ -65,4 +68,11 @@ npm run build    # out/ 에 정적 사이트 생성
 - 관리자 저장용 secret 필수:
 ```bash
 npx wrangler pages secret put ADMIN_TOKEN --project-name=dallu-golf-studio
+```
+- 관리자 IP 허용 목록 필수(비면 관리자 접근 전면 차단):
+```bash
+# 특정 IP만 허용
+npx wrangler pages secret put ADMIN_ALLOWED_IPS --project-name=dallu-golf-studio   # 예: 203.0.113.7,198.51.100.4
+# IP 제한을 쓰지 않으려면 명시적으로 해제
+npx wrangler pages secret put ADMIN_ALLOWED_IPS --project-name=dallu-golf-studio   # 값: *
 ```

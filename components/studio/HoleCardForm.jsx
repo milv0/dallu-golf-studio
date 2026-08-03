@@ -5,7 +5,7 @@ import PanelHeader, { ResetButton } from "./PanelHeader";
 import { replaceInputTextProps } from "./ScoreInputs";
 import { useLang } from "../../lib/i18n";
 import useGridNav from "../../lib/useGridNav";
-import { validatePar, validateHoleNumber, validateNumericOnly, validateShot } from "../../lib/inputValidators";
+import { validatePar, validateHoleNumber, validateNumericOnly } from "../../lib/inputValidators";
 import { hasNumericValue } from "../../lib/score";
 
 function CoreInput({ label, value, onChange, placeholder, inputMode = "text", inputRef, onKeyDown }) {
@@ -67,7 +67,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
       )}
 
       <div className="overflow-hidden rounded-lg border border-line">
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-4">
           {linked ? (
             <label className="block min-w-0 border-l border-line first:border-l-0">
               <span className="block bg-panel py-0.5 text-center font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">{t("hole.labelHole")}</span>
@@ -88,11 +88,8 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           <CoreInput label={t("hole.distance")} value={holeCard.distance} onChange={(v) => {
             if (validateNumericOnly(v)) setHC("distance", v);
           }} placeholder="–" inputMode="numeric" {...navProps(2)} />
-          <CoreInput label={t("hole.labelShot")} value={holeCard.currentShot} onChange={(v) => {
-            if (!validateShot(v, Number(holeCard.par) || 4)) return;
-            setHC("currentShot", v);
-          }} placeholder="–" inputMode="numeric" {...navProps(3)} />
-          <CoreInput label="±" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="–" {...navProps(4)} />
+          {/* SHOT은 아래 "현재 타수" 버튼 그리드가 단일 입력 수단이다(중복 입력 제거). */}
+          <CoreInput label="±" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="–" {...navProps(3)} />
         </div>
       </div>
 

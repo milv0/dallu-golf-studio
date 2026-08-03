@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { onRequestGet, onRequestPost } from "../functions/api/db.js";
 import { onRequest as onMiddlewareRequest } from "../functions/_middleware.js";
+import { onRequestPost as onSessionPost } from "../functions/api/admin/session.js";
 
 const validDb = {
   "테스트CC": {
@@ -76,7 +77,7 @@ test("GET requires admin access for protected course DB reads", async () => {
 });
 
 test("POST rejects writes when ADMIN_TOKEN is not configured", async () => {
-  const response = await onRequestPost({ request: request(validDb), env: { COURSE_KV: kv() } });
+  const response = await onRequestPost({ request: request(validDb), env: { COURSE_KV: kv(), ADMIN_ALLOWED_IPS: "*" } });
   assert.equal(response.status, 500);
   assert.match((await response.json()).error, /ADMIN_TOKEN/);
 });
@@ -84,7 +85,7 @@ test("POST rejects writes when ADMIN_TOKEN is not configured", async () => {
 test("POST rejects invalid admin tokens", async () => {
   const response = await onRequestPost({
     request: request(validDb, "wrong"),
-    env: { COURSE_KV: kv(), ADMIN_TOKEN: "secret" },
+    env: { COURSE_KV: kv(), ADMIN_TOKEN: "secret", ADMIN_ALLOWED_IPS: "*" },
   });
   assert.equal(response.status, 401);
 });
@@ -118,10 +119,56 @@ test("middleware blocks static admin page outside IP allowlist", async () => {
   assert.equal(response.status, 403);
 });
 
+test("middleware blocks the admin page when ADMIN_ALLOWED_IPS is unset", async () => {
+  let forwarded = false;
+  const response = await onMiddlewareRequest({
+    request: new Request("https://example.com/admin", {
+      headers: { "cf-connecting-ip": "203.0.113.7" },
+    }),
+    env: {},
+    next: async () => { forwarded = true; return new Response("ok"); },
+  });
+  assert.equal(response.status, 403);
+  assert.equal(forwarded, false);
+  assert.match((await response.json()).error, /ADMIN_ALLOWED_IPS/);
+});
+
+test("POST blocks admin writes when ADMIN_ALLOWED_IPS is unset", async () => {
+  const store = kv();
+  const response = await onRequestPost({
+    request: request(validDb, "secret", { "cf-connecting-ip": "203.0.113.7" }),
+    env: { COURSE_KV: store, ADMIN_TOKEN: "secret" },
+  });
+  assert.equal(response.status, 403);
+  assert.match((await response.json()).error, /ADMIN_ALLOWED_IPS/);
+  assert.equal(store.puts.length, 0);
+});
+
+test("ADMIN_ALLOWED_IPS='*' opts out of the IP gate for any client", async () => {
+  const response = await onRequestPost({
+    request: request(validDb, "secret", { "cf-connecting-ip": "198.51.100.10" }),
+    env: { COURSE_KV: kv(), ADMIN_TOKEN: "secret", ADMIN_ALLOWED_IPS: "*" },
+  });
+  assert.equal(response.status, 200);
+});
+
+test("session endpoint reports whether the IP gate is enforced", async () => {
+  const call = async (env) => (await onSessionPost({
+    request: new Request("https://example.com/api/admin/session", {
+      method: "POST",
+      headers: { "x-admin-token": "secret", "cf-connecting-ip": "203.0.113.7" },
+    }),
+    env,
+  })).json();
+
+  assert.equal((await call({ ADMIN_TOKEN: "secret", ADMIN_ALLOWED_IPS: "203.0.113.7" })).ipGate, "enforced");
+  assert.equal((await call({ ADMIN_TOKEN: "secret", ADMIN_ALLOWED_IPS: "*" })).ipGate, "open");
+});
+
 test("POST rejects invalid course DB payloads", async () => {
   const response = await onRequestPost({
     request: request({ "bad": { nines: { OUT: [4] }, combos: [] } }),
-    env: { COURSE_KV: kv(), ADMIN_TOKEN: "secret" },
+    env: { COURSE_KV: kv(), ADMIN_TOKEN: "secret", ADMIN_ALLOWED_IPS: "*" },
   });
   const data = await response.json();
   assert.equal(response.status, 400);
@@ -133,7 +180,7 @@ test("POST writes valid DB payloads to KV", async () => {
   const store = kv();
   const response = await onRequestPost({
     request: request(validDb),
-    env: { COURSE_KV: store, ADMIN_TOKEN: "secret" },
+    env: { COURSE_KV: store, ADMIN_TOKEN: "secret", ADMIN_ALLOWED_IPS: "*" },
   });
   assert.equal(response.status, 200);
   const data = await response.json();
@@ -157,7 +204,7 @@ test("POST backs up existing DB before overwriting KV", async () => {
 
   const response = await onRequestPost({
     request: request({ db: validDb, baseRevision: "rev-1" }),
-    env: { COURSE_KV: store, ADMIN_TOKEN: "secret" },
+    env: { COURSE_KV: store, ADMIN_TOKEN: "secret", ADMIN_ALLOWED_IPS: "*" },
   });
   const data = await response.json();
 
@@ -178,7 +225,7 @@ test("POST rejects stale course DB revisions", async () => {
 
   const response = await onRequestPost({
     request: request({ db: validDb, baseRevision: "old" }),
-    env: { COURSE_KV: store, ADMIN_TOKEN: "secret" },
+    env: { COURSE_KV: store, ADMIN_TOKEN: "secret", ADMIN_ALLOWED_IPS: "*" },
   });
   const data = await response.json();
 
@@ -202,7 +249,7 @@ test("POST restores a DB backup through the protected API", async () => {
 
   const response = await onRequestPost({
     request: request({ action: "restore", backupKey: "db-backups/saved", baseRevision: "current" }),
-    env: { COURSE_KV: store, ADMIN_TOKEN: "secret" },
+    env: { COURSE_KV: store, ADMIN_TOKEN: "secret", ADMIN_ALLOWED_IPS: "*" },
   });
   const data = await response.json();
 
