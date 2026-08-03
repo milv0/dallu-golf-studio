@@ -1,17 +1,18 @@
 // 프리셋: 릴스 3홀 카드 — 9홀 카드와 같은 레이아웃의 3홀 축소판
+import { memo } from "react";
 import { cardColors } from "../../lib/theme";
-import { normalizeToParDisplay, toParForPlayedHoles } from "../../lib/score";
+import { normalizeToParDisplay, toParColor, toParForPlayedHoles } from "../../lib/score";
 import { CompactScorecard } from "./scorecardPrimitives";
 
 export const SIZE = { w: 520, h: 200 };
 
-export default function ReelsThreeHoleCard({ data, theme = "light" }) {
+function ReelsThreeHoleCard({ data, theme = "light" }) {
   const { w, h } = SIZE;
   const c = cardColors(theme);
   const holes = (data.holes || []).slice(0, 3);
   const showHoleNumbers = data.showHoleNumbers !== false;
   const toPar = normalizeToParDisplay(data.toPar) || toParForPlayedHoles(holes);
-  const toParColor = !toPar ? c.text : String(toPar).startsWith("-") ? c.accent : String(toPar).startsWith("+") ? "#e5484d" : c.text;
+  const toParFill = toParColor(toPar, c);
 
   return (
     <CompactScorecard
@@ -24,7 +25,9 @@ export default function ReelsThreeHoleCard({ data, theme = "light" }) {
       metaMode={data.metaMode || "holePar"}
       unit={data.unit || "m"}
       toPar={toPar}
-      toParColor={toParColor}
+      toParColor={toParFill}
     />
   );
 }
+
+export default memo(ReelsThreeHoleCard);

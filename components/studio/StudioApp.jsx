@@ -167,8 +167,8 @@ function StudioWorkspace({ mode, source }) {
     action?.();
   }, [confirmRequest]);
 
-  const summary = useMemo(() => summarize(round.holes), [round]);
-  const customSummary = useMemo(() => summarize(customRound.holes), [customRound]);
+  const summary = useMemo(() => summarize(round.holes), [round.holes]);
+  const customSummary = useMemo(() => summarize(customRound.holes), [customRound.holes]);
   const activeSummary = isFullCustom ? customSummary : summary;
   const manualNineRound = useMemo(() => ({
     player: (manualNine.player || "").trim() || DEFAULT_CUSTOM_PLAYER,
@@ -424,6 +424,7 @@ function StudioWorkspace({ mode, source }) {
     const C = FORMATS[format].Comp;
     return <C round={scoreRound} summary={activeSummary} range={effRange} theme={cardTheme} />;
   };
+  const activeCard = renderActiveCard();
 
   return (
     <StudioShell
@@ -594,11 +595,11 @@ function StudioWorkspace({ mode, source }) {
           captureRef={captureRef}
           previewMaxWidth={previewMaxWidth}
           previewMobileMaxWidth={previewMobileMaxWidth}
-          previewNode={renderActiveCard()}
+          previewNode={activeCard}
         />
         <div className="order-3 hidden md:block">
           <PlacementPreview format={format} size={size} isHole={isHole}>
-            {renderActiveCard()}
+            {activeCard}
           </PlacementPreview>
         </div>
       </div>

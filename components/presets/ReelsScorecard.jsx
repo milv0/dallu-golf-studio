@@ -1,6 +1,7 @@
 // 프리셋: Reels(세로 9:16 영상용) 스코어카드 오버레이
 // 헤더(선수/대회/to-par) + FRONT 9 / BACK 9 2줄 + 합계 바. 1080 폭 기준.
-import { toParLabel, rangeStats } from "../../lib/score";
+import { memo } from "react";
+import { toParColor, toParLabel, rangeStats } from "../../lib/score";
 import { cardColors } from "../../lib/theme";
 import { displayPlayerName, fitFontSize } from "./svgText";
 import { CompactHoleCell, CompactScorecard, HEAD, MONO } from "./scorecardPrimitives";
@@ -8,9 +9,8 @@ import { CompactHoleCell, CompactScorecard, HEAD, MONO } from "./scorecardPrimit
 export function sizeFor(range = "all") {
   return range === "all" ? { w: 1080, h: 660 } : { w: 1080, h: 200 };
 }
-export const SIZE = sizeFor("all");
 
-export default function ReelsScorecard({ round, summary, range = "all", theme = "dark" }) {
+function ReelsScorecard({ round, summary, range = "all", theme = "dark" }) {
   const { w, h } = sizeFor(range);
   const c = cardColors(theme);
   const pad = 40;
@@ -24,8 +24,7 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
   const playerSize = fitFontSize(playerName, { base: 78, min: 42, maxWidth: w - pad * 2 - 210 });
 
   const toPar = rs.toPar;
-  const toParColor =
-    rs.thru === 0 ? c.text : toPar < 0 ? c.accent : toPar > 0 ? "#e5484d" : c.text;
+  const toParFill = rs.thru === 0 ? c.text : toParColor(toPar, c);
 
   if (!isAll) {
     const nineScore = range === "front" ? summary.outScore : summary.inScore;
@@ -39,7 +38,7 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
         startIndex={rs.start}
         showHoleNumbers={true}
         toPar={hasNine ? toParLabel(toPar) : ""}
-        toParColor={toParColor}
+        toParColor={toParFill}
         scoreDetail={hasNine ? String(nineScore) : ""}
       />
     );
@@ -60,7 +59,7 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
 
       <text x={w - pad} y="66" textAnchor="end" fill={c.sub} fontFamily={HEAD}
             fontSize="26" letterSpacing="3">TO PAR</text>
-      <text x={w - pad} y="150" textAnchor="end" fill={toParColor} fontFamily={HEAD}
+      <text x={w - pad} y="150" textAnchor="end" fill={toParFill} fontFamily={HEAD}
             fontSize="86" fontWeight="700">
         {toParLabel(rs.thru === 0 ? null : toPar)}
       </text>
@@ -100,3 +99,5 @@ export default function ReelsScorecard({ round, summary, range = "all", theme = 
     </svg>
   );
 }
+
+export default memo(ReelsScorecard);

@@ -60,6 +60,7 @@ export default function PreviewExportPanel({
       <div className="rounded-xl border border-line bg-panel p-2 md:p-3">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-1.5 md:gap-2">
           <button type="button" onClick={() => setCollapsed(!collapsed)}
+            aria-expanded={!collapsed} aria-controls="preview-body"
             className="flex items-center gap-1.5 md:pointer-events-none">
             <span className="font-head text-xs font-semibold uppercase tracking-widest text-txt-soft md:text-sm">
               {t("preview.title")}
@@ -67,20 +68,21 @@ export default function PreviewExportPanel({
             <ChevronDown size={14} className={"text-txt-faint transition md:hidden " + (collapsed ? "-rotate-90" : "")} />
           </button>
           <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-            <div className="flex overflow-hidden rounded-lg border border-line">
+            <div className="flex overflow-hidden rounded-lg border border-line" role="group" aria-label="카드 테마">
               {[["dark", Moon], ["light", Sun]].map(([key, Icon]) => (
                 <button key={key} onClick={() => setCardTheme(key)}
-                  aria-label={key === "dark" ? "다크 카드" : "라이트 카드"}
+                  aria-label={key === "dark" ? "다크 카드" : "라이트 카드"} aria-pressed={cardTheme === key}
                   className={"flex items-center justify-center px-2 py-1 md:px-2.5 md:py-1.5 " +
                     (cardTheme === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
                   <Icon size={14} strokeWidth={2.2} />
                 </button>
               ))}
             </div>
-            <div className={"flex overflow-hidden rounded-lg border border-line " + (collapsed ? "hidden md:flex" : "")}>
+            <div className={"flex overflow-hidden rounded-lg border border-line " + (collapsed ? "hidden md:flex" : "")}
+              role="group" aria-label="출력 품질">
               {QUALITY.map((qz) => (
                 <button key={qz.scale} onClick={() => setExportScale(qz.scale)}
-                  title={`${qz.desc} · ${size.w * qz.scale}x${size.h * qz.scale}px`}
+                  title={`${qz.desc} · ${size.w * qz.scale}x${size.h * qz.scale}px`} aria-pressed={exportScale === qz.scale}
                   className={"px-2 py-1 text-[11px] font-bold md:px-3 md:py-1.5 md:text-xs " +
                     (exportScale === qz.scale ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
                   {qz.label}

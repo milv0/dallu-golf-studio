@@ -56,8 +56,8 @@ export default function useStudioExport({
         downloadDataUrl(image.dataUrl, image.fileName);
         showToast(t("toast.downloadStart"));
       }
-    } catch (e) {
-      setExportError("내보내기 실패: " + e.message);
+    } catch {
+      setExportError(t("toast.exportFail"));
       showToast(t("toast.exportFail"));
     } finally {
       setBusy(false);
@@ -81,8 +81,8 @@ export default function useStudioExport({
       const zip = await createZipBlob(files);
       downloadBlob(zip, progressZipFileName({ isScore3, isScore9 }));
       showToast(t("toast.batchDone", { n: batchProgressCount }));
-    } catch (e) {
-      showToast(t("toast.batchFail") + e.message);
+    } catch {
+      showToast(t("toast.batchFail"));
     } finally {
       setBatchExportStep(null);
       setBusy(false);
@@ -104,7 +104,7 @@ export default function useStudioExport({
       }
     } catch (e) {
       if (e?.name !== "AbortError") {
-        showToast(t("toast.shareFail") + e.message);
+        showToast(t("toast.shareFail"));
       }
     } finally {
       setBusy(false);

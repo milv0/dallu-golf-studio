@@ -1,7 +1,8 @@
 // 프리셋 1: 홀바이홀 스코어카드 스트립 (방송 스타일, 투명 배경 SVG)
 // - 언더파 = 원, 오버파 = 사각형 (전통 스코어카드 마킹)
 // - 버디=빨강, 보기 계열=파랑, 이글/알바=골드 (방송 색상 코드)
-import { classify, toParLabel, rangeStats } from "../../lib/score";
+import { memo } from "react";
+import { classify, toParColor, toParLabel, rangeStats } from "../../lib/score";
 import { cardColors } from "../../lib/theme";
 import { displayPlayerName, fitFontSize } from "./svgText";
 import { HEAD, MONO, ResultMarker, ScoreNumber } from "./scorecardPrimitives";
@@ -17,9 +18,8 @@ const colsFor = (range) => (range === "all" ? 21 : 10);   // 21=9+OUT+9+IN+TOT /
 export function sizeFor(range = "all") {
   return { w: TABLE_X + colsFor(range) * CW + RM, h: H };
 }
-export const SIZE = sizeFor("all");
 
-export default function HoleByHoleStrip({ round, summary, range = "all", theme = "dark" }) {
+function HoleByHoleStrip({ round, summary, range = "all", theme = "dark" }) {
   const { w, h } = sizeFor(range);
   const c = cardColors(theme);
   const labelW = LABEL_W;
@@ -53,8 +53,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
   const colX = (idx) => tableX + idx * cw + cw / 2;
 
   const toPar = rs.toPar;
-  const toParColor =
-    rs.thru === 0 ? c.text : toPar < 0 ? c.accent : toPar > 0 ? "#e5484d" : c.text;
+  const toParFill = rs.thru === 0 ? c.text : toParColor(toPar, c);
 
 
   return (
@@ -93,7 +92,7 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
       <text x={LP / 2} y="116" textAnchor="middle" fill={c.sub} fontFamily={HEAD} fontSize="15" letterSpacing="2">
         TO PAR
       </text>
-      <text x={LP / 2} y="182" textAnchor="middle" fill={toParColor} fontFamily={HEAD} fontSize="56" fontWeight="700">
+      <text x={LP / 2} y="182" textAnchor="middle" fill={toParFill} fontFamily={HEAD} fontSize="56" fontWeight="700">
         {toParLabel(rs.thru === 0 ? null : toPar)}
       </text>
 
@@ -160,3 +159,5 @@ export default function HoleByHoleStrip({ round, summary, range = "all", theme =
     </svg>
   );
 }
+
+export default memo(HoleByHoleStrip);

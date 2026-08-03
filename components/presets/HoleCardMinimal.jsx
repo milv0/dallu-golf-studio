@@ -1,15 +1,16 @@
 // 프리셋: 1홀 카드 미니멀 스타일 — 2줄 로어서드
 // 좌측 2줄: 이름(상) + 홀/거리/SHOT(하)
 // 우측: TO PAR 크게 (전체 높이 중앙)
+import { memo } from "react";
 import { cardColors } from "../../lib/theme";
-import { normalizeToParDisplay } from "../../lib/score";
+import { normalizeToParDisplay, toParColor } from "../../lib/score";
 import { displayPlayerName } from "./svgText";
 import { HEAD, MONO } from "./scorecardPrimitives";
 
 export const SIZE = { w: 380, h: 88 };
 
 
-export default function HoleCardMinimal({ data, theme = "dark" }) {
+function HoleCardMinimal({ data, theme = "dark" }) {
   const c = cardColors(theme);
   const { w, h } = SIZE;
   const pad = 16;
@@ -26,7 +27,7 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
   const shotNums = Array.from({ length: totalShots }, (_, i) => i + 1);
 
   const toPar = normalizeToParDisplay(data.toPar, "–");
-  const toParColor = String(toPar).startsWith("-") ? c.accent : String(toPar).startsWith("+") ? "#e5484d" : c.text;
+  const toParFill = toParColor(toPar, c);
 
   const hasData = data.hole || data.distance || shots > 0;
   const holeLabel = data.hole ? `${data.hole}H` : "";
@@ -47,7 +48,7 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
       </text>
 
       {/* TO PAR (우측, 전체 높이 중앙) */}
-      <text x={toParX} y={h / 2} textAnchor="end" dominantBaseline="middle" fill={toParColor}
+      <text x={toParX} y={h / 2} textAnchor="end" dominantBaseline="middle" fill={toParFill}
             fontFamily={HEAD} fontSize="48" fontWeight="700">
         {toPar}
       </text>
@@ -88,3 +89,5 @@ export default function HoleCardMinimal({ data, theme = "dark" }) {
     </svg>
   );
 }
+
+export default memo(HoleCardMinimal);
