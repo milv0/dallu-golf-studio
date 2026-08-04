@@ -102,12 +102,15 @@ export default function HomeHub() {
           })}
         </div>
 
-        <div className="mx-auto mt-5 flex w-full max-w-[420px] items-start justify-center gap-2.5 border-y border-line py-3 md:hidden">
-          <Share2 aria-hidden="true" size={16} className="mt-0.5 shrink-0 text-accent" />
-          <div className="text-[11px] leading-relaxed text-txt-soft">
-            <div className="font-semibold text-txt">{t("home.addToHome")}</div>
-            <div>Chrome → “Share” → “Add to Home Screen”</div>
-            <div>Safari → “Share” → “Add to Home Screen”</div>
+        {/* Chrome/Safari 경로가 동일하므로 한 줄로 합친다. 좁은 화면에서 줄바꿈되도
+            중앙 정렬이 흐트러지지 않게 flex 대신 블록 + text-center를 쓴다. */}
+        <div className="mx-auto mt-5 w-full max-w-[380px] border-y border-line px-3 py-3 md:hidden">
+          <div className="flex items-center justify-center gap-1.5">
+            <Share2 aria-hidden="true" size={14} className="shrink-0 text-accent" />
+            <span className="font-head text-[12px] font-semibold text-txt">{t("home.addToHome")}</span>
+          </div>
+          <div className="mt-1 text-balance text-center text-[11px] leading-relaxed text-txt-soft">
+            {t("home.installSteps")}
           </div>
         </div>
 
