@@ -21,7 +21,7 @@ export default function RoundRecords() {
         <span
           aria-disabled="true"
           className="cursor-not-allowed rounded-lg border border-line bg-panel-2 px-3 py-1.5 font-head text-xs font-bold uppercase tracking-wide text-txt-faint opacity-70 sm:px-4 sm:py-2 sm:text-sm">
-          18홀 입력
+          {t("records.enter18")}
         </span>
       </div>
 
@@ -34,7 +34,7 @@ export default function RoundRecords() {
         </p>
         <button type="button" disabled
           className="mt-5 inline-flex cursor-not-allowed rounded-lg border border-line bg-panel-2 px-4 py-2 text-sm font-bold text-txt-faint opacity-70">
-          기록 불러오기
+          {t("records.load")}
         </button>
       </div>
     </main>

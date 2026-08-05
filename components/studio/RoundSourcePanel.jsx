@@ -22,14 +22,14 @@ export default function RoundSourcePanel({
           {t("source.selected")}
         </div>
         <div className="text-xs font-semibold text-txt-faint">
-          18홀 입력값 연동
+          {t("source.linked18")}
         </div>
       </div>
 
       {needsInput && (
         <div className="mb-3 rounded-lg border border-[#ffb648]/40 bg-[#ffb648]/10 px-3 py-2 text-sm text-txt-soft">
           <b className="text-[#ffb648]">
-            {!hasRoundData ? "18홀 데이터 없음" : "18홀 스코어 없음"}
+            {!hasRoundData ? t("source.noData") : t("source.noScores")}
           </b>
           <span className="ml-2">
             {t("source.needScores")}
