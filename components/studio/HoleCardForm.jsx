@@ -5,7 +5,7 @@ import PanelHeader, { ResetButton } from "./PanelHeader";
 import { replaceInputTextProps } from "./ScoreInputs";
 import { useLang } from "../../lib/i18n";
 import useGridNav from "../../lib/useGridNav";
-import { validatePar, validateHoleNumber, validateNumericOnly } from "../../lib/inputValidators";
+import { PAR_OPTIONS, validateHoleNumber, validateNumericOnly } from "../../lib/inputValidators";
 import { hasNumericValue } from "../../lib/score";
 
 function CoreInput({ label, value, onChange, placeholder, inputMode = "text", inputRef, onKeyDown }) {
@@ -31,6 +31,14 @@ function CoreInput({ label, value, onChange, placeholder, inputMode = "text", in
 export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound, onReset, linked = true, cardStyle = "classic" }) {
   const { t } = useLang();
   const { navProps } = useGridNav();
+
+  // PAR을 줄이면 기존 타수가 버튼 범위(PAR×2)를 벗어나 선택 표시가 사라진다 — 상한으로 맞춘다.
+  const setPar = (nextPar) => {
+    setHC("par", nextPar);
+    const maxShot = (Number(nextPar) || 4) * 2;
+    if (Number(holeCard.currentShot) > maxShot) setHC("currentShot", String(maxShot));
+  };
+
   return (
     <div className="rounded-xl border border-line bg-panel p-3 md:p-4">
       <PanelHeader title={t("hole.title")}>
@@ -67,7 +75,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
       )}
 
       <div className="overflow-hidden rounded-lg border border-line">
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-3">
           {linked ? (
             <label className="block min-w-0 border-l border-line first:border-l-0">
               <span className="block bg-panel py-0.5 text-center font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">{t("hole.labelHole")}</span>
@@ -82,14 +90,29 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
               setHC("hole", v);
             }} placeholder="–" inputMode="numeric" {...navProps(0)} />
           )}
-          <CoreInput label="P" value={holeCard.par} onChange={(v) => {
-            if (validatePar(v)) setHC("par", v);
-          }} placeholder="–" inputMode="numeric" {...navProps(1)} />
           <CoreInput label={t("hole.distance")} value={holeCard.distance} onChange={(v) => {
             if (validateNumericOnly(v)) setHC("distance", v);
-          }} placeholder="–" inputMode="numeric" {...navProps(2)} />
-          {/* SHOT은 아래 "현재 타수" 버튼 그리드가 단일 입력 수단이다(중복 입력 제거). */}
-          <CoreInput label="±" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="–" {...navProps(3)} />
+          }} placeholder="–" inputMode="numeric" {...navProps(1)} />
+          {/* PAR과 SHOT은 아래 버튼 그리드가 단일 입력 수단이다(값 범위가 좁아 키패드가 불필요). */}
+          <CoreInput label="±" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="–" {...navProps(2)} />
+        </div>
+      </div>
+
+      <div className="mt-4 border-t border-line pt-3">
+        <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
+          {t("hole.par")}
+        </span>
+        <div className="flex gap-1.5">
+          {PAR_OPTIONS.map((n) => (
+            <button key={n} type="button" onClick={() => setPar(String(n))}
+              aria-pressed={String(n) === String(holeCard.par)}
+              className={"h-9 flex-1 rounded-md font-mono text-sm font-bold transition " +
+                (String(n) === String(holeCard.par)
+                  ? "bg-accent text-[#06210f]"
+                  : "border border-line bg-panel-2 text-txt-soft hover:text-txt")}>
+              {n}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -100,6 +123,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
         <div className="flex flex-wrap gap-1.5">
           {Array.from({ length: (Number(holeCard.par) || 4) * 2 }, (_, i) => i + 1).map((n) => (
             <button key={n} type="button" onClick={() => setHC("currentShot", String(n))}
+              aria-pressed={String(n) === String(holeCard.currentShot)}
               className={"h-9 w-9 rounded-md font-mono text-sm font-bold transition " +
                 (String(n) === String(holeCard.currentShot)
                   ? "bg-accent text-[#06210f]"

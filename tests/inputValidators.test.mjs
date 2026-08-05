@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  PAR_OPTIONS,
   validateHoleNumber,
   validateNumericOnly,
   validatePar,
@@ -13,6 +14,13 @@ test("validatePar accepts only PAR 3-6 and empty", () => {
   for (const bad of ["0", "1", "2", "7", "44", "-4", "4.5", "x", " 4"]) {
     assert.equal(validatePar(bad), false, bad);
   }
+});
+
+test("PAR_OPTIONS is exactly the set validatePar accepts", () => {
+  // 버튼 목록과 검증 규칙이 갈라지면 고를 수 없는 값이나 막히는 버튼이 생긴다.
+  const accepted = Array.from({ length: 10 }, (_, n) => n)
+    .filter((n) => validatePar(String(n)));
+  assert.deepEqual(PAR_OPTIONS, accepted);
 });
 
 test("validateScore bounds strokes to 1..max", () => {
