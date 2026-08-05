@@ -208,6 +208,11 @@
 - 지원 언어는 `ko`, `en` 두 개다. 한쪽에만 키를 추가하면 테스트가 실패한다.
 - 치환은 `${n}` 형태를 쓰고, 같은 키의 치환 변수 이름은 두 언어가 동일해야 한다.
 - 화면에 보이는 문자열, `aria-label`, `title`은 모두 `t()`를 거친다. 한글 리터럴을 컴포넌트에 직접 쓰지 않는다.
+- 가이드/FAQ 본문은 양이 많아 사전 대신 `lib/guideContent.js`가 소유한다. 대신 같은 ko/en 구조를 유지하고
+  `tests/guideContent.test.mjs`가 사전과 동일한 파리티 검사(섹션 구성·항목 수·빈 값·영문의 한글 잔존)를 걸어
+  검증 공백을 만들지 않는다. `GuidePage.jsx`는 `guideFor(lang)`을 렌더링만 한다.
+- `lang === "en" ? "..." : "..."` 삼항으로 문자열을 고르지 않는다 — 사전을 우회하면 테스트가 검증하지 못한다.
+  `LangToggle`에 남은 `lang === "ko"` 분기는 번역 대상이 아닌 언어 코드(`EN`/`KO`)라서 예외다.
 - 언어는 `sc-lang`, 사이트 테마는 `sc-theme`에 저장한다.
 - `app/layout.js`의 인라인 스크립트가 첫 페인트 전에 `sc-theme`/`sc-lang`을 읽어 `data-theme`과 `<html lang>`을 적용한다 (FOUC 방지).
 - `LangProvider`는 언어 변경 시 `<html lang>`도 함께 갱신한다.

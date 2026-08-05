@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useLang } from "../../lib/i18n";
 
 export default function LoginPage() {
-  const { t, lang } = useLang();
+  const { t } = useLang();
   return (
     <main className="mx-auto max-w-[720px] px-5 py-7 sm:px-6 sm:py-10">
       <div className="mb-6 border-b border-line pb-5 sm:mb-8 sm:pb-6">
@@ -19,22 +19,18 @@ export default function LoginPage() {
       <section className="rounded-xl border border-line bg-panel p-5">
         <div className="mb-4">
           <h1 className="font-head text-3xl font-bold uppercase text-txt">{t("home.login")}</h1>
-          <p className="mt-1 text-sm text-txt-soft">
-            {lang === "en"
-              ? "Authentication and round history save are closed until proper auth is integrated."
-              : "사용자 인증과 라운딩 기록 저장 기능은 정식 인증 구조를 붙이기 전까지 닫아두었습니다."}
-          </p>
+          <p className="mt-1 text-sm text-txt-soft">{t("login.disabledDetail")}</p>
         </div>
 
         <div className="grid gap-3">
           <label className="block">
-            <span className="mb-1 block font-head text-[11px] uppercase tracking-widest text-txt-faint">{lang === "en" ? "Name" : "이름"}</span>
-            <input disabled placeholder={lang === "en" ? "Name" : "이름"}
+            <span className="mb-1 block font-head text-[11px] uppercase tracking-widest text-txt-faint">{t("label.name")}</span>
+            <input disabled placeholder={t("label.name")}
               className="w-full cursor-not-allowed rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt-faint outline-none opacity-70" />
           </label>
           <label className="block">
-            <span className="mb-1 block font-head text-[11px] uppercase tracking-widest text-txt-faint">{lang === "en" ? "Email" : "이메일"}</span>
-            <input disabled placeholder={lang === "en" ? "Email" : "이메일"}
+            <span className="mb-1 block font-head text-[11px] uppercase tracking-widest text-txt-faint">{t("label.email")}</span>
+            <input disabled placeholder={t("label.email")}
               className="w-full cursor-not-allowed rounded-lg border border-line-2 bg-panel-2 px-3 py-2 text-sm text-txt-faint outline-none opacity-70" />
           </label>
         </div>
