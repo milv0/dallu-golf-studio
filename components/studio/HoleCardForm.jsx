@@ -106,7 +106,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
           {PAR_OPTIONS.map((n) => (
             <button key={n} type="button" onClick={() => setPar(String(n))}
               aria-pressed={String(n) === String(holeCard.par)}
-              className={"h-9 flex-1 rounded-md font-mono text-sm font-bold transition " +
+              className={"h-9 w-9 rounded-md font-mono text-sm font-bold transition " +
                 (String(n) === String(holeCard.par)
                   ? "bg-accent text-[#06210f]"
                   : "border border-line bg-panel-2 text-txt-soft hover:text-txt")}>
