@@ -60,6 +60,9 @@ npm run build    # out/ 에 정적 사이트 생성
 ```
 
 ## 배포 (Cloudflare Pages)
+배포는 `main` 푸시로만 이루어집니다. 로컬에서 `wrangler pages deploy`로 직접 올리지 않습니다 —
+커밋되지 않은 빌드가 프로덕션에 올라가 `main`과 라이브가 어긋납니다.
+
 - 빌드 명령: `npm run build`
 - 출력 디렉토리: `out`
 - 프레임워크 프리셋: Next.js (Static HTML Export)

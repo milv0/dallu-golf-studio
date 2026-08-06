@@ -75,7 +75,11 @@ Cloudflare Pages는 환경변수를 **배포 시점에 스냅샷**하므로 secr
 
 ## 배포
 
-`main` 푸시로 Cloudflare Pages가 빌드한다. 배포가 실제로 반영됐는지는 라이브 HTML에서
+`main` 푸시로 Cloudflare Pages가 빌드한다. **이것이 유일한 배포 경로다.**
+`wrangler pages deploy`로 로컬 빌드를 직접 올리면 커밋되지 않은 산출물이 프로덕션에 올라가
+`main`과 라이브가 어긋난다 — 그래서 `deploy` 스크립트를 두지 않는다. 배포하려면 `main`에 머지해 푸시한다.
+
+배포가 실제로 반영됐는지는 라이브 HTML에서
 새 빌드만 내보내는 문자열을 grep해 확인한다 — 상태 코드만으로는 구버전과 구분되지 않는다.
 
 검색 노출은 배포와 별개다. Search Console 속성 등록·소유권 인증은 이미 끝났고 DNS TXT 방식이므로
