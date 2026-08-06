@@ -8,8 +8,7 @@
     "test": "node --test tests/*.test.mjs",
     "build": "next build",
     "serve:out": "serve out -l tcp://127.0.0.1:3100",
-    "start": "next start",
-    "deploy": "next build && npx wrangler pages deploy out --project-name=dallu-golf-studio --branch=main"
+    "start": "next start"
   },
   "dependencies": {
     "html-to-image": "^1.11.13",
