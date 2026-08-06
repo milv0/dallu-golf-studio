@@ -77,3 +77,7 @@ Cloudflare Pages는 환경변수를 **배포 시점에 스냅샷**하므로 secr
 
 `main` 푸시로 Cloudflare Pages가 빌드한다. 배포가 실제로 반영됐는지는 라이브 HTML에서
 새 빌드만 내보내는 문자열을 grep해 확인한다 — 상태 코드만으로는 구버전과 구분되지 않는다.
+
+검색 노출은 배포와 별개다. `MIRRORED_ROUTES`에 공개 라우트를 추가했으면 배포 후 Search Console에
+사이트맵을 **다시 제출**해야 새 URL이 제때 발견된다. 절차는 `docs/APP_FLOW.md`의
+`검색 노출(SEO) → Search Console` 항목에 있다.
