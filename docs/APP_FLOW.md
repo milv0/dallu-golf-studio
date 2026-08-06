@@ -270,19 +270,21 @@ app/
 ### Search Console — 코드 밖의 작업
 
 **배포만으로는 검색 결과에 나오지 않는다.** 위 메타데이터·사이트맵은 구글이 사이트를 *이미 알고 있을 때*
-읽을 것들이다. 신규 도메인을 발견시키는 경로는 [Search Console](https://search.google.com/search-console)
-등록 하나뿐이며, 이건 저장소에 없는 수동 절차다. 그래서 여기 적어 둔다.
+읽을 것들이다. 나머지는 [Search Console](https://search.google.com/search-console)에서 하는 수동 절차이고
+저장소에 흔적이 남지 않으므로 여기 적어 둔다.
 
-1. **속성 추가** — `dallugolf.com`을 **도메인 속성**으로 등록한다. URL 접두어 속성으로 만들면
-   `https://dallugolf.com/`만 잡히고, 프로토콜·서브도메인 변형이 다른 속성으로 갈라진다.
-2. **소유권 인증** — DNS TXT 방식이면 코드 변경이 없다(도메인 속성은 DNS만 지원). HTML 태그 방식을 써야 하면
-   `lib/seo.js`의 `rootMetadata()`에 `verification: { google: "<코드>" }`를 넣는다 — ko/en 두 레이아웃이
-   `rootMetadata`를 공유하므로 한 곳만 고치면 양쪽 트리에 다 들어간다.
-3. **사이트맵 제출** — `https://dallugolf.com/sitemap.xml`.
-   `MIRRORED_ROUTES`에 라우트를 추가하고 배포한 뒤에는 **다시 제출한다.** 안 해도 결국 재크롤링되지만
-   새 URL 발견이 몇 주 늦어진다.
-4. **URL 검사 → 색인 요청** — 최소 `/`와 `/en`은 수동으로 요청한다. 발견 단계를 건너뛴다.
-5. **확인** — 신규 도메인은 색인까지 며칠~2주다. `페이지` 리포트에 사이트맵 URL 수(현재 12개)가 차오르는지,
+**끝난 것 (다시 할 필요 없음)** — `dallugolf.com`은 이미 속성으로 등록돼 있고, 소유권은 **DNS TXT**로
+인증됐다(`dig +short TXT dallugolf.com`에 `google-site-verification=…`이 보인다. DNS는 Cloudflare가 관리).
+그래서 **인증용 메타 태그를 코드에 넣을 필요가 없다.** 라이브 HTML에 `google-site-verification` meta가
+없는 건 정상이다 — 지우려 들지 말 것. 방식을 HTML 태그로 바꿔야 할 일이 생기면 `lib/seo.js`의
+`rootMetadata()`에 `verification: { google: "<코드>" }`를 넣는다(ko/en 레이아웃이 이걸 공유하므로 한 곳만 고치면 된다).
+
+**공개 라우트를 추가하고 배포할 때마다**
+
+1. **사이트맵 재제출** — `https://dallugolf.com/sitemap.xml`. 안 해도 결국 재크롤링되지만 새 URL 발견이
+   몇 주 늦어진다. `MIRRORED_ROUTES`를 건드렸으면 이 단계가 남아 있다고 봐야 한다.
+2. **URL 검사 → 색인 요청** — 새 URL은 수동으로 요청해 발견 단계를 건너뛴다.
+3. **확인** — 색인까지 며칠~2주다. `페이지` 리포트에 사이트맵 URL 수(현재 12개)가 차오르는지,
    `국가/언어`가 ko/en으로 갈라지는지 본다. 갈라지지 않으면 hreflang이 무시된 것이다.
 
 hreflang은 **양쪽이 서로를 가리켜야** 인정된다. 한쪽만 가리키면 구글이 조용히 무시하므로 증상이 안 보인다 —
