@@ -74,7 +74,7 @@ export default function HomeHub() {
         )}
 
         {/* iPhone 16의 짧은 실제 Safari 뷰포트에서도 핵심 UI가 잘리지 않도록
-            설치 안내는 48px 버튼 하나만 두고, 절차는 바텀 시트에서 연다. Q&A는 상단바에 있다. */}
+            설치 안내는 48px 버튼 하나만 두고, 절차는 화면 중앙 모달에서 연다. Q&A는 상단바에 있다. */}
         <button type="button" onClick={() => installDialogRef.current?.showModal()}
           className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-line bg-panel px-3 text-[12px] font-semibold text-txt transition hover:border-accent/60 hover:bg-panel-2 active:scale-[0.98] md:hidden">
           <Share2 aria-hidden="true" size={17} strokeWidth={1.8} className="shrink-0 text-accent" />
@@ -87,7 +87,7 @@ export default function HomeHub() {
         onClick={(event) => {
           if (event.target === event.currentTarget) event.currentTarget.close();
         }}
-        className="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom)+1rem)] top-auto mx-auto w-[calc(100%_-_2rem)] max-w-[520px] rounded-[24px] border border-line bg-panel p-0 text-txt shadow-2xl backdrop:bg-bg/80 backdrop:backdrop-blur-sm">
+        className="fixed left-[50vw] top-[50dvh] m-0 h-fit max-h-[calc(100dvh_-_2rem)] w-[calc(100%_-_2rem)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[24px] border border-line bg-panel p-0 text-txt shadow-2xl backdrop:bg-bg/80 backdrop:backdrop-blur-sm">
         <div className="p-5">
           <div className="flex items-center gap-3">
             <div className="flex size-10 items-center justify-center rounded-full bg-panel-2 text-accent">
