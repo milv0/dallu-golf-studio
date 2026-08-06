@@ -1,6 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { CircleHelp } from "lucide-react";
+import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import { STUDIO_STORAGE_KEYS } from "../../lib/studioStorage";
 import { useLang } from "../../lib/i18n";
 import LangToggle from "./LangToggle";
@@ -94,34 +97,62 @@ export function TopActions({ currentUser, onLogout }) {
   );
 }
 
+// 모든 공개 화면의 첫 행은 이 컴포넌트를 쓴다. 높이·safe area·컨트롤 순서가
+// 화면마다 달라지면 앱 안에서 다른 사이트로 이동한 것처럼 느껴진다.
+export function AppHeader({ currentUser, onLogout, children }) {
+  const { t, href } = useLang();
+  const [localUser, setLocalUser] = useState(null);
+  const ownsUserState = currentUser === undefined;
+
+  useEffect(() => {
+    if (ownsUserState) setLocalUser(loadCurrentUser());
+  }, [ownsUserState]);
+
+  const activeUser = ownsUserState ? localUser : currentUser;
+  const logout = onLogout || (() => {
+    clearCurrentUser();
+    setLocalUser(null);
+  });
+
+  return (
+    <header className="sticky top-0 z-40 border-b border-line bg-bg/95 px-4 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] backdrop-blur md:px-6">
+      <div className="mx-auto w-full max-w-[980px]">
+        <div className="flex min-h-8 items-center justify-between gap-3">
+          <Link href={href("/")} className="font-head text-[13px] font-bold uppercase tracking-[0.15em] text-accent transition active:opacity-80">
+            Dallu Golf
+          </Link>
+          <div className="flex shrink-0 items-center gap-1.5">
+            <Link href={href("/guide")} aria-label={t("home.guideLink")} title={t("home.guideLink")}
+              className="flex size-8 items-center justify-center rounded-full border border-line bg-panel text-txt-soft transition hover:border-accent hover:text-txt active:scale-95">
+              <CircleHelp aria-hidden="true" size={18} strokeWidth={2} />
+            </Link>
+            <TopActions currentUser={activeUser} onLogout={logout} />
+          </div>
+        </div>
+        {children}
+      </div>
+    </header>
+  );
+}
+
 export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLogout }) {
   const { t, href } = useLang();
   const links = linksFor(sourceMode);
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-bg/95 px-4 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] backdrop-blur">
-      <div className="mx-auto max-w-[520px] md:max-w-[980px]">
-        <div className="flex items-center justify-between gap-3">
-          <Link href={href("/")} className="flex items-center gap-2 transition active:opacity-80">
-            <span className="font-head text-[13px] font-bold uppercase tracking-[0.15em] text-accent">
-              Dallu Golf
-            </span>
+    <AppHeader currentUser={currentUser} onLogout={onLogout}>
+      <nav className="mt-2 flex gap-1.5">
+        {links.map((link) => (
+          <Link key={link.href} href={href(link.href)}
+            aria-current={active === link.id ? "page" : undefined}
+            className={"flex-1 rounded-lg py-1.5 text-center font-head leading-none transition " +
+              (active === link.id
+                ? "bg-accent text-[#06210f] text-[15px] font-bold"
+                : "text-txt-soft text-[13px] font-semibold hover:bg-panel-2 hover:text-txt active:bg-panel-2")}>
+            {t(link.labelKey)}
           </Link>
-          <TopActions currentUser={currentUser} onLogout={onLogout} />
-        </div>
-        <nav className="mt-2 flex gap-1.5">
-          {links.map((link) => (
-            <Link key={link.href} href={href(link.href)}
-              aria-current={active === link.id ? "page" : undefined}
-              className={"flex-1 rounded-lg py-1.5 text-center font-head leading-none transition " +
-                (active === link.id
-                  ? "bg-accent text-[#06210f] text-[15px] font-bold"
-                  : "text-txt-soft text-[13px] font-semibold hover:bg-panel-2 hover:text-txt active:bg-panel-2")}>
-              {t(link.labelKey)}
-            </Link>
-          ))}
-        </nav>
-      </div>
-    </header>
+        ))}
+      </nav>
+    </AppHeader>
   );
 }
 

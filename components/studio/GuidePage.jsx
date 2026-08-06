@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useLang } from "../../lib/i18n";
 import { guideFor } from "../../lib/guideContent";
-import LangToggle from "./LangToggle";
-import ThemeToggle from "./ThemeToggle";
+import { AppHeader } from "./StudioNav";
 
 function FaqSection({ title, items }) {
   return (
@@ -30,22 +29,11 @@ export default function GuidePage() {
   const guide = guideFor(lang);
 
   return (
-    <main className="mx-auto max-w-[640px] px-4 pb-12 pt-[calc(env(safe-area-inset-top)+1rem)] md:px-6">
-      <header className="mb-8 flex items-center justify-between">
-        <Link href={href("/")} className="font-head text-[13px] font-bold uppercase tracking-[0.15em] text-accent transition active:opacity-80">
-          Dallu Golf
-        </Link>
-        <div className="flex items-center gap-2">
-          <ThemeToggle
-            iconSize={16}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-panel text-txt-soft transition hover:border-accent hover:text-txt active:scale-95"
-          />
-          <LangToggle />
-        </div>
-      </header>
-
-      <h1 className="font-head text-[32px] font-bold uppercase leading-none text-txt">Guide</h1>
-      <p className="mt-2 text-sm text-txt-soft">{guide.subtitle}</p>
+    <>
+      <AppHeader />
+      <main className="mx-auto max-w-[640px] px-4 pb-12 pt-8 md:px-6">
+        <h1 className="font-head text-[32px] font-bold uppercase leading-none text-txt">Guide</h1>
+        <p className="mt-2 text-sm text-txt-soft">{guide.subtitle}</p>
 
       <section className="mt-8">
         <h2 className="mb-4 font-head text-[14px] font-semibold uppercase tracking-widest text-accent">{guide.usageTitle}</h2>
@@ -73,6 +61,7 @@ export default function GuidePage() {
           {t("notfound.home")}
         </Link>
       </div>
-    </main>
+      </main>
+    </>
   );
 }
