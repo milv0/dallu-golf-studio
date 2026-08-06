@@ -12,6 +12,12 @@ npx next build   # exit 0
 npm test         # node --test tests/*.test.mjs
 ```
 
+사용자 흐름·접근성·반응형 UI를 바꿨으면 추가로 실행한다.
+
+```bash
+npm run test:e2e # Playwright: Chrome에서 홈·가이드·작업 화면 스모크 테스트
+```
+
 ## 테스트가 JSX를 읽지 못한다
 
 `npm test`는 번들러 없이 `node --test`로 돈다. `"use client"`나 JSX가 있는 모듈을 import하면
