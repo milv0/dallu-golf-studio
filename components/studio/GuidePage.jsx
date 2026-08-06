@@ -25,14 +25,14 @@ function FaqSection({ title, items }) {
 }
 
 export default function GuidePage() {
-  const { lang, t } = useLang();
+  const { lang, t, href } = useLang();
   // 본문은 lib/guideContent.js가 소유한다 — 이 컴포넌트는 렌더링만 한다.
   const guide = guideFor(lang);
 
   return (
     <main className="mx-auto max-w-[640px] px-4 pb-12 pt-[calc(env(safe-area-inset-top)+1rem)] md:px-6">
       <header className="mb-8 flex items-center justify-between">
-        <Link href="/" className="font-head text-[13px] font-bold uppercase tracking-[0.15em] text-accent transition active:opacity-80">
+        <Link href={href("/")} className="font-head text-[13px] font-bold uppercase tracking-[0.15em] text-accent transition active:opacity-80">
           Dallu Golf
         </Link>
         <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ export default function GuidePage() {
       ))}
 
       <div className="mt-10 text-center">
-        <Link href="/" className="inline-block rounded-lg bg-accent px-5 py-2 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2">
+        <Link href={href("/")} className="inline-block rounded-lg bg-accent px-5 py-2 font-head text-sm font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2">
           {t("notfound.home")}
         </Link>
       </div>

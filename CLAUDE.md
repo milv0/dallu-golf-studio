@@ -31,6 +31,23 @@ npm test         # node --test tests/*.test.mjs
 - `tests/i18n.test.mjs`가 키 집합 일치, 빈 값, `${}` 치환 변수 일치, 영문 사전의 한글 잔존을 막는다.
 - 새 키를 추가하기 전에 기존 키를 grep한다. 비슷한 키가 이미 있는 경우가 많다.
 
+**언어는 URL이 결정한다.** `/`는 한국어, `/en`은 영어다. `app/`에 루트 레이아웃이 두 개
+(`(ko)/layout.js`, `(en)/layout.js`)이고 `app/layout.js`는 없다 — `<html lang>`을 라우트별로 바꾸는
+유일한 방법이다. 공통 부분은 `components/RootShell.jsx`에 있다.
+
+- 영어 URL을 내보내는 라우트 목록은 `lib/langRoutes.js`의 `MIRRORED_ROUTES`가 유일한 기준이다.
+  메타데이터·hreflang·사이트맵·언어 토글이 다 이걸 본다. 새 공개 라우트는 `(ko)`/`(en)` 양쪽에 만들고
+  `MIRRORED_ROUTES`와 `lib/seo.js`의 `PAGE_SEO`에 등록한다.
+- 내부 링크는 `useLang().href(path)`를 거친다. `/en`에서 `href="/guide"`를 쓰면 한국어로 튕긴다.
+- 테마 부트스트랩 스크립트는 언어를 건드리지 않는다. `sc-lang`이 `<html lang>`을 덮으면
+  `/en` 정적 HTML(영어)과 화면(한국어)이 어긋난다.
+
+## 가이드 본문은 코드와 자동으로 맞춰지지 않는다
+
+`tests/guideContent.test.mjs`는 ko/en 구조 파리티만 본다 — 본문이 실제 동작과 맞는지는 검증하지 못한다.
+그래서 카드 크기나 배율 설명이 실제 코드와 어긋난 채 오래 남아 있었다(`QUALITY` 배율, 프리셋 `SIZE`).
+프리셋 크기·출력 배율·입력 UI를 바꿨으면 `lib/guideContent.js`의 해당 답변을 다시 읽고 고친다.
+
 ## 기능 플래그
 
 `lib/features.js`. **`myRound`는 `false`로 유지한다** — 공개 배포에서 내 라운드 기록/로그인은 비활성이다.

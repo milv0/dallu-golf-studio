@@ -95,13 +95,13 @@ export function TopActions({ currentUser, onLogout }) {
 }
 
 export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLogout }) {
-  const { t } = useLang();
+  const { t, href } = useLang();
   const links = linksFor(sourceMode);
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-bg/95 px-4 pb-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] backdrop-blur">
       <div className="mx-auto max-w-[520px] md:max-w-[980px]">
         <div className="flex items-center justify-between gap-3">
-          <Link href="/" className="flex items-center gap-2 transition active:opacity-80">
+          <Link href={href("/")} className="flex items-center gap-2 transition active:opacity-80">
             <span className="font-head text-[13px] font-bold uppercase tracking-[0.15em] text-accent">
               Dallu Golf
             </span>
@@ -110,7 +110,7 @@ export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLog
         </div>
         <nav className="mt-2 flex gap-1.5">
           {links.map((link) => (
-            <Link key={link.href} href={link.href}
+            <Link key={link.href} href={href(link.href)}
               aria-current={active === link.id ? "page" : undefined}
               className={"flex-1 rounded-lg py-1.5 text-center font-head leading-none transition " +
                 (active === link.id
@@ -126,7 +126,7 @@ export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLog
 }
 
 export default function StudioNav({ active, sourceMode = "custom" }) {
-  const { t } = useLang();
+  const { t, href } = useLang();
   const links = linksFor(sourceMode);
   const secondaryLinks = [
     { href: "/records", label: t("records.title"), id: "records", disabled: true },
@@ -139,7 +139,7 @@ export default function StudioNav({ active, sourceMode = "custom" }) {
           {t("nav.outputSelect")}
         </span>
         {links.map((link) => (
-          <NavLink key={link.href} href={link.href} label={t(link.labelKey)} active={active === link.id} />
+          <NavLink key={link.href} href={href(link.href)} label={t(link.labelKey)} active={active === link.id} />
         ))}
       </div>
       <div className="hidden flex-wrap items-center gap-2 sm:flex">

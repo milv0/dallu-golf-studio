@@ -15,20 +15,47 @@
 ## 화면 트리
 
 ```text
-/
+/                      (한국어)
+├─ /guide
 ├─ /rounds (비활성 시 redirect → /)
 │  ├─ /round (비활성 시 redirect → /)
 │  ├─ /round/Hole9 (비활성 시 redirect → /)
 │  ├─ /round/Hole3 (비활성 시 redirect → /)
 │  └─ /round/Hole1 (비활성 시 redirect → /)
-└─ /custom (redirect → 마지막 직접 만들기 탭)
-   ├─ /custom/Hole18
-   ├─ /custom/Hole9
-   ├─ /custom/Hole3
-   └─ /custom/Hole1
+├─ /custom (redirect → 마지막 직접 만들기 탭)
+│  ├─ /custom/Hole18
+│  ├─ /custom/Hole9
+│  ├─ /custom/Hole3
+│  └─ /custom/Hole1
+├─ /login, /records, /admin (비활성 또는 관리자 전용)
+└─ /en                 (영어 미러 — 공개 라우트만)
+   ├─ /en/guide
+   └─ /en/custom/Hole18 · Hole9 · Hole3 · Hole1
 ```
 
 경로 세그먼트로 `round`/`custom` 모드를 구분한다. 쿼리 파라미터를 사용하지 않는다.
+
+### 라우트 그룹과 언어
+
+URL이 언어를 결정한다. `app/` 아래에 라우트 그룹 두 개를 두고 **각각이 자기 `<html>`을 렌더링**한다.
+
+```text
+app/
+├─ (ko)/layout.js   → <html lang="ko">, 트리 전체
+├─ (en)/layout.js   → <html lang="en">
+│  └─ en/…          → /en 이하 (그룹명은 URL에 안 나오므로 en 세그먼트가 필요하다)
+├─ globals.css · manifest.js · robots.js · sitemap.js
+```
+
+- `app/layout.js`는 **없다**. `<html lang>`은 루트 레이아웃에서만 정할 수 있고, 라우트별로 다르게 하려면
+  루트 레이아웃이 여러 개여야 한다. 그래서 루트를 둘로 쪼갰다.
+- 두 레이아웃의 차이는 `lang` 하나뿐이고 공통 부분(폰트·테마 부트스트랩·`Providers`·AdSense)은
+  `components/RootShell.jsx`에 모여 있다.
+- 영어 URL을 함께 내보내는 라우트 목록은 `lib/langRoutes.js`의 `MIRRORED_ROUTES` 하나가 소유한다.
+  메타데이터·hreflang·사이트맵·언어 토글이 모두 이 배열을 본다.
+- 미러하지 않는 라우트(관리자, `myRound` 플래그로 닫힌 화면, 404)는 한국어 전용이다 — 색인 대상이 아니다.
+- 새 공개 라우트를 추가하면 `(ko)`/`(en)` 양쪽에 페이지를 만들고 `MIRRORED_ROUTES`와 `PAGE_SEO`에 넣는다.
+  `tests/seo.test.mjs`가 두 목록의 불일치를 잡는다.
 
 ## 홈
 
@@ -184,7 +211,9 @@
 - `HoleCardForm`: 1홀 입력 폼. `linked` prop으로 홀 선택 버튼 표시/숨김 결정.
 - `RoundSourcePanel`: 라운드 연동 데이터 안내.
 - `CoursePresets`: 코스 프리셋 목록/즐겨찾기. 공개 배포에서는 `disabled` 상태로만 표시한다.
-- `Providers`: `LangProvider`(i18n) + `ThemeProvider`(사이트 테마)를 한 번에 감싼다.
+- `Providers`: `LangProvider`(i18n) + `ThemeProvider`(사이트 테마)를 한 번에 감싼다. `lang` prop을 `LangProvider`로 넘긴다.
+- `RootShell`: `(ko)`/`(en)` 루트 레이아웃의 공통 부분(`<html>`·폰트·테마 부트스트랩·`Providers`·AdSense).
+- `JsonLd`: 구조화 데이터를 `<script type="application/ld+json">`으로 심는 서버 컴포넌트.
 - `useStudioResets`: 6개 초기화 액션(18/커스텀18/9/3/1/커스텀1)을 `확인 → 초기화 → 토스트` 형태로 통일한다.
 - `lib/studioModes.js`: 라우트(mode)+출처(source) 조합에서 화면 플래그를 계산하는 순수 함수와 setter 팩토리.
 
@@ -213,9 +242,30 @@
   검증 공백을 만들지 않는다. `GuidePage.jsx`는 `guideFor(lang)`을 렌더링만 한다.
 - `lang === "en" ? "..." : "..."` 삼항으로 문자열을 고르지 않는다 — 사전을 우회하면 테스트가 검증하지 못한다.
   `LangToggle`에 남은 `lang === "ko"` 분기는 번역 대상이 아닌 언어 코드(`EN`/`KO`)라서 예외다.
-- 언어는 `sc-lang`, 사이트 테마는 `sc-theme`에 저장한다.
-- `app/layout.js`의 인라인 스크립트가 첫 페인트 전에 `sc-theme`/`sc-lang`을 읽어 `data-theme`과 `<html lang>`을 적용한다 (FOUC 방지).
-- `LangProvider`는 언어 변경 시 `<html lang>`도 함께 갱신한다.
+- 언어는 URL이 결정한다. `LangProvider`는 루트 레이아웃이 주는 `lang` prop을 권위로 삼고,
+  그 prop이 있으면 `sc-lang` 저장값을 읽지 않는다 — 저장값이 URL을 덮어쓰면 `/en` 정적 HTML(영어)과
+  화면(한국어)이 어긋난다.
+- 미러가 없는 라우트에서는 `lang` prop이 없으므로 예전처럼 `sc-lang`으로 언어를 고른다.
+- 사이트 테마는 `sc-theme`에 저장한다. `RootShell`의 인라인 스크립트가 첫 페인트 전에 `data-theme`만
+  적용한다 (FOUC 방지). **언어는 건드리지 않는다.**
+- 내부 링크는 `useLang().href(path)`를 거친다. `/en`에서 `href="/guide"`를 쓰면 한국어 페이지로 튕긴다.
+  `href()`는 미러가 없는 경로면 한국어 트리로 떨어뜨리므로 `/en/records` 같은 404 링크가 생기지 않는다.
+- `LangToggle`은 미러가 있으면 반대 언어 URL로 가는 `<Link>`, 없으면 상태만 바꾸는 `<button>`이다.
+  링크여야 크롤러가 반대 언어 페이지를 발견한다.
+
+## 검색 노출(SEO)
+
+- 페이지별 `title`/`description`은 `lib/seo.js`의 `PAGE_SEO`가 소유한다. 순수 데이터라
+  `tests/seo.test.mjs`가 ko/en 양쪽 존재, 언어 내 title 중복, 영문의 한글 잔존, description 길이를 검사한다.
+- `pageMetadata(path, lang)`가 canonical + hreflang(`ko`/`en`/`x-default`) + OG/Twitter를 한 번에 만든다.
+  양쪽 언어가 **동일한 hreflang 쌍**을 광고해야 구글이 언어 변형으로 인식한다.
+- `title`은 `absolute`로 고정한다. Next의 `title.template`은 레이아웃과 같은 세그먼트에 있는 페이지
+  (각 트리의 홈)에는 적용되지 않아서, template에만 의존하면 홈만 브랜드가 빠진다.
+- 구조화 데이터는 `JsonLd` 서버 컴포넌트로 정적 HTML에 박는다 — 홈은 `WebApplication`,
+  가이드는 가이드 Q&A 전체를 담은 `FAQPage`.
+- `app/sitemap.js`는 `MIRRORED_ROUTES`를 돌며 ko/en URL을 모두 내보내고 각 항목에 hreflang을 붙인다.
+- `app/robots.js`는 관리자와 `myRound` 플래그로 닫힌 라우트를 막는다. 닫힌 라우트는 `/`로 리다이렉트만
+  하므로 색인되면 홈의 중복 문서가 된다. 플래그를 켤 때 `/round` 항목을 뺀다.
 
 ## 입력 이동 규칙
 
@@ -273,7 +323,9 @@
 - `lib/roundHistory.js` 같은 별도 localStorage 기록 저장소를 다시 만들지 않는다. 향후 사용자 기록은 인증 후 `/api/round-records`와 D1을 단일 기준으로 사용한다.
 - 공개 배포 전까지 내 라운드 기록/로그인/DB 저장/코스 자동 불러오기는 비활성 상태를 유지한다.
 - 내 라운드 기록을 공개할 때는 `lib/features.js`의 `myRound`만 활성화하고 전체 연동 테스트 후 배포한다.
-- 기능 플래그가 꺼진 라우트(`/round/*`, `/records`, `/login`, `/rounds`)는 모두 서버에서 `redirect("/")` 한다. 새 비활성 라우트를 추가할 때도 같은 가드를 넣는다.
+- 기능 플래그가 꺼진 라우트(`/round/*`, `/records`, `/login`, `/rounds`)는 모두 서버에서 `redirect("/")` 한다. 새 비활성 라우트를 추가할 때도 같은 가드를 넣고 `app/robots.js`의 `Disallow`에도 넣는다.
+- 새 공개 라우트는 `(ko)`/`(en)` 양쪽에 만들고 `MIRRORED_ROUTES`·`PAGE_SEO`에 등록한다. 한쪽만 넣으면 테스트가 실패한다.
+- 컴포넌트에서 내부 링크를 만들 때 `href="/..."`를 직접 쓰지 않고 `useLang().href()`를 쓴다. 한국어 전용 화면(관리자·비활성 라우트)은 예외다.
 - CSP는 `public/_headers`에서만 관리한다. `'unsafe-eval'`은 쓰지 않고, AdSense용으로 Google 도메인 와일드카드를 `script-src`/`img-src`/`frame-src`/`connect-src`에 둔다.
 - `/admin`은 `X-Robots-Tag: noindex`와 `app/robots.js`의 `Disallow`로 색인에서 제외한다.
 - 관리자 IP 제한(`ADMIN_ALLOWED_IPS`)은 **fail-closed**다. 값이 비면 `/admin`과 모든 관리자 API가 403이며, 에러 메시지에 변수명이 그대로 나온다. IP 제한을 쓰지 않으려면 `ADMIN_ALLOWED_IPS=*`를 명시적으로 설정해야 한다 — 설정을 잊어 보호가 조용히 사라지는 상태를 만들지 않기 위함이다.

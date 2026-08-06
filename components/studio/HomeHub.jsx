@@ -9,7 +9,7 @@ import { useLang } from "../../lib/i18n";
 import { FEATURE_FLAGS } from "../../lib/features.js";
 
 export default function HomeHub() {
-  const { t } = useLang();
+  const { t, href } = useLang();
   const [currentUser, setCurrentUser] = useState(null);
   const [flowHrefs, setFlowHrefs] = useState({
     round: defaultFlowHref("round"),
@@ -82,7 +82,7 @@ export default function HomeHub() {
               );
             }
             return (
-              <Link key={item.href} href={item.href}
+              <Link key={item.href} href={href(item.href)}
                 className={`group relative overflow-hidden rounded-2xl border border-line bg-panel p-6 transition hover:border-accent/60 hover:shadow-[0_0_30px_-8px_rgba(56,224,139,0.15)] active:scale-[0.98] md:p-8 ${item.accent}`}>
                 <Icon size={28} strokeWidth={1.8} className="mb-4 text-accent" />
                 <div className="font-head text-[22px] font-bold leading-tight text-txt md:text-[26px]">
@@ -115,7 +115,7 @@ export default function HomeHub() {
         </div>
 
         <div className="mt-8 text-center">
-          <Link href="/guide" className="text-[12px] font-semibold text-txt-faint underline transition hover:text-accent">
+          <Link href={href("/guide")} className="text-[12px] font-semibold text-txt-faint underline transition hover:text-accent">
             {t("home.guideLink")}
           </Link>
         </div>
