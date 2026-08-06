@@ -33,13 +33,15 @@ export function PlayerNameControl({ value, onChange, maxLength = 7, placeholder 
 }
 
 export function UnitToggle({ value = "m", onChange }) {
+  const { t } = useLang();
   return (
-    <div className="flex overflow-hidden rounded-md border border-line">
+    <div role="group" aria-label={t("a11y.distanceUnit")} className="flex overflow-hidden rounded-md border border-line">
       {[["m", "M"], ["yd", "YD"]].map(([unit, label]) => (
         <button
           key={unit}
           type="button"
           onClick={() => onChange(unit)}
+          aria-pressed={value === unit}
           className={"px-2.5 py-1 text-[11px] font-bold transition " +
             (value === unit
               ? "bg-accent text-[#06210f]"

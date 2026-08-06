@@ -65,12 +65,13 @@ export function RelativeScoreHint({ className = "mb-2" }) {
 export function ScoreModeToggle({ value, onChange }) {
   const { t } = useLang();
   return (
-    <div className="flex overflow-hidden rounded-lg border border-line">
+    <div role="group" aria-label={t("a11y.scoreMode")} className="flex overflow-hidden rounded-lg border border-line">
       {[["strokes", t("score.strokes")], ["relative", t("score.toPar")]].map(([key, label]) => (
         <button
           key={key}
           type="button"
           onClick={() => onChange(key)}
+          aria-pressed={value === key}
           className={"px-3 py-1 text-xs font-semibold transition " +
             (value === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}
         >
