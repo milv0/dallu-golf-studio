@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { CircleHelp } from "lucide-react";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import { STUDIO_STORAGE_KEYS } from "../../lib/studioStorage";
@@ -101,6 +102,9 @@ export function TopActions({ currentUser, onLogout }) {
 // 화면마다 달라지면 앱 안에서 다른 사이트로 이동한 것처럼 느껴진다.
 export function AppHeader({ currentUser, onLogout, children }) {
   const { t, href } = useLang();
+  const pathname = usePathname() || "/";
+  const guideHref = href("/guide");
+  const isGuidePage = pathname === guideHref;
   const [localUser, setLocalUser] = useState(null);
   const ownsUserState = currentUser === undefined;
 
@@ -122,8 +126,12 @@ export function AppHeader({ currentUser, onLogout, children }) {
             Dallu Golf
           </Link>
           <div className="flex shrink-0 items-center gap-1.5">
-            <Link href={href("/guide")} aria-label={t("home.guideLink")} title={t("home.guideLink")}
-              className="flex size-8 items-center justify-center rounded-full border border-line bg-panel text-txt-soft transition hover:border-accent hover:text-txt active:scale-95">
+            <Link href={guideHref} aria-label={t("home.guideLink")} title={t("home.guideLink")}
+              aria-current={isGuidePage ? "page" : undefined}
+              className={"flex size-8 items-center justify-center rounded-full border transition active:scale-95 " +
+                (isGuidePage
+                  ? "border-accent bg-panel-2 text-accent"
+                  : "border-line bg-panel text-txt-soft hover:border-accent hover:text-txt")}>
               <CircleHelp aria-hidden="true" size={18} strokeWidth={2} />
             </Link>
             <TopActions currentUser={activeUser} onLogout={logout} />
@@ -140,7 +148,7 @@ export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLog
   const links = linksFor(sourceMode);
   return (
     <AppHeader currentUser={currentUser} onLogout={onLogout}>
-      <nav className="mt-2 flex gap-1.5">
+      <nav aria-label={t("a11y.cardFormatNav")} className="mt-2 flex gap-1.5">
         {links.map((link) => (
           <Link key={link.href} href={href(link.href)}
             aria-current={active === link.id ? "page" : undefined}
