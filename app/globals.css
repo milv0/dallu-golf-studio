@@ -1,4 +1,4 @@
-/* Pretendard는 app/layout.js의 <link>로 병렬 로드한다 (CSS→CSS 체인 방지) */
+/* Pretendard는 components/RootShell.jsx의 <link>로 병렬 로드한다 (CSS→CSS 체인 방지) */
 @import "tailwindcss";
 
 /* ── 테마 토큰 (다크 기본) ── */
