@@ -60,21 +60,21 @@ export default function AppMenu() {
                 : <Moon aria-hidden="true" size={19} strokeWidth={2.2} className="text-accent" />}
               {themeLabel}
             </button>
-            <div className="px-4 py-2">
-              <div className="flex items-center gap-3 text-[14px] font-semibold text-txt">
-                <Globe aria-hidden="true" size={19} strokeWidth={2.2} className="text-accent" />
+            <div className="mt-1 border-t border-line pt-1">
+              <div className="flex items-center gap-3 px-4 pb-1 pt-2 text-[12px] font-semibold uppercase tracking-wider text-txt-faint">
+                <Globe aria-hidden="true" size={16} strokeWidth={2.2} />
                 {t("menu.language")}
               </div>
-              <div className="mt-2.5 flex gap-2" role="group" aria-label={t("menu.language")}>
+              <div role="group" aria-label={t("menu.language")}>
                 {LANGS.map((code) => (
                   <button key={code} type="button" aria-pressed={lang === code}
                     onClick={() => { setLang(code); close(); }}
-                    className={"flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border text-[14px] font-semibold transition " +
-                      (lang === code
-                        ? "border-accent bg-accent/10 text-txt"
-                        : "border-line bg-panel text-txt-soft hover:border-accent hover:text-txt")}>
-                    {lang === code && <Check aria-hidden="true" size={15} strokeWidth={2.5} className="text-accent" />}
+                    className={ITEM_CLASS + (lang === code ? "" : " text-txt-soft")}>
+                    <span className="w-[19px]" aria-hidden="true" />
                     {LANGUAGE_NAMES[code]}
+                    {lang === code && (
+                      <Check aria-hidden="true" size={17} strokeWidth={2.5} className="ml-auto text-accent" />
+                    )}
                   </button>
                 ))}
               </div>
