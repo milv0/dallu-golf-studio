@@ -10,6 +10,10 @@ test("iOS navigator standalone flag hides the install CTA", () => {
   assert.equal(isStandaloneApp({ navigatorStandalone: true }), true);
 });
 
+test("Capacitor native shell hides the install CTA", () => {
+  assert.equal(isStandaloneApp({ capacitorNative: true }), true);
+});
+
 test("browser mode keeps the install CTA available", () => {
   assert.equal(isStandaloneApp({ displayModeStandalone: false, navigatorStandalone: false }), false);
 });

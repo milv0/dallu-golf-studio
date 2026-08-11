@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronRight, ClipboardList, Share2, X } from "lucide-react";
 import { isStandaloneApp } from "../../lib/standaloneDisplayMode.js";
+import { isNativeApp } from "../../lib/nativePlatform.js";
 import { AppHeader, CUSTOM_LINKS } from "./StudioNav";
 import { useLang } from "../../lib/i18n";
 import { FEATURE_FLAGS } from "../../lib/features.js";
@@ -29,6 +30,7 @@ export default function HomeHub() {
       setStandalone(isStandaloneApp({
         displayModeStandalone: displayMode?.matches,
         navigatorStandalone: window.navigator.standalone,
+        capacitorNative: isNativeApp(),
       }));
     };
     syncStandalone();
