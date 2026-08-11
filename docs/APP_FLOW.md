@@ -22,6 +22,11 @@
   `lib/adsEligibility.js`의 판단으로 앱에서는 로드하지 않는다. 앱 광고가 필요하면 AdMob을 따로 붙인다.
 - 공유: 앱에서는 `lib/nativeShare.js`가 캐시에 PNG를 쓰고 네이티브 공유 시트를 연다
   (시트의 `이미지 저장`이 사진앱 저장을 담당한다). 웹은 기존 Web Share/다운로드 경로를 유지한다.
+- 햅틱: `lib/haptics.js`가 담당한다 — 스코어 입력 확정은 가벼운 톡, 공유 완료는 성공 알림.
+  웹에서는 no-op이므로 호출부가 분기하지 않는다.
+- WebView 감각: 스와이프 뒤로가기와 바운스 제거는 `ios/App/App/SceneDelegate.swift`의
+  `AppBridgeViewController`, 링크 미리보기 차단은 `capacitor.config.json`, 텍스트 선택·콜아웃
+  억제는 `NativeAppMarker`가 단 `<html data-native>`를 `globals.css`가 스코프해서 처리한다.
 - 아이콘·스플래시 원본은 `assets/logo.png`(1024, `app/icon.svg`에서 렌더링)이고
   `npx @capacitor/assets generate --ios`로 재생성한다.
 - 웹 수정을 앱에 반영하려면 `npm run build && npx cap sync ios`를 실행한다.
