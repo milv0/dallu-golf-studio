@@ -8,9 +8,11 @@ import {
   downloadBlob,
   downloadDataUrl,
   exportFileName,
+  isShareCancelError,
   progressFileName,
   progressZipFileName,
 } from "../../lib/exportImage";
+import { isNativeApp } from "../../lib/nativePlatform";
 import { useLang } from "../../lib/i18n";
 
 function nextFrame() {
@@ -94,6 +96,12 @@ export default function useStudioExport({
     try {
       const image = await createExportImage();
       if (!image) return;
+      // Capacitor 앱: 파일 기반 네이티브 공유 시트. 플러그인은 앱에서만 필요하므로 동적 import.
+      if (isNativeApp()) {
+        const { shareImageNative } = await import("../../lib/nativeShare");
+        await shareImageNative(image);
+        return;
+      }
       const file = await dataUrlToFile(image.dataUrl, image.fileName);
       const sharePayload = { files: [file], title: image.fileName };
       if (navigator.share && (!navigator.canShare || navigator.canShare(sharePayload))) {
@@ -103,7 +111,7 @@ export default function useStudioExport({
         showToast(t("toast.shareUnsupported"));
       }
     } catch (e) {
-      if (e?.name !== "AbortError") {
+      if (!isShareCancelError(e)) {
         showToast(t("toast.shareFail"));
       }
     } finally {
