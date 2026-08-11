@@ -22,6 +22,8 @@
   `lib/adsEligibility.js`의 판단으로 앱에서는 로드하지 않는다. 앱 광고가 필요하면 AdMob을 따로 붙인다.
 - 공유: 앱에서는 `lib/nativeShare.js`가 캐시에 PNG를 쓰고 네이티브 공유 시트를 연다
   (시트의 `이미지 저장`이 사진앱 저장을 담당한다). 웹은 기존 Web Share/다운로드 경로를 유지한다.
+- 언어: 웹은 SEO·hreflang 때문에 `/`와 `/en` URL을 서로 이동한다. 앱은 Capacitor 로컬 서버가
+  정적 경로를 다시 로드하지 않도록 `LangToggle`이 URL을 바꾸지 않고 `LangProvider` 상태와 `sc-lang`만 전환한다.
 - 햅틱: `lib/haptics.js`가 담당한다 — 스코어 입력 확정은 가벼운 톡, 공유 완료는 성공 알림.
   웹에서는 no-op이므로 호출부가 분기하지 않는다.
 - WebView 감각: 스와이프 뒤로가기와 바운스 제거는 `ios/App/App/SceneDelegate.swift`의
