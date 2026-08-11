@@ -5,9 +5,14 @@
 // 로그인은 공개 배포에서 비활성 기능이라 앱 메뉴에는 아예 싣지 않는다.
 import { useRef } from "react";
 import Link from "next/link";
-import { CircleHelp, Globe, Menu, Moon, Sun, X } from "lucide-react";
+import { Check, CircleHelp, Globe, Menu, Moon, Sun, X } from "lucide-react";
 import { useLang } from "../../lib/i18n";
 import { useTheme } from "../../lib/themeContext";
+import { LANGS } from "../../lib/langRoutes";
+
+// 언어 이름은 번역하지 않는다 — 영어 UI에 갇힌 한국어 사용자가 "Korean"보다
+// "한국어"를 찾기 쉽다. 언어 선택기의 표준 관례라 사전을 거치지 않는다.
+const LANGUAGE_NAMES = { ko: "한국어", en: "English" };
 
 const ITEM_CLASS =
   "flex min-h-12 w-full items-center gap-3 rounded-xl px-4 text-[14px] font-semibold text-txt transition hover:bg-panel-2 active:bg-panel-2";
@@ -19,7 +24,6 @@ export default function AppMenu() {
 
   const close = () => dialogRef.current?.close();
   const themeLabel = theme === "dark" ? t("theme.toLight") : t("theme.toDark");
-  const nextLang = lang === "ko" ? "en" : "ko";
 
   return (
     <>
@@ -56,10 +60,25 @@ export default function AppMenu() {
                 : <Moon aria-hidden="true" size={19} strokeWidth={2.2} className="text-accent" />}
               {themeLabel}
             </button>
-            <button type="button" onClick={() => { setLang(nextLang); close(); }} className={ITEM_CLASS}>
-              <Globe aria-hidden="true" size={19} strokeWidth={2.2} className="text-accent" />
-              {t("menu.language")}
-            </button>
+            <div className="px-4 py-2">
+              <div className="flex items-center gap-3 text-[14px] font-semibold text-txt">
+                <Globe aria-hidden="true" size={19} strokeWidth={2.2} className="text-accent" />
+                {t("menu.language")}
+              </div>
+              <div className="mt-2.5 flex gap-2" role="group" aria-label={t("menu.language")}>
+                {LANGS.map((code) => (
+                  <button key={code} type="button" aria-pressed={lang === code}
+                    onClick={() => { setLang(code); close(); }}
+                    className={"flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl border text-[14px] font-semibold transition " +
+                      (lang === code
+                        ? "border-accent bg-accent/10 text-txt"
+                        : "border-line bg-panel text-txt-soft hover:border-accent hover:text-txt")}>
+                    {lang === code && <Check aria-hidden="true" size={15} strokeWidth={2.5} className="text-accent" />}
+                    {LANGUAGE_NAMES[code]}
+                  </button>
+                ))}
+              </div>
+            </div>
           </nav>
         </div>
       </dialog>
