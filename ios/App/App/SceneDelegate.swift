@@ -1,4 +1,5 @@
 import UIKit
+import Photos
 import Capacitor
 
 // 웹 감싼 티를 줄이는 WebView 설정.
@@ -17,7 +18,59 @@ class AppBridgeViewController: CAPBridgeViewController {
 }
 
 // file URL 자체를 공유하면 iOS가 범용 파일로 취급해 '파일에 저장'만 보여줄 수 있다.
-// PNG를 UIImage로 전달하면 시스템 공유 시트가 사진 보관함의 '이미지 저장' 액션을 제공한다.
+// 앱 전용 활동은 사진 추가 권한을 받은 뒤 UIImage를 사진 보관함에 직접 저장한다.
+private final class SaveImageActivity: UIActivity {
+    static let type = UIActivity.ActivityType("com.dallugolf.golfscorecardmaker.saveImage")
+    private var image: UIImage?
+
+    override var activityType: UIActivity.ActivityType? { Self.type }
+    override var activityTitle: String? { "사진에 저장" }
+    override var activityImage: UIImage? { UIImage(systemName: "photo.badge.arrow.down") }
+    override class var activityCategory: UIActivity.Category { .share }
+
+    override func canPerform(withActivityItems activityItems: [Any]) -> Bool {
+        activityItems.contains { $0 is UIImage }
+    }
+
+    override func prepare(withActivityItems activityItems: [Any]) {
+        image = activityItems.first { $0 is UIImage } as? UIImage
+    }
+
+    override func perform() {
+        guard let image else {
+            activityDidFinish(false)
+            return
+        }
+
+        switch PHPhotoLibrary.authorizationStatus(for: .addOnly) {
+        case .authorized, .limited:
+            save(image)
+        case .notDetermined:
+            PHPhotoLibrary.requestAuthorization(for: .addOnly) { [weak self] status in
+                DispatchQueue.main.async {
+                    guard status == .authorized || status == .limited else {
+                        self?.activityDidFinish(false)
+                        return
+                    }
+                    self?.save(image)
+                }
+            }
+        default:
+            activityDidFinish(false)
+        }
+    }
+
+    private func save(_ image: UIImage) {
+        PHPhotoLibrary.shared().performChanges({
+            PHAssetChangeRequest.creationRequestForAsset(from: image)
+        }) { [weak self] success, error in
+            DispatchQueue.main.async {
+                self?.activityDidFinish(success && error == nil)
+            }
+        }
+    }
+}
+
 @objc(ImageSharePlugin)
 class ImageSharePlugin: CAPPlugin, CAPBridgedPlugin {
     let identifier = "ImageSharePlugin"
@@ -47,13 +100,15 @@ class ImageSharePlugin: CAPPlugin, CAPBridgedPlugin {
 
             let activityController = UIActivityViewController(
                 activityItems: [image],
-                applicationActivities: nil
+                applicationActivities: [SaveImageActivity()]
             )
-            activityController.completionWithItemsHandler = { _, completed, _, error in
+            activityController.completionWithItemsHandler = { activityType, completed, _, error in
                 if let error {
                     call.reject("이미지 공유에 실패했습니다.", nil, error)
                 } else if completed {
                     call.resolve()
+                } else if activityType == SaveImageActivity.type {
+                    call.reject("사진 앱 저장에 실패했습니다.")
                 } else {
                     call.reject("Share canceled")
                 }
