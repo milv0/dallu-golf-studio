@@ -12,6 +12,20 @@
 - PNG 저장은 SVG 카드 노드만 투명 배경으로 내보낸다.
 - iPhone/PWA에서는 사진앱 직접 저장 권한이 없으므로 `공유` 버튼을 우선 사용한다.
 
+## 웹과 Capacitor 앱
+
+같은 정적 빌드(`out/`)를 웹(Cloudflare Pages)과 App Store용 Capacitor iOS 셸이 공유한다.
+플랫폼 분기는 런타임에 `lib/nativePlatform.js`의 `isNativeApp()` 하나로만 판별한다.
+
+- 설치 CTA: Capacitor 셸은 이미 앱이므로 `isStandaloneApp`의 `capacitorNative` 경로로 숨긴다.
+- AdSense: 웹 전용이다. 네이티브 WebView 삽입은 Google 정책 위반이라 `components/AdSenseLoader.jsx`가
+  `lib/adsEligibility.js`의 판단으로 앱에서는 로드하지 않는다. 앱 광고가 필요하면 AdMob을 따로 붙인다.
+- 공유: 앱에서는 `lib/nativeShare.js`가 캐시에 PNG를 쓰고 네이티브 공유 시트를 연다
+  (시트의 `이미지 저장`이 사진앱 저장을 담당한다). 웹은 기존 Web Share/다운로드 경로를 유지한다.
+- 아이콘·스플래시 원본은 `assets/logo.png`(1024, `app/icon.svg`에서 렌더링)이고
+  `npx @capacitor/assets generate --ios`로 재생성한다.
+- 웹 수정을 앱에 반영하려면 `npm run build && npx cap sync ios`를 실행한다.
+
 ## 화면 트리
 
 ```text
