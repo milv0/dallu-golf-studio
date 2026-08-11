@@ -10,6 +10,62 @@ class AppBridgeViewController: CAPBridgeViewController {
         webView?.allowsBackForwardNavigationGestures = true
         webView?.scrollView.bounces = false
     }
+
+    override func capacitorDidLoad() {
+        bridge?.registerPluginInstance(ImageSharePlugin())
+    }
+}
+
+// file URL 자체를 공유하면 iOS가 범용 파일로 취급해 '파일에 저장'만 보여줄 수 있다.
+// PNG를 UIImage로 전달하면 시스템 공유 시트가 사진 보관함의 '이미지 저장' 액션을 제공한다.
+@objc(ImageSharePlugin)
+class ImageSharePlugin: CAPPlugin, CAPBridgedPlugin {
+    let identifier = "ImageSharePlugin"
+    let jsName = "ImageShare"
+    let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "shareImage", returnType: CAPPluginReturnPromise)
+    ]
+
+    @objc func shareImage(_ call: CAPPluginCall) {
+        guard let urlString = call.getString("url"),
+              let url = URL(string: urlString),
+              url.isFileURL,
+              let image = UIImage(contentsOfFile: url.path) else {
+            call.reject("공유할 PNG 파일을 열 수 없습니다.")
+            return
+        }
+
+        DispatchQueue.main.async { [weak self] in
+            guard let viewController = self?.bridge?.viewController else {
+                call.reject("공유 화면을 열 수 없습니다.")
+                return
+            }
+            guard viewController.presentedViewController == nil else {
+                call.reject("이미 공유 화면이 열려 있습니다.")
+                return
+            }
+
+            let activityController = UIActivityViewController(
+                activityItems: [image],
+                applicationActivities: nil
+            )
+            activityController.completionWithItemsHandler = { _, completed, _, error in
+                if let error {
+                    call.reject("이미지 공유에 실패했습니다.", nil, error)
+                } else if completed {
+                    call.resolve()
+                } else {
+                    call.reject("Share canceled")
+                }
+            }
+            if let popover = activityController.popoverPresentationController {
+                popover.sourceView = viewController.view
+                popover.sourceRect = viewController.view.bounds
+                popover.permittedArrowDirections = []
+            }
+            viewController.present(activityController, animated: true)
+        }
+    }
 }
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
