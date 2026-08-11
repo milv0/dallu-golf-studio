@@ -4,6 +4,7 @@
 import { Barlow_Condensed, Barlow, JetBrains_Mono } from "next/font/google";
 import Providers from "./studio/Providers";
 import AdSenseLoader from "./AdSenseLoader";
+import NativeAppMarker from "./NativeAppMarker";
 
 const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
@@ -47,6 +48,7 @@ export default function RootShell({ lang, children }) {
       <body>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
         <Providers lang={lang}>{children}</Providers>
+        <NativeAppMarker />
         {/* 웹 전용 — Capacitor 앱에서는 AdSenseLoader가 로드를 건너뛴다 */}
         <AdSenseLoader />
       </body>

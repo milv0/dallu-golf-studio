@@ -1,5 +1,8 @@
 {
   "appId": "com.dallugolf.app",
   "appName": "Dallu Golf",
-  "webDir": "out"
+  "webDir": "out",
+  "ios": {
+    "allowsLinkPreview": false
+  }
 }

@@ -55,6 +55,21 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+
+/* ── Capacitor 앱 전용 (NativeAppMarker가 data-native를 단다) ──
+   네이티브 앱은 본문 텍스트를 드래그 선택하거나 롱프레스 콜아웃을 띄우지 않는다.
+   입력칸은 예외 — 값 수정에 선택이 필요하다. */
+[data-native] body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: none;
+}
+[data-native] input,
+[data-native] textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
 body {
   background:
     radial-gradient(1000px 500px at 82% -10%, var(--glow), transparent 60%),
