@@ -98,8 +98,12 @@ export default function useStudioExport({
       if (!image) return;
       // Capacitor 앱: 파일 기반 네이티브 공유 시트. 플러그인은 앱에서만 필요하므로 동적 import.
       if (isNativeApp()) {
-        const { shareImageNative } = await import("../../lib/nativeShare");
+        const [{ shareImageNative }, { hapticSuccess }] = await Promise.all([
+          import("../../lib/nativeShare"),
+          import("../../lib/haptics.js"),
+        ]);
         await shareImageNative(image);
+        hapticSuccess();
         return;
       }
       const file = await dataUrlToFile(image.dataUrl, image.fileName);
