@@ -24,6 +24,9 @@
   (시트의 `이미지 저장`이 사진앱 저장을 담당한다). 웹은 기존 Web Share/다운로드 경로를 유지한다.
 - 언어: 웹은 SEO·hreflang 때문에 `/`와 `/en` URL을 서로 이동한다. 앱은 Capacitor 로컬 서버가
   정적 경로를 다시 로드하지 않도록 `LangToggle`이 URL을 바꾸지 않고 `LangProvider` 상태와 `sc-lang`만 전환한다.
+  앱 재시작 시에는 `lib/appLanguage.js`의 규칙대로 저장된 언어가 URL 언어보다 우선 복원된다.
+- 상단바: 웹은 Q&A·테마·언어·로그인을 펼쳐 두고, 앱은 `AppMenu`(3줄 버거) 하나로 수납한다.
+  로그인은 비활성 기능이라 앱 메뉴에는 싣지 않는다.
 - 햅틱: `lib/haptics.js`가 담당한다 — 스코어 입력 확정은 가벼운 톡, 공유 완료는 성공 알림.
   웹에서는 no-op이므로 호출부가 분기하지 않는다.
 - WebView 감각: 스와이프 뒤로가기와 바운스 제거는 `ios/App/App/SceneDelegate.swift`의
