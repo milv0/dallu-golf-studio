@@ -4,7 +4,7 @@
 import { memo } from "react";
 import { cardColors } from "../../lib/theme";
 import { normalizeToParDisplay, toParColor } from "../../lib/score";
-import { displayPlayerName, textWidth } from "./svgText";
+import { displayPlayerName } from "./svgText";
 import { HEAD, MONO } from "./scorecardPrimitives";
 
 export const SIZE = { w: 380, h: 88 };
@@ -25,6 +25,7 @@ function HoleCardMinimal({ data, theme = "dark" }) {
   const hasPar = data.par !== "" && data.par != null;
   const totalShots = hasPar ? Math.max(par, shots) : 0;
   const shotNums = Array.from({ length: totalShots }, (_, i) => i + 1);
+  const isCompactShotSequence = shotNums.length > 10;
 
   const toPar = normalizeToParDisplay(data.toPar, "–");
   const toParFill = toParColor(toPar, c);
@@ -32,24 +33,23 @@ function HoleCardMinimal({ data, theme = "dark" }) {
   const holeLabel = data.hole ? `${data.hole}H` : "";
   const dist = data.distance ? `${data.distance}${data.unit === "yd" ? "YDS" : "M"}` : "";
 
-  // 하단 행 레이아웃: 홀 → 거리 → SHOT. SHOT 영역은 TO PAR 폭을 미리 비워 둔다.
+  // html-to-image의 SVG 폰트 메트릭은 화면 브라우저와 달라질 수 있다.
+  // 문자열 폭 추정으로 다음 x좌표를 계산하면 PNG에서 홀·거리가 붙으므로,
+  // 각 정보에 고정 안전 구역을 배정해 미리보기와 내보내기를 동일하게 유지한다.
   const HOLE_FS = 16;
   const DIST_FS = 15;
+  const SHOT_FS = 15;
   const SHOT_R_MAX = 10;
   const SHOT_STEP_MAX = 22;
-  const holeW = holeLabel ? textWidth(holeLabel, HOLE_FS, "head") : 0;
-  const distW = dist ? textWidth(dist, DIST_FS, "mono") : 0;
-  const distX = pad + holeW + (holeLabel ? 6 : 0);
-  // 최소 3글자("+00") 폭은 항상 확보해 자릿수가 늘어도 겹치지 않게 한다.
-  const toParW = Math.max(textWidth(toPar, 48, "head"), textWidth("+00", 48, "head"));
-  const shotZoneRight = toParX - toParW - 10;
-  const shotBaseX = distX + (dist ? distW + 14 : 0) + SHOT_R_MAX;
+  const distX = 48;
+  // 최대 10타(PAR 5 × 2)까지 숫자 크기를 줄이지 않고 한 줄에 배치한다.
+  const shotBaseX = 140;
+  const shotZoneRight = 270;
   const shotAvail = Math.max(shotZoneRight - shotBaseX - SHOT_R_MAX, 0);
   const shotStep = shotNums.length > 1
-    ? Math.min(SHOT_STEP_MAX, Math.max(13, shotAvail / (shotNums.length - 1)))
+    ? Math.min(SHOT_STEP_MAX, Math.max(10, shotAvail / (shotNums.length - 1)))
     : SHOT_STEP_MAX;
-  const shotR = Math.min(SHOT_R_MAX, shotStep * 0.45);
-  const shotFs = Math.min(14, shotStep * 0.64);
+  const shotR = Math.min(SHOT_R_MAX, Math.max(5, shotStep * 0.45));
 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} width={w} height={h}
@@ -89,10 +89,16 @@ function HoleCardMinimal({ data, theme = "dark" }) {
         const active = n === shots;
         return (
           <g key={n}>
-            {active && <circle cx={sx} cy={row2Y} r={shotR} fill={c.accent} />}
-            <text x={sx} y={row2Y} textAnchor="middle" dominantBaseline="middle"
-                  fill={active ? c.ink : c.sub} fontFamily={MONO}
-                  fontSize={shotFs} fontWeight="700">{n}</text>
+            {isCompactShotSequence && !active ? (
+            <circle cx={sx} cy={row2Y} r="2.4" fill={c.sub} />
+          ) : (
+            <>
+              {active && <circle cx={sx} cy={row2Y} r={shotR} fill={c.accent} />}
+              <text x={sx} y={row2Y} textAnchor="middle" dominantBaseline="middle"
+                    fill={active ? c.ink : c.sub} fontFamily={MONO}
+                    fontSize={SHOT_FS} fontWeight="700">{n}</text>
+            </>
+          )}
           </g>
         );
       })}
