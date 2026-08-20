@@ -75,7 +75,7 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
       )}
 
       <div className="overflow-hidden rounded-lg border border-line">
-        <div className="grid grid-cols-3">
+        <div className="grid grid-cols-2">
           {linked ? (
             <label className="block min-w-0 border-l border-line first:border-l-0">
               <span className="block bg-panel py-0.5 text-center font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">{t("hole.labelHole")}</span>
@@ -90,68 +90,60 @@ export default function HoleCardForm({ round, holeCard, setHC, loadHoleFromRound
               setHC("hole", v);
             }} placeholder="–" inputMode="numeric" {...navProps(0)} />
           )}
+          <CoreInput label={t("hole.par")} value={holeCard.par} onChange={(v) => {
+            if (v === "" || PAR_OPTIONS.includes(Number(v))) setPar(v);
+          }} placeholder="–" inputMode="numeric" {...navProps(1)} />
           <CoreInput label={t("hole.distance")} value={holeCard.distance} onChange={(v) => {
             if (validateNumericOnly(v)) setHC("distance", v);
-          }} placeholder="–" inputMode="numeric" {...navProps(1)} />
-          {/* PAR과 SHOT은 아래 버튼 그리드가 단일 입력 수단이다(값 범위가 좁아 키패드가 불필요). */}
-          <CoreInput label="±" value={holeCard.toPar} onChange={(v) => setHC("toPar", v)} placeholder="–" {...navProps(2)} />
+          }} placeholder="–" inputMode="numeric" {...navProps(2)} />
+          <CoreInput label={t("hole.currentScore")} value={holeCard.toPar}
+            onChange={(v) => setHC("toPar", v)} placeholder="–" {...navProps(3)} />
         </div>
       </div>
 
-      <div className="mt-4 border-t border-line pt-3">
-        <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
-          {t("hole.par")}
-        </span>
-        <div className="flex gap-1.5">
-          {PAR_OPTIONS.map((n) => (
-            <button key={n} type="button" onClick={() => setPar(String(n))}
-              aria-pressed={String(n) === String(holeCard.par)}
-              className={"h-9 w-9 rounded-md font-mono text-sm font-bold transition " +
-                (String(n) === String(holeCard.par)
-                  ? "bg-accent text-[#06210f]"
-                  : "border border-line bg-panel-2 text-txt-soft hover:text-txt")}>
-              {n}
-            </button>
-          ))}
+      <div className="mt-3">
+        <div className="mb-1.5 flex items-center justify-between gap-3">
+          <span className="font-head text-[11px] uppercase tracking-widest text-txt-soft">
+            {t("hole.currentShot")}
+          </span>
+          <button type="button" onClick={() => setHC("currentShot", "")}
+            className="min-h-10 rounded-md border border-line bg-panel-2 px-3 text-xs font-semibold text-txt-faint hover:text-txt">
+            {t("hole.none")}
+          </button>
         </div>
-      </div>
-
-      <div className="mt-4 border-t border-line pt-3">
-        <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
-          {t("hole.currentShot")}
-        </span>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="grid grid-cols-5 gap-2">
           {Array.from({ length: (Number(holeCard.par) || 4) * 2 }, (_, i) => i + 1).map((n) => (
             <button key={n} type="button" onClick={() => setHC("currentShot", String(n))}
               aria-pressed={String(n) === String(holeCard.currentShot)}
-              className={"h-9 w-9 rounded-md font-mono text-sm font-bold transition " +
+              className={"min-h-11 rounded-lg font-mono text-base font-bold transition " +
                 (String(n) === String(holeCard.currentShot)
                   ? "bg-accent text-[#06210f]"
                   : "border border-line bg-panel-2 text-txt-soft hover:text-txt")}>
               {n}
             </button>
           ))}
-          <button type="button" onClick={() => setHC("currentShot", "")}
-            className="h-9 rounded-md border border-line bg-panel-2 px-3 text-xs font-semibold text-txt-faint hover:text-txt">
-            {t("hole.none")}
-          </button>
         </div>
       </div>
-      <div className="mt-3">
-        <div className={"w-full " + (cardStyle === "minimal" ? "opacity-40" : "")}>
-          <ClubField value={holeCard.club} onChange={(v) => setHC("club", v)}
-            disabled={cardStyle === "minimal"} />
+
+      {cardStyle === "classic" && (
+        <div className="mt-4 border-t border-line pt-3">
+          <span className="mb-1.5 block font-head text-[11px] uppercase tracking-widest text-accent">
+            {t("hole.classicDetails")}
+          </span>
+          <div className="mt-3">
+            <ClubField value={holeCard.club} onChange={(v) => setHC("club", v)} />
+          </div>
+          <label className="mt-3 flex items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm font-semibold text-txt-soft">
+            <input
+              type="checkbox"
+              checked={holeCard.showResultBanner !== false}
+              onChange={(e) => setHC("showResultBanner", e.target.checked)}
+              className="h-4 w-4 accent-[var(--color-accent)]"
+            />
+            {t("hole.forBanner")}
+          </label>
         </div>
-      </div>
-      <label className="mt-3 flex items-center gap-2 rounded-lg border border-line bg-panel-2 px-3 py-2 text-sm font-semibold text-txt-soft">
-        <input
-          type="checkbox"
-          checked={holeCard.showResultBanner !== false}
-          onChange={(e) => setHC("showResultBanner", e.target.checked)}
-          className="h-4 w-4 accent-[var(--color-accent)]"
-        />
-        {t("hole.forBanner")}
-      </label>
+      )}
       {linked && (
         <p className="mt-2 text-[12px] text-txt-faint">
           {t("hole.linkedHint")}

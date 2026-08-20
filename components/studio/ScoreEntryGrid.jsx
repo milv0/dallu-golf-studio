@@ -79,7 +79,7 @@ export default function ScoreEntryGrid({
   const parSum = visibleHoles.reduce((a, h) => a + (Number(h.par) || 0), 0);
   const scoreSum = visibleHoles.reduce((a, h) => a + (Number(h.score) || 0), 0);
   const hasScore = visibleHoles.some((hole) => hasNumericValue(hole.score));
-  const template = `repeat(${Math.max(visibleHoles.length, 1)}, minmax(0,1fr))${showSum ? " 34px" : ""}`;
+  const template = `repeat(${Math.max(visibleHoles.length, 1)}, minmax(24px,1fr))${showSum ? " 34px" : ""}`;
 
   return (
     <div className="mb-2 overflow-hidden rounded-lg border border-line last:mb-0">

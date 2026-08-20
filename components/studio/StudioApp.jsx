@@ -503,10 +503,11 @@ function StudioWorkspace({ mode, source }) {
           {isHole && (
             <div className="order-[10]">
               <div className="mb-3 flex items-center justify-between">
-                <div className="flex overflow-hidden rounded-lg border border-line">
+                <div role="group" aria-label={t("a11y.holeCardStyle")} className="flex overflow-hidden rounded-lg border border-line">
                   {[["classic", "Classic"], ["minimal", "Minimal"]].map(([key, label]) => (
                     <button key={key} type="button" onClick={() => setHoleCardStyle(key)}
-                      className={"px-3 py-1 text-[11px] font-bold transition " +
+                      aria-pressed={holeCardStyle === key}
+                      className={"min-h-11 px-4 text-xs font-bold transition " +
                         (holeCardStyle === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
                       {label}
                     </button>

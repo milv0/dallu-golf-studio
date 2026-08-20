@@ -12,6 +12,70 @@
 - PNG 저장은 SVG 카드 노드만 투명 배경으로 내보낸다.
 - iPhone/PWA에서는 사진앱 직접 저장 권한이 없으므로 `공유` 버튼을 우선 사용한다.
 
+## 웹과 Capacitor 앱 운영 규칙
+
+같은 React/Next.js 코드와 정적 산출물(`out/`)을 웹(Cloudflare Pages)과 App Store용 Capacitor iOS 셸이 공유한다.
+**코드가 하나여도 배포 채널·URL·저장소·플랫폼 기능은 서로 다르다.** 플랫폼 분기는 런타임에
+`lib/nativePlatform.js`의 `isNativeApp()` 하나로만 판별한다.
+
+### 동작 매트릭스
+
+| 항목 | 웹 (`dallugolf.com`) | Capacitor iOS 앱 |
+| --- | --- | --- |
+| 배포 단위 | `main` 푸시 → Cloudflare Pages 자동 배포 | Xcode 빌드 → TestFlight → App Store 심사 |
+| 언어 기준 | URL: 한국어 `/`, 영어 `/en` | `sc-lang`: 마지막 선택 언어를 재시작 시 복원 |
+| 언어 전환 | `/`와 `/en` 사이 URL 이동. SEO·hreflang 대상 | URL 이동 금지. `LangProvider` 상태만 전환 |
+| 내부 링크 | 현재 언어 트리(`/en/custom/...` 포함) | 항상 한국어 URL 트리(`/custom/...`)에 머무름 |
+| 상단 UI | Q&A·테마·언어·로그인 컨트롤을 노출 | `AppMenu`(3줄 버거)에 Q&A·테마·언어를 수납, 비활성 로그인 제외 |
+| 설치 안내 | 모바일 웹/PWA에서 표시, 이미 설치된 PWA에서는 숨김 | 이미 설치된 앱이므로 항상 숨김 |
+| 광고 | `AdSenseLoader`가 AdSense를 웹에서만 로드 | AdSense 미로드. 앱 광고가 필요하면 AdMob을 별도로 검토 |
+| PNG 공유 | Web Share API 또는 브라우저 다운로드 | `nativeShare`가 캐시에 PNG를 쓴 뒤 iOS 네이티브 공유 시트 표시 |
+| 입력 피드백 | 웹 기본 상호작용 | 스코어 입력은 가벼운 햅틱, 공유 완료는 성공 햅틱 |
+| WebView 감각 | 해당 없음 | 스와이프 뒤로가기, 바운스 제거, 링크 미리보기·본문 롱프레스 억제 |
+| 로컬 데이터 | 사용 중인 브라우저의 localStorage | 앱 WebView 저장소. 웹 브라우저와 서로 공유하지 않음 |
+
+### 새 기능 분류
+
+새 기능을 구현하기 전에 아래 셋 중 하나로 분류한다. 플랫폼 전용 로직을 공통 컴포넌트에 섞지 않는다.
+
+| 분류 | 예시 | 구현·검증 원칙 |
+| --- | --- | --- |
+| **공통** | 카드 형식, 스코어 계산, 입력 UX, SVG/PNG 카드, 번역 문구 | `app/`·`components/`·`lib/`를 한 번 수정하고 웹·앱 양쪽 검증 |
+| **웹 전용** | SEO, `/en` URL, hreflang, AdSense, Search Console, Cloudflare | 앱에서는 숨기거나 로드하지 않음 |
+| **앱 전용** | 햅틱, 사진 앱 공유, 푸시, 위젯, Apple 로그인 | Capacitor 플러그인 또는 `ios/` 코드 추가, 웹에서는 no-op 또는 미노출 |
+
+**필수 제약:** 웹의 `/en` URL 이동을 앱에 적용하지 않는다. 앱에서 `/en` 루트 레이아웃으로 이동하면
+Capacitor 로컬 서버의 정적 경로 재로드로 빈 화면이나 이동 실패가 생길 수 있다. 앱의 언어는 상태가,
+링크는 한국어 URL 트리가 담당한다.
+
+### 배포와 업데이트
+
+`dev` 푸시는 개발 이력만 갱신하며 웹 사용자·앱 사용자에게 자동 반영되지 않는다.
+
+1. **공통 기능 개발:** `dev`에서 구현 → 테스트·빌드 → 커밋·푸시한다.
+2. **웹 공개:** 검토 후 `dev`를 `main`에 머지하고 `git push origin main` 한다. Cloudflare가 빌드한다.
+   `wrangler pages deploy`로 직접 올리지 않는다.
+3. **앱 반영:** 공통 또는 앱 전용 변경 뒤 아래 순서로 네이티브 번들을 갱신한다.
+   ```bash
+   npm run build
+   npx cap sync ios
+   npx cap open ios
+   ```
+   Xcode에서 실기기 검증 → Archive → TestFlight → App Store 심사를 거쳐야 사용자 앱이 갱신된다.
+4. `capacitor.config.json`의 `server.url`은 로컬 디버그에서만 임시로 쓴다. 커밋된 앱 설정에는 넣지 않는다.
+
+### 검증 기준
+
+| 변경 범위 | 필수 검증 |
+| --- | --- |
+| 공통·웹 코드 | `npm test`, `npm run build`, UI 흐름 변경 시 `npm run test:e2e` |
+| 앱/Capacitor 코드 | 위 웹 검증 + `npx cap sync ios` + `xcodebuild` 시뮬레이터 빌드 |
+| 사진 저장·햅틱·스와이프 | 시뮬레이터 빌드 뒤 실제 iPhone에서 수동 검증 |
+| 아이콘·스플래시 | `assets/logo.png` 수정 → `npx @capacitor/assets generate --ios` → Xcode 확인 |
+
+아이콘·스플래시 원본은 `assets/logo.png`(1024, `app/icon.svg`에서 렌더링)이다.
+
+
 ## 화면 트리
 
 ```text
@@ -37,7 +101,9 @@
 
 ### 라우트 그룹과 언어
 
-URL이 언어를 결정한다. `app/` 아래에 라우트 그룹 두 개를 두고 **각각이 자기 `<html>`을 렌더링**한다.
+**웹에서는 URL이 언어를 결정한다.** `app/` 아래에 라우트 그룹 두 개를 두고 **각각이 자기 `<html>`을 렌더링**한다.
+Capacitor 앱은 항상 한국어 URL 트리에 머물고 저장된 언어 상태만 바꾸는 예외이며, 상세 규칙은
+[웹과 Capacitor 앱 운영 규칙](#웹과-capacitor-앱-운영-규칙)을 따른다.
 
 ```text
 app/
@@ -68,7 +134,7 @@ app/
 - `/rounds`는 항상 `/round`로 리다이렉트한다 (FlowHub 없이 `redirect()` 사용).
 - 내 라운드 기록 전체, 로그인, 코스 DB, 내 라운드 저장은 공개 UI에서 비활성화한다.
 - 비활성 버튼은 `로그인`, `내 라운딩`, `기록 불러오기`처럼 기능 이름을 유지하고, 상태는 별도 `준비 중` 배지로 표시한다.
-- 설치 안내는 MyRound 아래의 48px 버튼으로 둔다. 절차는 버튼을 눌렀을 때 화면 중앙의 네이티브 다이얼로그로 연다.
+- 설치 안내는 MyRound 아래의 48px 버튼으로 둔다. 절차는 버튼을 눌렀을 때 화면 중앙의 네이티브 다이얼로그로 연다. `display-mode: standalone` 또는 iOS standalone 상태에서는 이미 설치된 앱이므로 버튼을 숨긴다.
 - 홈·가이드·18/9/3/1홀 작업 화면은 모두 `AppHeader`를 쓴다. 첫 행은 좌측 브랜드, 우측 Q&A 아이콘·테마·언어·로그인 순서로 동일하다.
 - 홈에는 웹 랜딩페이지형 푸터나 SEO 소개 본문을 두지 않는다. 검색 설명은 메타데이터가 담당한다.
 - 상단 앱바의 18/9/3/1홀 탭은 작업 화면에서만 첫 행 아래에 붙는다.

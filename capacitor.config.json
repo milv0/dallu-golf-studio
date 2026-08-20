@@ -1,0 +1,8 @@
+{
+  "appId": "com.dallugolf.golfscorecardmaker",
+  "appName": "Golf Scorecard",
+  "webDir": "out",
+  "ios": {
+    "allowsLinkPreview": false
+  }
+}

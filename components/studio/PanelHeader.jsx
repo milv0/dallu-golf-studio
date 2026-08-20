@@ -7,7 +7,7 @@ export function ResetButton({ onClick, label }) {
   const displayLabel = label || t("panel.reset");
   return (
     <button type="button" onClick={onClick}
-      className="rounded-lg border border-line bg-panel-2 px-3 py-1.5 text-xs font-bold text-txt-soft transition hover:border-[#ff6b57] hover:text-[#ff6b57]">
+      className="min-h-11 rounded-lg border border-line bg-panel-2 px-4 text-sm font-bold text-txt-soft transition hover:border-[#ff6b57] hover:text-[#ff6b57]">
       {displayLabel}
     </button>
   );

@@ -50,6 +50,14 @@ test("usage steps line up across languages", () => {
   assert.deepEqual(ko.map((s) => s.step), en.map((s) => s.step));
 });
 
+test("first guide step matches the direct card selection on home", () => {
+  const [ko, en] = LANGS.map((lang) => guideContent[lang].steps[0].desc);
+  assert.match(ko, /카드 형식.*18홀\/9홀\/3홀\/1홀/);
+  assert.doesNotMatch(ko, /직접 만들기/);
+  assert.match(en, /card format.*18\/9\/3\/1 hole/i);
+  assert.doesNotMatch(en, /select ['"]?custom/i);
+});
+
 test("no guide string is empty", () => {
   for (const lang of LANGS) {
     for (const [path, value] of everyString(lang)) {

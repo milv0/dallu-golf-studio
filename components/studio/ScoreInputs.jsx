@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLang } from "../../lib/i18n";
 import { validateScore } from "../../lib/inputValidators";
+import { hapticTap } from "../../lib/haptics.js";
 
 const REL_MIN = -3;
 const REL_MAX = 5;
@@ -65,12 +66,13 @@ export function RelativeScoreHint({ className = "mb-2" }) {
 export function ScoreModeToggle({ value, onChange }) {
   const { t } = useLang();
   return (
-    <div className="flex overflow-hidden rounded-lg border border-line">
+    <div role="group" aria-label={t("a11y.scoreMode")} className="flex overflow-hidden rounded-lg border border-line">
       {[["strokes", t("score.strokes")], ["relative", t("score.toPar")]].map(([key, label]) => (
         <button
           key={key}
           type="button"
           onClick={() => onChange(key)}
+          aria-pressed={value === key}
           className={"px-3 py-1 text-xs font-semibold transition " +
             (value === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}
         >
@@ -105,6 +107,7 @@ export function RelativeScoreInput({
     const next = Math.max(REL_MIN, Math.min(REL_MAX, rel));
     setBuf(String(next));
     onScore(String(p + next));
+    hapticTap();
     if (autoAdvance) {
       setTimeout(() => scoreRefs?.current[idx + 1]?.focus(), 0);
     }
@@ -199,6 +202,7 @@ export function ScoreInput({ idx, localIdx, par, score, mode, setHole, scoreRefs
     if (!validateScore(value)) return;
     setBuf(value);
     setHole(idx, "score", value);
+    hapticTap();
     if (value.length >= 2 || Number(value) >= 2) {
       setTimeout(() => scoreRefs?.current[idx + 1]?.focus(), 0);
     }

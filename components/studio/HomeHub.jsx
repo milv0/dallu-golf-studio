@@ -1,8 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, ClipboardList, Share2, X } from "lucide-react";
+import { ChevronRight, Share2, X } from "lucide-react";
+import { isStandaloneApp } from "../../lib/standaloneDisplayMode.js";
+import { isNativeApp } from "../../lib/nativePlatform.js";
 import { AppHeader, CUSTOM_LINKS } from "./StudioNav";
 import { useLang } from "../../lib/i18n";
 import { FEATURE_FLAGS } from "../../lib/features.js";
@@ -20,6 +22,21 @@ const CARD_TYPES = CUSTOM_LINKS.map(({ href: path }) => {
 export default function HomeHub() {
   const { t, href } = useLang();
   const installDialogRef = useRef(null);
+  const [standalone, setStandalone] = useState(false);
+
+  useEffect(() => {
+    const displayMode = window.matchMedia?.("(display-mode: standalone)");
+    const syncStandalone = () => {
+      setStandalone(isStandaloneApp({
+        displayModeStandalone: displayMode?.matches,
+        navigatorStandalone: window.navigator.standalone,
+        capacitorNative: isNativeApp(),
+      }));
+    };
+    syncStandalone();
+    displayMode?.addEventListener?.("change", syncStandalone);
+    return () => displayMode?.removeEventListener?.("change", syncStandalone);
+  }, []);
 
   return (
     <>
@@ -62,24 +79,17 @@ export default function HomeHub() {
             <ChevronRight aria-hidden="true" size={16}
               className="ml-auto text-txt-faint transition group-hover:translate-x-0.5 group-hover:text-accent" />
           </Link>
-        ) : (
-          <div aria-disabled="true"
-            className="mt-3 flex min-h-14 items-center gap-3 rounded-2xl border border-line bg-panel px-4 text-txt-faint">
-            <ClipboardList aria-hidden="true" size={20} strokeWidth={1.8} className="shrink-0" />
-            <span className="font-head text-[14px] font-bold">{t("home.roundTitle")}</span>
-            <span className="ml-auto rounded-full bg-panel-2 px-2.5 py-1 font-head text-[10px] font-semibold uppercase tracking-wider">
-              {t("home.preparing")}
-            </span>
-          </div>
-        )}
+        ) : null}
 
         {/* iPhone 16의 짧은 실제 Safari 뷰포트에서도 핵심 UI가 잘리지 않도록
             설치 안내는 48px 버튼 하나만 두고, 절차는 화면 중앙 모달에서 연다. Q&A는 상단바에 있다. */}
-        <button type="button" onClick={() => installDialogRef.current?.showModal()}
-          className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-line bg-panel px-3 text-[12px] font-semibold text-txt transition hover:border-accent/60 hover:bg-panel-2 active:scale-[0.98] md:hidden">
-          <Share2 aria-hidden="true" size={17} strokeWidth={1.8} className="shrink-0 text-accent" />
-          {t("home.addToHome")}
-        </button>
+        {!standalone && (
+          <button type="button" onClick={() => installDialogRef.current?.showModal()}
+            className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-line bg-panel px-3 text-[12px] font-semibold text-txt transition hover:border-accent/60 hover:bg-panel-2 active:scale-[0.98] md:hidden">
+            <Share2 aria-hidden="true" size={17} strokeWidth={1.8} className="shrink-0 text-accent" />
+            {t("home.addToHome")}
+          </button>
+        )}
       </div>
 
       <dialog ref={installDialogRef}

@@ -2,12 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { CircleHelp } from "lucide-react";
 import { clearCurrentUser, loadCurrentUser } from "../../lib/auth";
 import { STUDIO_STORAGE_KEYS } from "../../lib/studioStorage";
 import { useLang } from "../../lib/i18n";
 import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
+import AppMenu from "./AppMenu";
+import { isNativeApp } from "../../lib/nativePlatform.js";
+import { FEATURE_FLAGS } from "../../lib/features.js";
 
 export const LAST_CUSTOM_ROUTE_KEY = STUDIO_STORAGE_KEYS.lastCustomRoute;
 
@@ -69,6 +73,7 @@ function DisabledNavItem({ label, disabledTitle }) {
 }
 
 function LoginButton({ currentUser, onLogout, t }) {
+  if (!FEATURE_FLAGS.myRound) return null;
   if (currentUser) {
     return (
       <button type="button" onClick={onLogout}
@@ -101,12 +106,21 @@ export function TopActions({ currentUser, onLogout }) {
 // 화면마다 달라지면 앱 안에서 다른 사이트로 이동한 것처럼 느껴진다.
 export function AppHeader({ currentUser, onLogout, children }) {
   const { t, href } = useLang();
+  const pathname = usePathname() || "/";
+  const guideHref = href("/guide");
+  const isGuidePage = pathname === guideHref;
   const [localUser, setLocalUser] = useState(null);
   const ownsUserState = currentUser === undefined;
+  const [nativeApp, setNativeApp] = useState(false);
 
   useEffect(() => {
     if (ownsUserState) setLocalUser(loadCurrentUser());
   }, [ownsUserState]);
+
+  // 수화 후에만 Capacitor 여부를 확정해 서버·클라이언트 마크업 불일치를 막는다.
+  useEffect(() => {
+    setNativeApp(isNativeApp());
+  }, []);
 
   const activeUser = ownsUserState ? localUser : currentUser;
   const logout = onLogout || (() => {
@@ -121,13 +135,22 @@ export function AppHeader({ currentUser, onLogout, children }) {
           <Link href={href("/")} className="font-head text-[13px] font-bold uppercase tracking-[0.15em] text-accent transition active:opacity-80">
             Dallu Golf
           </Link>
-          <div className="flex shrink-0 items-center gap-1.5">
-            <Link href={href("/guide")} aria-label={t("home.guideLink")} title={t("home.guideLink")}
-              className="flex size-8 items-center justify-center rounded-full border border-line bg-panel text-txt-soft transition hover:border-accent hover:text-txt active:scale-95">
-              <CircleHelp aria-hidden="true" size={18} strokeWidth={2} />
-            </Link>
-            <TopActions currentUser={activeUser} onLogout={logout} />
-          </div>
+          {/* 앱은 3줄 버거 하나로 수납해 헤더를 비우고, 웹은 컨트롤을 펼쳐 크롤러·발견성을 유지한다. */}
+          {nativeApp ? (
+            <AppMenu />
+          ) : (
+            <div className="flex shrink-0 items-center gap-1.5">
+              <Link href={guideHref} aria-label={t("home.guideLink")} title={t("home.guideLink")}
+                aria-current={isGuidePage ? "page" : undefined}
+                className={"flex size-11 items-center justify-center rounded-full border transition active:scale-95 " +
+                  (isGuidePage
+                    ? "border-accent bg-panel-2 text-accent"
+                    : "border-line bg-panel text-txt-soft hover:border-accent hover:text-txt")}>
+                <CircleHelp aria-hidden="true" size={18} strokeWidth={2} />
+              </Link>
+              <TopActions currentUser={activeUser} onLogout={logout} />
+            </div>
+          )}
         </div>
         {children}
       </div>
@@ -140,11 +163,11 @@ export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLog
   const links = linksFor(sourceMode);
   return (
     <AppHeader currentUser={currentUser} onLogout={onLogout}>
-      <nav className="mt-2 flex gap-1.5">
+      <nav aria-label={t("a11y.cardFormatNav")} className="mt-2 flex gap-1.5">
         {links.map((link) => (
           <Link key={link.href} href={href(link.href)}
             aria-current={active === link.id ? "page" : undefined}
-            className={"flex-1 rounded-lg py-1.5 text-center font-head leading-none transition " +
+            className={"flex min-h-11 flex-1 items-center justify-center rounded-lg text-center font-head leading-none transition " +
               (active === link.id
                 ? "bg-accent text-[#06210f] text-[15px] font-bold"
                 : "text-txt-soft text-[13px] font-semibold hover:bg-panel-2 hover:text-txt active:bg-panel-2")}>

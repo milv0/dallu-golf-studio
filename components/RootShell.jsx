@@ -2,8 +2,9 @@
 // <html lang>은 루트 레이아웃에서만 정할 수 있어서 라우트 그룹으로 레이아웃을 둘로 나눴고,
 // 중복을 막기 위해 공통 부분을 여기로 모았다.
 import { Barlow_Condensed, Barlow, JetBrains_Mono } from "next/font/google";
-import Script from "next/script";
 import Providers from "./studio/Providers";
+import AdSenseLoader from "./AdSenseLoader";
+import NativeAppMarker from "./NativeAppMarker";
 
 const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
@@ -47,12 +48,9 @@ export default function RootShell({ lang, children }) {
       <body>
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
         <Providers lang={lang}>{children}</Providers>
-        <Script
-          id="google-adsense"
-          strategy="afterInteractive"
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4755795516057681"
-          crossOrigin="anonymous"
-        />
+        <NativeAppMarker />
+        {/* 웹 전용 — Capacitor 앱에서는 AdSenseLoader가 로드를 건너뛴다 */}
+        <AdSenseLoader />
       </body>
     </html>
   );

@@ -52,6 +52,7 @@ ADMIN_ALLOWED_IPS=*
 ## 테스트
 ```bash
 npm test
+npm run test:e2e  # 홈·가이드·작업 화면의 Chrome 스모크 테스트
 ```
 
 ## 빌드 (정적)

@@ -17,7 +17,7 @@ const CLUB_OPTIONS = [
 export function PlayerNameControl({ value, onChange, maxLength = 7, placeholder = "PLAYER" }) {
   const { t } = useLang();
   return (
-    <label className="flex w-[128px] shrink-0 items-center gap-2 rounded-lg border border-line bg-panel-2 px-2 py-1">
+    <label className="flex min-h-11 w-[140px] shrink-0 items-center gap-2 rounded-lg border border-line bg-panel-2 px-3">
       <span className="font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">
         {t("label.name")}
       </span>
@@ -33,14 +33,16 @@ export function PlayerNameControl({ value, onChange, maxLength = 7, placeholder 
 }
 
 export function UnitToggle({ value = "m", onChange }) {
+  const { t } = useLang();
   return (
-    <div className="flex overflow-hidden rounded-md border border-line">
+    <div role="group" aria-label={t("a11y.distanceUnit")} className="flex overflow-hidden rounded-md border border-line">
       {[["m", "M"], ["yd", "YD"]].map(([unit, label]) => (
         <button
           key={unit}
           type="button"
           onClick={() => onChange(unit)}
-          className={"px-2.5 py-1 text-[11px] font-bold transition " +
+          aria-pressed={value === unit}
+          className={"min-h-11 min-w-11 px-3 text-xs font-bold transition " +
             (value === unit
               ? "bg-accent text-[#06210f]"
               : "bg-panel-2 text-txt-soft hover:text-txt")}
