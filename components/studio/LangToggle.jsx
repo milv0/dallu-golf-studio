@@ -9,7 +9,7 @@ import { shouldNavigateForLanguage } from "../../lib/languageNavigation.js";
 import { isNativeApp } from "../../lib/nativePlatform.js";
 
 const BASE_CLASS =
-  "flex h-8 w-8 items-center justify-center rounded-full border border-line bg-panel text-[11px] font-bold text-txt-soft transition active:border-accent active:text-txt";
+  "flex h-10 w-10 items-center justify-center rounded-full border border-line bg-panel text-[11px] font-bold text-txt-soft transition active:border-accent active:text-txt";
 
 export default function LangToggle({ className }) {
   const { lang, setLang, t } = useLang();

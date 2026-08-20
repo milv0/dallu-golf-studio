@@ -507,7 +507,7 @@ function StudioWorkspace({ mode, source }) {
                   {[["classic", "Classic"], ["minimal", "Minimal"]].map(([key, label]) => (
                     <button key={key} type="button" onClick={() => setHoleCardStyle(key)}
                       aria-pressed={holeCardStyle === key}
-                      className={"px-3 py-1 text-[11px] font-bold transition " +
+                      className={"min-h-11 px-4 text-xs font-bold transition " +
                         (holeCardStyle === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
                       {label}
                     </button>

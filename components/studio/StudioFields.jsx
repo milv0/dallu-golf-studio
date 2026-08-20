@@ -17,7 +17,7 @@ const CLUB_OPTIONS = [
 export function PlayerNameControl({ value, onChange, maxLength = 7, placeholder = "PLAYER" }) {
   const { t } = useLang();
   return (
-    <label className="flex w-[128px] shrink-0 items-center gap-2 rounded-lg border border-line bg-panel-2 px-2 py-1">
+    <label className="flex min-h-11 w-[140px] shrink-0 items-center gap-2 rounded-lg border border-line bg-panel-2 px-3">
       <span className="font-head text-[10px] font-semibold uppercase tracking-widest text-txt-faint">
         {t("label.name")}
       </span>
@@ -42,7 +42,7 @@ export function UnitToggle({ value = "m", onChange }) {
           type="button"
           onClick={() => onChange(unit)}
           aria-pressed={value === unit}
-          className={"px-2.5 py-1 text-[11px] font-bold transition " +
+          className={"min-h-11 min-w-11 px-3 text-xs font-bold transition " +
             (value === unit
               ? "bg-accent text-[#06210f]"
               : "bg-panel-2 text-txt-soft hover:text-txt")}

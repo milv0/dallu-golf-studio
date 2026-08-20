@@ -36,9 +36,17 @@ test("selection controls expose their current state and tabs have a name", async
 
   await page.goto("/custom/Hole1");
   const style = page.getByRole("group", { name: "1홀 카드 스타일" });
+  const clubInput = page.locator('input[placeholder="3, Driver, Putter"]');
   await expect(style.getByRole("button", { name: "Minimal" })).toHaveAttribute("aria-pressed", "true");
+  await expect(clubInput).toHaveCount(0);
+  await expect(page.getByText("현재 타수", { exact: true })).toBeVisible();
+  await expect(page.getByText("Classic 상세 정보", { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "1", exact: true })).toBeVisible();
   await style.getByRole("button", { name: "Classic" }).click();
   await expect(style.getByRole("button", { name: "Classic" })).toHaveAttribute("aria-pressed", "true");
+  await expect(clubInput).toBeVisible();
+  await expect(page.getByText("현재 타수", { exact: true })).toBeVisible();
+  await expect(page.getByText("Classic 상세 정보", { exact: true })).toBeVisible();
 
   const unit = page.getByRole("group", { name: "거리 단위" });
   await expect(unit.getByRole("button", { name: "M" })).toHaveAttribute("aria-pressed", "true");

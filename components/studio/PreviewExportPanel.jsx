@@ -61,7 +61,7 @@ export default function PreviewExportPanel({
         <div className="mb-2 flex flex-wrap items-center justify-between gap-1.5 md:gap-2">
           <button type="button" onClick={() => setCollapsed(!collapsed)}
             aria-expanded={!collapsed} aria-controls="preview-body"
-            className="flex items-center gap-1.5 md:pointer-events-none">
+            className="flex min-h-11 items-center gap-1.5 px-2 md:pointer-events-none">
             <span className="font-head text-xs font-semibold uppercase tracking-widest text-txt-soft md:text-sm">
               {t("preview.title")}
             </span>
@@ -72,7 +72,7 @@ export default function PreviewExportPanel({
               {[["dark", Moon], ["light", Sun]].map(([key, Icon]) => (
                 <button key={key} onClick={() => setCardTheme(key)}
                   aria-label={key === "dark" ? t("a11y.cardDark") : t("a11y.cardLight")} aria-pressed={cardTheme === key}
-                  className={"flex items-center justify-center px-2 py-1 md:px-2.5 md:py-1.5 " +
+                  className={"flex size-11 items-center justify-center " +
                     (cardTheme === key ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
                   <Icon size={14} strokeWidth={2.2} />
                 </button>
@@ -83,7 +83,7 @@ export default function PreviewExportPanel({
               {QUALITY.map((qz) => (
                 <button key={qz.scale} onClick={() => setExportScale(qz.scale)}
                   title={`${qz.desc} · ${size.w * qz.scale}x${size.h * qz.scale}px`} aria-pressed={exportScale === qz.scale}
-                  className={"px-2 py-1 text-[11px] font-bold md:px-3 md:py-1.5 md:text-xs " +
+                  className={"min-h-11 px-3 text-xs font-bold md:px-3 " +
                     (exportScale === qz.scale ? "bg-accent text-[#06210f]" : "bg-panel text-txt-soft hover:text-txt")}>
                   {qz.label}
                 </button>
@@ -92,7 +92,7 @@ export default function PreviewExportPanel({
             <button onClick={handleShareExport} disabled={busy || !canExport}
               title={!canExport ? t("preview.inputFirst") : t("preview.iphoneHint")}
               className="rounded-lg bg-accent px-3 py-1 font-head text-xs font-bold uppercase tracking-wide text-[#06210f] transition hover:bg-accent-2 disabled:opacity-60 md:hidden">
-              {busy ? t("preview.generating") : !canExport ? t("preview.inputRequired") : t("preview.share")}
+              {busy ? t("preview.generating") : !canExport ? t("preview.inputRequired") : t("preview.saveShare")}
             </button>
             <button onClick={handleExport} disabled={busy || !canExport}
               title={!canExport ? t("preview.inputFirst") : t("preview.download")}

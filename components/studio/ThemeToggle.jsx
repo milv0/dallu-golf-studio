@@ -15,7 +15,7 @@ export default function ThemeToggle({ className, iconSize = 18 }) {
       onClick={toggleTheme}
       aria-label={label}
       title={label}
-      className={className || "flex h-8 w-8 items-center justify-center rounded-full border border-line bg-panel text-txt-soft transition hover:border-accent hover:text-txt active:scale-95"}
+      className={className || "flex h-10 w-10 items-center justify-center rounded-full border border-line bg-panel text-txt-soft transition hover:border-accent hover:text-txt active:scale-95"}
     >
       {theme === "dark"
         ? <Sun aria-hidden="true" size={iconSize} strokeWidth={2.2} />

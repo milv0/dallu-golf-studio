@@ -11,6 +11,7 @@ import LangToggle from "./LangToggle";
 import ThemeToggle from "./ThemeToggle";
 import AppMenu from "./AppMenu";
 import { isNativeApp } from "../../lib/nativePlatform.js";
+import { FEATURE_FLAGS } from "../../lib/features.js";
 
 export const LAST_CUSTOM_ROUTE_KEY = STUDIO_STORAGE_KEYS.lastCustomRoute;
 
@@ -72,6 +73,7 @@ function DisabledNavItem({ label, disabledTitle }) {
 }
 
 function LoginButton({ currentUser, onLogout, t }) {
+  if (!FEATURE_FLAGS.myRound) return null;
   if (currentUser) {
     return (
       <button type="button" onClick={onLogout}
@@ -140,7 +142,7 @@ export function AppHeader({ currentUser, onLogout, children }) {
             <div className="flex shrink-0 items-center gap-1.5">
               <Link href={guideHref} aria-label={t("home.guideLink")} title={t("home.guideLink")}
                 aria-current={isGuidePage ? "page" : undefined}
-                className={"flex size-8 items-center justify-center rounded-full border transition active:scale-95 " +
+                className={"flex size-11 items-center justify-center rounded-full border transition active:scale-95 " +
                   (isGuidePage
                     ? "border-accent bg-panel-2 text-accent"
                     : "border-line bg-panel text-txt-soft hover:border-accent hover:text-txt")}>
@@ -165,7 +167,7 @@ export function MobileAppBar({ active, sourceMode = "custom", currentUser, onLog
         {links.map((link) => (
           <Link key={link.href} href={href(link.href)}
             aria-current={active === link.id ? "page" : undefined}
-            className={"flex-1 rounded-lg py-1.5 text-center font-head leading-none transition " +
+            className={"flex min-h-11 flex-1 items-center justify-center rounded-lg text-center font-head leading-none transition " +
               (active === link.id
                 ? "bg-accent text-[#06210f] text-[15px] font-bold"
                 : "text-txt-soft text-[13px] font-semibold hover:bg-panel-2 hover:text-txt active:bg-panel-2")}>
